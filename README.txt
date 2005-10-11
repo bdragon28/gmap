@@ -51,13 +51,31 @@ http://vancouver.cyclehome.org/gmapmacro
 To see an example a node with the macro inserted go to:
 http://vancouver.cyclehome.org/
 
+It should be noted that because of the way the gmap api works much of the
+development can only be done on-line and therefore, I am not able to test
+the module on my internal server.  As a result the version on this webpage
+is likely to be a little more developed than the one in the drupal CVS.
+These pages may also occassionally have errors on them.
+
+Bugs & quirks
+----
+
+- The lines on the map are not redrawn when the page is reloaded.  Reload
+  is required only to resize the map.
+- When you preview a node, if the map is shown in the short version, it
+  will not be shown on the long version of the node, this is because only
+  one copy of a mapid can be shown on the same page.
+
 To do
 -----
 
+- Change so number of markers is not limited. (currently maximum of 3).
 - Create an API that will allow the use of the macro creation tool in any
   module.
 - Create setting to supress the option of changing some of the settings in
-  the macro.
+  the macro creation page.  This could be used so that all maps generated
+  are the same size, or the same maginification.
+- Add more settings (for example fixed/draggable map)
 
 Credit
 ------
@@ -65,3 +83,11 @@ Credit
 Written by:
 James Blake
 http://www.webgeer.com/James
+
+History
+-------
+1.2 October 10, 2005
+- Fix up many minor bugs and improve interface for macro generation.
+
+1.1 October 9, 2005
+- Initial release (probably a little premature)

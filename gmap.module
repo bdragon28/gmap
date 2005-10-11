@@ -108,7 +108,7 @@ function gmap_from_var ($gmap) {
         }
         $line1txt .="new GPoint($value)";
       }
-      $outtext .="\n".$gmap['id'].".addOverlay(new GPolyline([$line1txt],'#00cc00',5));";
+      $outtext .="\n".$gmap['id'].".addOverlay(new GPolyline([$line1txt],'".variable_get('gmap_default_line1_color', '#00cc00')."',5));";
     }
     if (isset($gmap['line2'])) {
       $line2 = explode('+',$gmap['line2']);
@@ -119,7 +119,7 @@ function gmap_from_var ($gmap) {
         }
         $line2txt .="new GPoint($value)";
       }
-      $outtext .="\n".$gmap['id'].".addOverlay(new GPolyline([$line2txt],'#ff0000',5));";
+      $outtext .="\n".$gmap['id'].".addOverlay(new GPolyline([$line2txt],'".variable_get('gmap_default_line2_color', '#ff0000')."',5));";
     }
     if (isset($gmap['line3'])) {
       $line3 = explode('+',$gmap['line3']);
@@ -130,7 +130,7 @@ function gmap_from_var ($gmap) {
         }
         $line3txt .="new GPoint($value)";
       }
-      $outtext .="\n".$gmap['id'].".addOverlay(new GPolyline([$line3txt],'#0000ff',5));";
+      $outtext .="\n".$gmap['id'].".addOverlay(new GPolyline([$line3txt],'".variable_get('gmap_default_line3_color', '#0000ff')."',5));";
     }
     $outtext .="\n } \n".'  //]]>
                </script>';
@@ -246,7 +246,7 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
 }
 
 function gmap_filter_tips($delta, $format, $long = false) {
-  return t('Insert Google Map macro. <a onclick="" >Create a macro</a>');
+  return t('Insert Google Map macro. <a href="gmapmacro" target="_blank" >Create a macro</a>');
 }
 
 function gmap_menu($may_cache) {
@@ -289,6 +289,9 @@ function gmap_settings() {
   $output .= form_textfield(t('Default zoom'), 'gmap_default_zoom', variable_get('gmap_default_zoom', 7), 30,2,t('The default zoom level of a Google map.'));
   $output .= form_select(t('Default Control type'), 'gmap_map_control', variable_get('gmap_default_control', 'Small'), array('None'=>t('None'), 'Small'=>t('Small'), 'Large'=>t('Large')),t('The default control type for the map.'));
   $output .= form_select(t('Default map type'), 'gmap_map_type', variable_get('gmap_default_type', 'Map'),array('Map'=>t('Map'), 'Hybrid'=>t('Hybrid'), 'Satellite'=>t('Satellite')),t('The default map type.'));
+  $output .= form_textfield(t('Line1 color'), 'gmap_line1_color', variable_get('gmap_default_line1_color', '#00cc00'), 30,2);
+  $output .= form_textfield(t('Line2 color'), 'gmap_line2_color', variable_get('gmap_default_line2_color', '#ff0000'), 30,2);
+  $output .= form_textfield(t('Line3 color'), 'gmap_line3_color', variable_get('gmap_default_line3_color', '#0000ff'), 30,2);
 
   return $output;
 }
@@ -300,8 +303,8 @@ function gmap_settings() {
  */
 
 function gmap_macro_page() {
-  drupal_set_title(t('Google Maps Macro Maker'));
-  
+
+   $line_colour=array(1=>variable_get('gmap_default_line1_color', '#00cc00'), variable_get('gmap_default_line2_color', '#ff0000'),variable_get('gmap_default_line3_color', '#0000ff'));
   (isset($_REQUEST['width'])) ? $newwidth=$_REQUEST['width'] : $newwidth= variable_get('gmap_default_width', 300);
   (isset($_REQUEST['height'])) ? $newheight=$_REQUEST['height'] : $newheight= variable_get('gmap_default_height', 200);
   (isset($_REQUEST['latlong'])) ? $newlatlong=$_REQUEST['latlong'] : $newlatlong= variable_get('gmap_default_latlong', '-123.1, 49.2');
@@ -309,38 +312,35 @@ function gmap_macro_page() {
   (isset($_REQUEST['control'])) ? $newcontrol=$_REQUEST['control'] : $newcontrol= variable_get('gmap_default_control', 'Small');
   $control=''; $small=''; $large='';
   $none= ($newcontrol=='None') ? 'SELECTED ' :'';
-  $initiate ='';
+  $initiate = "//initiate variables\n";
   if ($newcontrol=='Small') {
     $small = 'SELECTED ';
-    $initiate .=  "mycontrol=new GSmallMapControl();\n".
-                  "map.addControl(mycontrol);\n";
+    $initiate .=  "map.addControl(new GSmallMapControl());\n";
   }
   if ($newcontrol=='Large') {
     $large = 'SELECTED ';
-    $initiate .=  "mycontrol=new GLargeMapControl(); \n".
-                  "map.addControl(mycontrol);\n";
+    $initiate .=  "map.addControl(new GLargeMapControl());\n";
   }
 
-  if (isset($_REQUEST['point1']) && strlen($_REQUEST['point1'])>0) {
-    $newpoint1=$_REQUEST['point1'];
-    $initiate .= 'map.addOverlay(new GMarker(new GPoint('.$_REQUEST['point1'].')));';
-  }
-  else {
-    $newpoint1='';
-  }
-  if (isset($_REQUEST['point2']) && strlen($_REQUEST['point2'])>0) {
-    $newpoint2=$_REQUEST['point2'];
-    $initiate .= 'map.addOverlay(new GMarker(new GPoint('.$_REQUEST['point2'].')));';
-  }
-  else {
-    $newpoint2='';
-  }
-  if (isset($_REQUEST['point3']) && strlen($_REQUEST['point3'])>0) {
-    $newpoint3=$_REQUEST['point3'];
-    $initiate .= 'map.addOverlay(new GMarker(new GPoint('.$_REQUEST['point3'].')));';
-  }
-  else {
-    $newpoint3='';
+  for ($i=1; $i<=3; $i++) {
+    if (isset($_REQUEST['point'.$i]) && strlen($_REQUEST['point'.$i])>0) {
+      $newpoint[$i]=$_REQUEST['point'.$i];
+      $initiate .= 'point'.$i.'overlay=new GMarker(new GPoint('.$_REQUEST['point'.$i].'));'."\n";
+      $initiate .= 'map.addOverlay(point'.$i.'overlay);'."\n";
+    }
+    else {
+      $newpoint[$i]='';
+    }
+
+    if (isset($_REQUEST['line'.$i]) && strlen($_REQUEST['line'.$i])>0) {
+      $newline[$i]=$_REQUEST['line'.$i];
+      $initiate .= 'line'.$i.'overlay = new GPolyline([new GPoint('.str_replace(' + ','), new GPoint(',$newline[$i]).')],"'.$line_colour[$i].'", 5);'."\n";
+      $initiate .= 'map.addOverlay(line'.$i.'overlay);'."\n";
+    }
+    else {
+      $newline[$i]='';
+    }
+
   }
 
   $output='<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -352,12 +352,20 @@ function gmap_macro_page() {
       v\:* {
         behavior:url(#default#VML);
       }
+      body {
+        font-family: Helvetica, Arial, Lucida, Verdana, sans-serif;
+      }
+      h1 {
+        font-size: 1.2em;
+        font-weight: 700;
+      }
     </style>
   </head>
   <body onload="makemacro(); gmapload();">
     <h1>GMap Macro creation tool</h1>
     <p>Using the controls on this page, set the map as to how you would like it to appear and then use the gmap macro filter to insert this
-    into a node.
+    into a node.  Select the contents of the macro form (by clicking on macro text field) and then copy and paste it into a node where the
+    gmap filter has been enabled.
     <p><div id="map" style="width: '.$newwidth.'px; height: '.$newheight.'px"></div>
     <script type="text/javascript">
     //<![CDATA[
@@ -401,7 +409,7 @@ function changetype(intype) {
 }
 var map=null;
 var mycontrol=null;
-var overlay1=null; var overlay2=null; var overlay3=null;
+var point1overlay=null; var point2overlay=null; var point3overlay=null;
 var line1overlay=null;  var line1points=new Array(); var line1string=new String();
 var line2overlay=null;  var line2points=new Array(); var line2string=new String();
 var line3overlay=null;  var line3points=new Array(); var line3string=new String();
@@ -409,9 +417,11 @@ var line3overlay=null;  var line3points=new Array(); var line3string=new String(
     function gmapload() {
       if (GBrowserIsCompatible()) {
         map = new GMap(document.getElementById("map"));
-        '.$control.'
-        map.centerAndZoom(new GPoint('.$newlatlong.'), '.$newzoom.');
 
+        map.centerAndZoom(new GPoint('.$newlatlong.'), '.$newzoom.');
+       '.$initiate.'
+       
+       
         GEvent.addListener(map, "moveend", function() {
           var center = map.getCenterLatLng();
           var latLngStr = center.x + \', \' + center.y ;
@@ -430,23 +440,23 @@ var line3overlay=null;  var line3points=new Array(); var line3string=new String(
         GEvent.addListener(map, \'click\', function(overlay, point) {
 
           if (overlay) {
-            if (overlay==overlay1) {
-              overlay1=overlay2;
-              overlay2=overlay3;
-              overlay3=null;
+            if (overlay==point1overlay) {
+              point1overlay=point2overlay;
+              point2overlay=point3overlay;
+              point3overlay=null;
               document.gmapform.point1.value=document.gmapform.point2.value;
               document.gmapform.point2.value=document.gmapform.point3.value;
               document.gmapform.point3.value=\'\';
             }
-            if (overlay==overlay2) {
-              overlay2=overlay3;
-              overlay3=null;
+            if (overlay==point2overlay) {
+              point2overlay=point3overlay;
+              point3overlay=null;
               document.gmapform.point2.value=document.gmapform.point3.value;
               document.gmapform.point3.value=\'\';
             }
         
-            if (overlay==overlay3) {
-              overlay3=null;
+            if (overlay==point3overlay) {
+              point3overlay=null;
               document.gmapform.point3.value=\'\';
             }
             map.removeOverlay(overlay);
@@ -454,24 +464,24 @@ var line3overlay=null;  var line3points=new Array(); var line3string=new String(
           else if (point) {
             if (document.gmapform.clicktype.value==\'Points\') {
               map.addOverlay(marker=new GMarker(point));
-              if (overlay2) {
-                if (overlay3!=false) {
-                  map.removeOverlay(overlay3);
+              if (point2overlay) {
+                if (point3overlay!=false) {
+                  map.removeOverlay(point3overlay);
                 }
-                overlay3=overlay2;
+                point3overlay=point2overlay;
                 document.gmapform.point3.value=document.gmapform.point2.value;
               }
-              if (overlay1) {
-                overlay2=overlay1;
+              if (point1overlay) {
+                point2overlay=point1overlay;
                 document.gmapform.point2.value=document.gmapform.point1.value
               }
-              overlay1 = marker;
+              point1overlay = marker;
               document.gmapform.point1.value=point.x + \',\' + point.y ;
             }
             else if (document.gmapform.clicktype.value==\'Line1\') {
               line1points.push(point);
               if (line1overlay) map.removeOverlay(line1overlay);
-              line1overlay=new GPolyline(line1points,"#00cc00", 5);
+              line1overlay=new GPolyline(line1points,"'.$line_colour[1].'", 5);
               map.addOverlay(line1overlay);
               if (line1string.length > 0) line1string += \' + \';
               line1string += point.x + \',\' + point.y;
@@ -480,7 +490,7 @@ var line3overlay=null;  var line3points=new Array(); var line3string=new String(
             else if (document.gmapform.clicktype.value==\'Line2\') {
               line2points.push(point);
               if (line2overlay) map.removeOverlay(line2overlay);
-              line2overlay=new GPolyline(line2points,"#ff0000", 5);
+              line2overlay=new GPolyline(line2points,"'.$line_colour[2].'", 5);
               map.addOverlay(line2overlay);
               if (line2string.length > 0) line2string += \' + \';
               line2string += point.x + \',\' + point.y;
@@ -489,7 +499,7 @@ var line3overlay=null;  var line3points=new Array(); var line3string=new String(
             else if (document.gmapform.clicktype.value==\'Line3\') {
               line3points.push(point);
               if (line3overlay) map.removeOverlay(line3overlay);
-              line3overlay=new GPolyline(line3points,"#0000ff", 5);
+              line3overlay=new GPolyline(line3points,"'.$line_colour[3].'", 5);
               map.addOverlay(line3overlay);
               if (line3string.length > 0) line3string += \' + \';
               line3string += point.x + \',\' + point.y;
@@ -506,14 +516,14 @@ var line3overlay=null;  var line3points=new Array(); var line3string=new String(
 
     <form action="gmapmacro" name="gmapform" method="post">
     <table>
-      <tr><td>ID:</td><td><input type="text" size="25" name="id" value="map"  onchange="makemacro(); " />
+      <tr><td><a title="When multiple maps are to be shown on the same page, each one must have a unique id.">ID:</a></td><td><input type="text" size="25" name="id" value="map"  onchange="makemacro(); " />
           <td>Map type:</td><td><SELECT NAME="maptype" onchange="changetype(document.gmapform.maptype.value);">
                                   <OPTION VALUE="Map" />Map
                                   <OPTION VALUE="Hybrid" />Hybrid
                                   <OPTION VALUE="Satellite" />Satellite
                                 </SELECT> </td> </tr>
       <tr><td>Lat,Long:</td><td colspan=3><input type="text" size="50" name="latlong" value="'.$newlatlong.'" onchange="mapat(document.gmapform.latlong.value); " />  </td>
-      <tr><td>Width:</td><td><input type="text" size="25" name="width" value="'.$newwidth.'" /></td>
+      <tr><td><a title="Map size, page must be reloaded to change map size">Width:</a></td><td><input type="text" size="25" name="width" value="'.$newwidth.'" /></td>
           <td>Alignment:</td><td><SELECT NAME="alignment" onchange="makemacro();">
                                   <OPTION VALUE="None" />None
                                   <OPTION VALUE="Right" />Right
@@ -521,33 +531,32 @@ var line3overlay=null;  var line3points=new Array(); var line3string=new String(
                                   <OPTION VALUE="Center" />Center
                                 </SELECT></td></tr>
 
-      <tr><td>Height:</td><td><input type="text" size="25" name="height" value="'.$newheight.'" />  </td>
+      <tr><td><a title="Map size, page must be reloaded to change map size">Height:</a></td><td><input type="text" size="25" name="height" value="'.$newheight.'" />  </td>
           <td>Controls:</td><td><SELECT NAME="controltype" onchange="docontrol(document.gmapform.controltype.value);">
                                   <OPTION VALUE="None" '.$none.'/>None
                                   <OPTION VALUE="Small" '.$small.'/>Small
                                   <OPTION VALUE="Large" '.$large.'/>Large
                                 </SELECT>
 
-      <tr><td>Magnification:</td><td><input type="text" size="25" name="zoom" value="'.$newzoom.'"  onchange="map.zoomTo(document.gmapform.zoom.value); " />  </td>
-          <td>Click type:</td><td><SELECT NAME="clicktype" >
-                                  <OPTION VALUE="Points" />Points
+      <tr><td><a title="What happens when you click on the map">Click type:</a></td><td><SELECT NAME="clicktype" >
+                                  <OPTION VALUE="Points" TITLE="Add Marker to map"/>Points
                                   <OPTION VALUE="Line1" />Line1
                                   <OPTION VALUE="Line2" />Line2
                                   <OPTION VALUE="Line3" />Line3
-                                </SELECT> </td> </tr>
+                                </SELECT> </td>
+          <td><a title="The current magnification of the map">Magnification:</a></td><td><input type="text" size="5" name="zoom" value="'.$newzoom.'"  onchange="map.zoomTo(document.gmapform.zoom.value); " />  </td></tr>
 
-
-      <tr><td>point1:</td><td colspan=3><input type="text" size="50" name="point1" value="'.$newpoint1.'" /></td>
-      <tr><td>point2:</td><td colspan=3><input type="text" size="50" name="point2" value="'.$newpoint2.'" />  </td>
-      <tr><td>point3:</td><td colspan=3><input type="text" size="50" name="point3" value="'.$newpoint3.'" />  </td>
-      <tr><td>line1:</td><td colspan=3><input type="text" size="50" name="line1" value="" />  </td>
-      <tr><td>line2:</td><td colspan=3><input type="text" size="50" name="line2" value="" />  </td>
-      <tr><td>line3:</td><td colspan=3><input type="text" size="50" name="line3" value="" />  </td>
+      <!-- tr><td>point1:</td><td colspan=3 --><input type="hidden" size="50" name="point1" value="'.$newpoint[1].'" /><!-- /td>
+      <tr><td>point2:</td><td colspan=3 --><input type="hidden" size="50" name="point2" value="'.$newpoint[2].'" />  <!-- /td>
+      <tr><td>point3:</td><td colspan=3 --><input type="hidden" size="50" name="point3" value="'.$newpoint[3].'" />  <!-- /td>
+      <tr><td>line1:</td><td colspan=3 --><input type="hidden" size="50" name="line1" value="'.$newline[1].'" />  <!-- /td>
+      <tr><td>line2:</td><td colspan=3 --><input type="hidden" size="50" name="line2" value="'.$newline[2].'" />  <!-- /td>
+      <tr><td>line3:</td><td colspan=3 --><input type="hidden" size="50" name="line3" value="'.$newline[3].'" />  <!-- /td-->
 
     </table>
-    <textarea name="macro" cols="60" rows="20">
+    <textarea name="macro" cols="60" rows="10" onclick="document.gmapform.macro.select();">
     </textarea>
-    <p><INPUT type="submit" value="Reload"></p>
+    <p><INPUT type="submit" value="Reload to resize map" title="Only reload to resize map, some settings may be lost"></p>
     </form>
   </body>
 </html> ';
