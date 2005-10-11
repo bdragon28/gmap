@@ -289,9 +289,9 @@ function gmap_settings() {
   $output .= form_textfield(t('Default zoom'), 'gmap_default_zoom', variable_get('gmap_default_zoom', 7), 30,2,t('The default zoom level of a Google map.'));
   $output .= form_select(t('Default Control type'), 'gmap_map_control', variable_get('gmap_default_control', 'Small'), array('None'=>t('None'), 'Small'=>t('Small'), 'Large'=>t('Large')),t('The default control type for the map.'));
   $output .= form_select(t('Default map type'), 'gmap_map_type', variable_get('gmap_default_type', 'Map'),array('Map'=>t('Map'), 'Hybrid'=>t('Hybrid'), 'Satellite'=>t('Satellite')),t('The default map type.'));
-  $output .= form_textfield(t('Line1 color'), 'gmap_line1_color', variable_get('gmap_default_line1_color', '#00cc00'), 30,2);
-  $output .= form_textfield(t('Line2 color'), 'gmap_line2_color', variable_get('gmap_default_line2_color', '#ff0000'), 30,2);
-  $output .= form_textfield(t('Line3 color'), 'gmap_line3_color', variable_get('gmap_default_line3_color', '#0000ff'), 30,2);
+  $output .= form_textfield(t('Line1 color'), 'gmap_line1_color', variable_get('gmap_default_line1_color', '#00cc00'), 30,7);
+  $output .= form_textfield(t('Line2 color'), 'gmap_line2_color', variable_get('gmap_default_line2_color', '#ff0000'), 30,7);
+  $output .= form_textfield(t('Line3 color'), 'gmap_line3_color', variable_get('gmap_default_line3_color', '#0000ff'), 30,7);
 
   return $output;
 }
