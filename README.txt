@@ -3,9 +3,25 @@ $Id$
 Description
 -----------
 
-The GMap filter module uses filters to allow the insertion of a Google map
-into a node.  It includes a page to create the macro and a filter to insert
-a map based on the macro.
+The GMap module is a module that has 4 essential parts.  The first part
+an API that allows other modules or administrators to convert either an
+array of specifications or a macro text into a html/javascript text that
+will include the google map on their page.
+
+The second part is a macro generator which will allow you to interactively
+create a gmap macro suitable for using with this module.
+
+The third part is the filter, which allows you to take the text created
+from the macro and insert it into a node and the filter will convert this
+into a google map shown on the node.
+
+The fourth part is a user interface that allows users to enter their location
+in a google map and then a map can be viewed that can show where users are
+from around the world.  Note that the user functionality must have a table
+added to the database.  However, the rest of the module will work fine if
+this table is not activated and the user functionality is not turned on in
+the settings page.
+
 
 Installation
 ------------
@@ -29,6 +45,10 @@ Installation
    this will be on a 'html filtered' format, ensure that the weighting is
    such that the HTML filter comes before the gmap filter.
 
+7) (optional) If the user functionality will be used, a table must be added
+   to the database (as defined in gmap_user.mysql) and it must be turned
+   on in the gmap settings page.
+
 Instructions
 ------------
 
@@ -49,6 +69,9 @@ points on the map.  An unlimited number of points may be added separated
 by the '+' symbol. This could be used, for example, to plot a series of
 points that you get from a GPS.
 
+It should be noted that currently the macro parsing (filter) has much more
+functionality than can be created using the macro creator.
+
 Demo
 ----
 
@@ -58,14 +81,30 @@ http://vancouver.cyclehome.org/gmapmacro
 To see an example a node with the macro inserted go to:
 http://vancouver.cyclehome.org/
 
-It should be noted that because of the way the gmap api works much of the
-development can only be done on-line and therefore, I am not able to test
-the module on my home server.  As a result the version on this webpage
-is likely to be a little more developed than the one in the drupal CVS.
-These pages may also occasionally have errors on them.
+User
+----
+
+If the user functions are enables (on the settings page) then users are
+able to edit their location using an interactive google map on the edit
+user page.  Alternatively they can enter in their Latitude and Longitude
+and the map will set their location.
+
+Any user that has permission for "show user map" will then be able to see
+a map of all of the user locations at: q=gmapusers if a user has permission
+to "user location" when they click on the marker they will see what user it
+is.
+
 
 Bugs & quirks
 -------------
+
+- There is a conflict between the xmaps script and the javascript that does
+  the collapsing menus.  If want to use the xmaps functionality, it is
+  recommended that you comment out all of the statements in the function
+  "collapseEnsureErrorsVisible()" in misc/collapse.js.
+- The "dynamic" gmap method of inserting the initialization script does not
+  work with the filter functionality.  (It does work with user functionality).
+- The "track" method is not yet implemented.
 
 - When you preview a node, if the map is shown in the short version, it
   will not be shown on the long version of the node, this is because only
@@ -74,6 +113,10 @@ Bugs & quirks
 To do
 -----
 
+- Significantly upgrade the macro creator
+- The documentation (both in the code and this file) needs to be significantly
+  improved.
+- Import .plt file
 - create interface to geocoding for address or postal code to Long, Lat
   conversion.  Preferably on the client side of the javascript gmapmacro
   page.
@@ -83,7 +126,6 @@ To do
 - Create setting to suppress the option of changing some of the settings in
   the macro creation page.  This could be used so that all maps generated
   are the same size, or the same magnification.
-- Add more settings (for example fixed/draggable map)
 
 Credit
 ------
@@ -92,8 +134,23 @@ Written by:
 James Blake
 http://www.webgeer.com/James
 
+Thanks to the following for their contributions:
+
+
 History
 -------
+
+2005-12-xx:
+ - forked the 4.6/4.7 version, both versions will continue to be developed
+   for a while longer.
+ - added gmap user functionality
+ - width and height can be either px or %
+ - gmapmacro no longer needs to reload page (now works without clean url's)
+ - generalized gmap_from_var so that uses an array of points, or an array
+   of lines, ...
+ - 37518-Info windows associated with points (markers) can be shown
+ - can optionally include xgmap options such as circle/polygon/style types
+ -
 
 2005-10-15 Quite a few fixes.  (some reported in the project and some just
 noted myself)
