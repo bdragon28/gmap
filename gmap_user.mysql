@@ -1,0 +1,11 @@
+--
+-- Table structure for table `gmap_user`
+--
+
+CREATE TABLE `gmap_user` (
+  `uid` int(11) NOT NULL default '0',
+  `longitude` varchar(50) NOT NULL default '',
+  `latitude` varchar(50) NOT NULL default '',
+  `zoom` tinyint(4) NOT NULL default '0',
+  KEY `uid` (`uid`)
+) TYPE=MyISAM;
