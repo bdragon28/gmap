@@ -96,11 +96,6 @@ function gmap_from_var ($gmap,$javascript='') {
 
     $outtext="\n\n<!-- \n".print_r($gmap,true)."--> \n";
     $outtext.='<div id="'.$gmap['id'].'" style="'.$style.'"></div>
-              <style type="text/css">
-                 v\: {
-                   behavior:url(#default#VML);
-                 }
-              </style>
               <script type="text/javascript">
               //<![CDATA[
               //initialize gmap variables
@@ -209,7 +204,7 @@ function gmap_from_var ($gmap,$javascript='') {
           $linestyle .= 'color: "'.$value['color'].'", ';
         }
         if (isset($value['width'])){
-          $linestyle .= 'width: '.$value['width'].', ';
+          $linestyle .= 'weight: '.$value['width'].', ';
         }
         if (isset($value['opacity'])){
           $linestyle .= 'opacity: '.$value['opacity'].', ';
@@ -227,7 +222,12 @@ function gmap_from_var ($gmap,$javascript='') {
           $fillstyle .= 'opacity: '.$value['fillopacity'].', ';
         }
         $outtext .= 'var lineStyle = {'.$linestyle."};\n";
-        $outtext .= 'var fillStyle = {'.$fillstyle."};\n";
+        if (strlen($fillstyle)>0) {
+          $outtext .= 'var fillStyle = {'.$fillstyle."};\n";
+        }
+        else {
+          $outtext .= "var fillStyle = null;\n";
+        }
 
         switch ($value['type']) {
           case 'line':
@@ -449,7 +449,12 @@ function _gmap_doheader(){
     return;
   }
 
-  $header_text = '<script src="http://maps.google.com/maps?file=api&v=1&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script><script src="http://maps.google.com/maps?file=api&v=1&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>
+  $header_text = '<style type="text/css">
+               v\:* {
+                 behavior:url(#default#VML);
+               }
+               </style>
+                <script src="http://maps.google.com/maps?file=api&v=1&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script><script src="http://maps.google.com/maps?file=api&v=1&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>
                 <script language="javascript">
                  //<![CDATA[
                  var gmap_torun= new Array();
@@ -461,8 +466,6 @@ function _gmap_doheader(){
                         eval(gmap_torun[i]);
                      }
                    }
-
-                   //note: the following is used because of a bug in Drupal 4.7 so that hook_onload does not work.
                    var oldOnload = window.onload;
                    if (typeof window.onload != \'function\') {
                      window.onload = gmap_onload;
@@ -478,24 +481,27 @@ function _gmap_doheader(){
               baseIcon.shadow = "http://www.google.com/mapfiles/shadow50.png";
               baseIcon.iconSize = new GSize(20, 34);
               baseIcon.shadowSize = new GSize(37, 34);
+              baseIcon.iconAnchor = new GPoint(9, 34);
+              baseIcon.infoWindowAnchor = new GPoint(9, 2);
+              baseIcon.infoShadowAnchor = new GPoint(18, 25);
 
               function createGMarker(point, htmltext, marker) {
                 if (marker.length >0) {
-                  var icon = new GIcon(baseIcon);
-                  icon.image = marker;
-                  return new GMarker(point, icon);
+                  var markerIcon = new GIcon(baseIcon);
+                  markerIcon.image = marker;
+                  var returnMarker = new GMarker(point, markerIcon);
                 }
                 else {
-                  var marker = new GMarker(point);
+                  var returnMarker = new GMarker(point);
                 }
 
                 // Show this htmltext  info window when it is clicked.
                 if (htmltext.length>0) {
-                  GEvent.addListener(marker, \'click\', function() {
-                    marker.openInfoWindowHtml(htmltext);
+                  GEvent.addListener(returnMarker, \'click\', function() {
+                    returnMarker.openInfoWindowHtml(htmltext);
                   });
                 }
-                return marker;
+                return returnMarker;
               }
                   // ]]>
                </script>
@@ -582,9 +588,9 @@ function gmap_menu($may_cache) {
                      'callback' => 'gmap_macro_page' );
     if (variable_get('gmap_user',0)) {
       $items[] = array('path' => 'gmapusers',
-                       'type' => 'MENU_SUGGESTED_ITEM',
-                       'title' => t('Show a User Map'),
-                       'access' => user_access('user map'),
+                       'type' => 'MENU_NORMAL_ITEM',
+                       'title' => t('User Locations'),
+                       'access' => user_access('show user map'),
                        'callback' => 'gmap_users_page' );
     }
   }
@@ -723,8 +729,8 @@ function gmap_settings() {
 function gmap_macro_page() {
    global $qurl;
    $line_colour=array(1=>variable_get('gmap_default_line1_color', '#00cc00'), variable_get('gmap_default_line2_color', '#ff0000'),variable_get('gmap_default_line3_color', '#0000ff'));
-  (isset($_REQUEST['width'])) ? $newwidth=gmap_todim($_REQUEST['width']) : $newwidth= gmap_todim(variable_get('gmap_default_width', 300));
-  (isset($_REQUEST['height'])) ? $newheight=gmap_todim($_REQUEST['height']) : gmap_todim($newheight= variable_get('gmap_default_height', 200));
+  (isset($_REQUEST['width'])) ? $newwidth=gmap_todim($_REQUEST['width']) : $newwidth= gmap_todim(variable_get('gmap_default_width', '300px'));
+  (isset($_REQUEST['height'])) ? $newheight=gmap_todim($_REQUEST['height']) : $newheight= gmap_todim(variable_get('gmap_default_height', '200px'));
   (isset($_REQUEST['longlat'])) ? $newlonglat=$_REQUEST['longlat'] : $newlonglat= variable_get('gmap_default_latlong', '-123.1, 49.2');
   (isset($_REQUEST['zoom'])) ? $newzoom=$_REQUEST['zoom'] : $newzoom= variable_get('gmap_default_zoom', 7);
   (isset($_REQUEST['control'])) ? $newcontrol=$_REQUEST['control'] : $newcontrol= variable_get('gmap_default_control', 'Small');
@@ -1089,43 +1095,38 @@ function gmap_users_page() {
   // get array of users for lookups.  There is probably a better way of doing this, but I'm not
   // sure what it is.  Only necessary if user has view
   if (user_access('user locations')) {
-    $result=db_query('SELECT uid, name FROM {users}');
+    $result=db_query('SELECT uid, name, picture FROM {users}');
     $usernames=array();
     while ($u=db_fetch_array($result)) {
       $username[$u['uid']]=$u['name'];
+      $userpicture[$u['uid']]=$u['picture'];
     }
   }
   $output .=t('<p>This map illustrates the extent of users of this website.  Each marker indicates a user that has entered their locations.');
 
-  if (user_access('user locations')) {
-    $output .='<script type="text/javascript">
-              //<![CDATA[
-              function createMarker(point, username) {
-                 var marker = new GMarker(point);
-                 var html = "<p>"+username+"</p>";
-                 GEvent.addListener(marker, "click", function() {
-                   marker.openInfoWindowHtml(html);
-                 });
-                 return marker;
-               }
-              // ]]>
-              </script>
-               ';
-  }
 
   $result=db_query('SELECT * FROM {gmap_user}');
+  $thismap = gmap_parse_text(variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]'));
+  if (empty($thismap['markers'])) {
+    $thismap['markers']=array();
+  }
   while ($u=db_fetch_object($result)) {
     if (user_access('user locations')) {
-      $js .='{id}.addOverlay(createMarker(new GPoint('.$u->longitude.','.$u->latitude.'),"'.$username[$u->uid].'"));
-                ';
+      $newmarker['label'] = '<a href="'.$baseurl.'/user/'.$u->uid.'">';
+      if (strlen($userpicture[$u->uid])>0) {
+        //insert picture html
+      }
+      $newmarker['label'] .= $username[$u->uid];
+      $newmarker['label'] .= '</a>';
+      $newmarker['point']= $u->longitude.','.$u->latitude;
+//      $newmarker['markername']='usermarker';
     }
     else {
-      $js .= '{id}.addOverlay(new GMarker(new GPoint('.$u->longitude.','.$u->latitude.')));
-                 ';
+      $newmarker['point']= $u->longitude.','.$u->latitude;
     }
+    $thismap['markers'][]=$newmarker;
   }
-  $output .= '<p>'.gmap_from_text(variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]'),$js);
-
+  $output .= '<p>'.gmap_from_var($thismap);
   return $output;
 }
 
