@@ -628,8 +628,10 @@ function gmap_user($op, &$edit, &$user, $category = NULL) {
         return;
       case 'insert':
       case 'update':
-        db_query('DELETE from {gmap_user} WHERE uid=%d',$user->uid);
-        db_query("INSERT INTO {gmap_user} (uid, latitude, longitude, zoom) VALUES (%d, %f, %f, %d)", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], $edit['gmap_zoom']);
+        if ((isset($edit['gmap_latitude']) && $edit['gmap_latitude'] !=0) && (isset($edit['gmap_longitude']) && $edit['gmap_longitude'] !=0)) {
+          db_query('DELETE from {gmap_user} WHERE uid=%d',$user->uid);
+          db_query("INSERT INTO {gmap_user} (uid, latitude, longitude, zoom) VALUES (%d, %f, %f, %d)", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], $edit['gmap_zoom']);
+        }
         return;
 
         //db_query ("UPDATE {gmap_user} SET latitude='%f', longitude='%f', zoom=%d WHERE uid=%d", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], $edit['gmap_zoom']);
@@ -1149,5 +1151,3 @@ function gmap_users_page() {
   $output .= '<p>'.gmap_from_var($thismap);
   return $output;
 }
-
-?>
