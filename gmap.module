@@ -95,7 +95,7 @@ function gmap_from_var ($gmap,$javascript='') {
     }
 
     $outtext.='<div id="'.$gmap['id'].'" style="'.$style.'"></div>
-              <script type="text/javascript">
+              <script type="text/javascript" type="text/javascript">
               //<![CDATA[
               //initialize gmap variables
               var mycontrol=null;
@@ -141,6 +141,17 @@ function gmap_from_var ($gmap,$javascript='') {
         $tt=$value;
         $tt['type']='line';
         //open file parse into points
+        $tt['points']=array();
+        if($trackFH = fopen($tt['filename'], "r")) {
+          while(!feof($trackFH)) {
+            $line = fgets($trackFH, 4096);
+            $line_exploded = explode(",", $line);
+            if(count($line_exploded) == 7) {
+              $tt['points'][]= trim($line_exploded[0]).', '.trim($line_exploded[1]);
+            }
+          }
+          fclose($trackFH);
+        }
         $gmap['shape'][]=$tt;
       }
     }
@@ -316,12 +327,21 @@ function gmap_sanitize($gmap){
  *  align - the alignment of the map 'right', 'left' or 'center'
  *  control - the control shown on the map 'Large', 'Small', or 'None'
  *  type - 'Map', 'Hybrid' or 'Satellite'
- *  points - a string of points to mark on the map with + between each point
- *  line -
- *  circle -
- *  rpolygon -
- *  polygon -
- *  track -
+ *  markers - a string of points to mark on the map with + between
+ *          each point
+ *  line - the line is defined by a set of points separated by a +
+ *  track - Draws a line based on the points in the .plt file
+ *  The following shape types require XMaps:
+ *  circle - a circle based on a center point and a radius in km separated
+ *          by a + and optionally can include the number of sizes.
+ *  rpolygon - a regular polygon is defined by the center point and a point
+ *          on the permiter separated by a +
+ *  polygon - a polygon is defined by a set of points
+ *
+ *  Each of the shapes types can optionally have charecteristics of colour,
+ *  width, opacity, pattern, text, fill colour, fill opacity.  Pattern, text
+ *  and fill are all only used by xmaps.
+ *      color - hexadecimal for the colour include the '#'
  *
  * @return
  * A string with the google map ready to be inserted into a node.
@@ -453,8 +473,8 @@ function _gmap_doheader(){
                  behavior:url(#default#VML);
                }
                </style>
-                <script src="http://maps.google.com/maps?file=api&v=1&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>
-                <script language="javascript">
+                <script src="http://maps.google.com/maps?file=api&amp;v=1&amp;key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>
+                <script type="text/javascript">
                  //<![CDATA[
                  var gmap_torun= new Array();
 
@@ -697,6 +717,7 @@ function gmap_settings() {
   $form['user']=array('#type' => 'fieldset', '#title' => t('User map settings'));
   $form['user']['gmap_user']=array('#type'=>'checkbox', '#title'=>t('Enable Mapping of user locations'), '#default_value'=>variable_get('gmap_user',0),'#description'=>t('Ensure that the database table gmap_user is created before turning on the user location mapping functions.'));
   $form['user']['gmap_user_map']=array('#type'=>'textfield', '#title'=>t('Default user map'), '#default_value'=>variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]'), '#size'=>50, '#description'=>t('The gmap macro where the user information will be diplayed on.'));
+  $form['user']['gmap_user_map_header']=array('#type'=>'textarea', '#title'=>t('Text at the top of the users/map page'), '#default_value'=>variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')), '#cols'=>50, '#rows'=>6 );
 
   return $form;
   /*  from 4.6 settings
@@ -1126,7 +1147,7 @@ function gmap_users_page() {
       $userpicture[$u['uid']]=$u['picture'];
     }
   } */
-  $output .=t('<p>This map illustrates the extent of users of this website.  Each marker indicates a user that has entered their locations.');
+  $output .= variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
 
 
   $result=db_query('SELECT * FROM {gmap_user} WHERE longitude !=0 OR latitude !=0');
