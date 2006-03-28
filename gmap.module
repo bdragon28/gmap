@@ -1,6 +1,21 @@
 <?php
 /* $Id$ */
 
+define('GMAP_LOAD_METHOD', variable_get('gmap_method','Static'));
+define('GMAP_WIDTH', variable_get('gmap_default_width', '300px'));
+define('GMAP_HEIGHT', variable_get('gmap_default_height', '200px'));
+define('GMAP_ZOOM', variable_get('gmap_default_zoom', 16));
+define('GMAP_CONTROL', variable_get('gmap_default_control', 'Small'));
+//define('GMAP_ALIGNMENT', variable_get('gmap_default_allignment', ???));
+// variable still defined as gmap_default_latlong to avoid having to upgrade the database
+define('GMAP_LONGLAT', variable_get('gmap_default_latlong', '0, 40'));
+define('GMAP_TYPE', variable_get('gmap_default_type', 'Map'));
+define('GMAP_LINECOLOR1', variable_get('gmap_default_line1_color', '#00cc00'));
+define('GMAP_LINECOLOR2', variable_get('gmap_default_line2_color', '#ff0000'));
+define('GMAP_LINECOLOR3', variable_get('gmap_default_line3_color', '#0000ff'));
+define('GMAP_XMAPS', variable_get('gmap_xmaps',0));
+define('GMAP_XMAPS_SCRIPT', variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
+
 /**
  * @file
  * GMap Filters is a module to include Google Map in a module
@@ -10,13 +25,10 @@
  * html and javascript code required to insert a google map.
  */
 
-$gmap_initialized=FALSE;
-
 function gmap_help($section) {
   switch ($section) {
     case 'admin/modules#description':
       return t('Filter to allow insertion of a google map into a node');
-      break;
   }
 }
 
@@ -56,18 +68,16 @@ function gmap_perm() {
  * A string with the google map ready to be inserted into a node.
  *
  */
-
-
-function gmap_from_var ($gmap,$javascript='') {
+function gmap_draw_map($gmap, $javascript='') {
   global $base_url;
     _gmap_doheader();
-    (!isset($gmap['width'])) ? $gmap['width']=variable_get('gmap_default_width', 300): NULL;
-    (!isset($gmap['height'])) ? $gmap['height']=variable_get('gmap_default_height', 200):NULL;
-    (!isset($gmap['zoom'])) ? $gmap['zoom']=variable_get('gmap_default_zoom', 7):NULL;
+    (!isset($gmap['width'])) ? $gmap['width']=GMAP_WIDTH: NULL;
+    (!isset($gmap['height'])) ? $gmap['height']=GMAP_HEIGHT:NULL;
+    (!isset($gmap['zoom'])) ? $gmap['zoom']=GMAP_ZOOM:NULL;
     (!isset($gmap['align'])) ? $gmap['align']='':NULL;
     (!isset($gmap['id'])) ? $gmap['id']='map':NULL;
-    (!isset($gmap['control'])) ? $gmap['control']='Small':NULL;
-    (!isset($gmap['type'])) ? $gmap['type']='Map':NULL;
+    (!isset($gmap['control'])) ? $gmap['control']=GMAP_CONTROL:NULL;
+    (!isset($gmap['type'])) ? $gmap['type']=GMAP_TYPE:NULL;
     (!isset($gmap['tcontrol'])) ? $gmap['tcontrol']='off':NULL;
     (!isset($gmap['drag'])) ? $gmap['drag']='yes':NULL;
 
@@ -76,7 +86,7 @@ function gmap_from_var ($gmap,$javascript='') {
       $gmap['center']=$gmap['latlong'];
     }
     elseif (!isset($gmap['center'])){
-      $gmap['center']=variable_get('gmap_default_latlong', '-123.1, 49.2');
+      $gmap['center']=GMAP_LONGLAT;
     }
 
     $style='width: '.gmap_todim($gmap['width']).'; height: '.gmap_todim($gmap['height']).';';
@@ -95,16 +105,18 @@ function gmap_from_var ($gmap,$javascript='') {
     }
 
     $outtext.='<div id="'.$gmap['id'].'" style="'.$style.'"></div>
-              <script type="text/javascript" type="text/javascript">
+              <script type="text/javascript">
               //<![CDATA[
               //initialize gmap variables
               var mycontrol=null;
               var mytypecontrol=null;
               var '.$gmap['id'].'=null;
-
-              gmap_torun.push(\'gmap_load_'.$gmap['id'].'();\');
+              
+              addLoadEvent(gmap_init);  
+              addLoadEvent(gmap_load_'.$gmap['id'].');
+           
               function gmap_load_'.$gmap['id'].'() {
-                 '.$gmap['id'].' = new GMap(document.getElementById("'.$gmap['id'].'"));
+                 '.$gmap['id'].' = new GMap($("'.$gmap['id'].'"));
                  '.$gmap['id'].'.centerAndZoom(new GPoint('.$gmap['center'].'), '.$gmap['zoom'].');
                  ';
     switch (strtolower($gmap['control'])) {
@@ -140,7 +152,6 @@ function gmap_from_var ($gmap,$javascript='') {
       foreach ($gmap['track'] as $value) {
         $tt=$value;
         $tt['type']='line';
-        //open file parse into points
         $tt['points']=array();
         if($trackFH = fopen($tt['filename'], "r")) {
           while(!feof($trackFH)) {
@@ -152,7 +163,9 @@ function gmap_from_var ($gmap,$javascript='') {
           }
           fclose($trackFH);
         }
+
         $gmap['shape'][]=$tt;
+        
       }
     }
 
@@ -294,14 +307,14 @@ function gmap_from_var ($gmap,$javascript='') {
  *
  * This does not really do much of anything right now.
  */
-
-function gmap_sanitize($gmap){
+function gmap_sanitize(&$gmap){
   //sanitizes the gmap variables to reduce the possibility of javascript inserts
   reset($gmap);
   $value=current($gmap);
   do {
     if (key($gmap)=='id') {
-      preg_match('([a-zA-Z1-9_-]*)', $value,$out);
+            $out = array();
+      preg_match('([a-zA-Z1-9_-]*)', $value, $out);
       if (strlen($out[0])==0) $out[0]='map';
       $gmap[key($gmap)]=$out[0];
     }
@@ -309,12 +322,11 @@ function gmap_sanitize($gmap){
       $gmap[key($gmap)]=str_replace(';','',$value);
     }
   } while ($value=next($gmap));
-  return $gmap;
 }
 
 /**
  *
- * Returns the html required to insert a map from a gmap associative array.
+ * Returns a variable based on .
  *
  * @param $instring
  * A string with the settings of gmap insertion in the format var=setting|var2=setting2
@@ -327,7 +339,7 @@ function gmap_sanitize($gmap){
  *  align - the alignment of the map 'right', 'left' or 'center'
  *  control - the control shown on the map 'Large', 'Small', or 'None'
  *  type - 'Map', 'Hybrid' or 'Satellite'
- *  markers - a string of points to mark on the map with + between
+ *  points/markers - a string of points to mark on the map with + between
  *          each point
  *  line - the line is defined by a set of points separated by a +
  *  track - Draws a line based on the points in the .plt file
@@ -343,13 +355,12 @@ function gmap_sanitize($gmap){
  *  and fill are all only used by xmaps.
  *      color - hexadecimal for the colour include the '#'
  *
+ *
  * @return
  * A string with the google map ready to be inserted into a node.
  *
  */
-
-
-function gmap_parse_text($instring, $javascript='') {
+function gmap_parse_macro($instring) {
   $statements=explode('|', $instring);
   $j=0;
 
@@ -382,7 +393,7 @@ function gmap_parse_text($instring, $javascript='') {
         break;
 
       case 'track':
-        $tt['color']=variable_get('gmap_default_line1_color', '#00cc00');
+        $tt['color']=GMAP_LINECOLOR1;
         if (strpos($t[1],':')) { // note: we don't care about case starting with ':'
           list($configs,$t[1])=explode(':',$t[1],2);
           list($tt['color'],$tt['width'],$tt['opacity'],$tt['pattern'],$tt['text'])=explode('/',$configs);
@@ -392,14 +403,14 @@ function gmap_parse_text($instring, $javascript='') {
         break;
 
       case 'line1':
-        $tt['color']=variable_get('gmap_default_line1_color', '#00cc00');
+        $tt['color']=GMAP_LINECOLOR1;
       case 'line2':
         if (empty($tt['color'])){
-          $tt['color']=variable_get('gmap_default_line2_color', '#ff0000');
+          $tt['color']=GMAP_LINECOLOR2;
         }
       case 'line3':
         if (empty($tt['color'])){
-          $tt['color']=variable_get('gmap_default_line3_color', '#0000ff');
+          $tt['color']=GMAP_LINECOLOR3;
         }
       case 'line':
         if (strpos($t[1],':')) { // note: we don't care about case starting with ':'
@@ -432,7 +443,7 @@ function gmap_parse_text($instring, $javascript='') {
         break;
 
       case 'polygon':
-        $tt['color']=variable_get('gmap_default_line1_color', '#00cc00');
+        $tt['color']=GMAP_LINECOLOR1;
         if (strpos(':',$t[1])) { // note: we don't care about case starting with ':'
           list($configs,$t[1])=explode(':',$t[1],2);
           list($tt['color'],$tt['width'],$tt['opacity'],$tt['pattern'],$tt['text'],$tt['fillcolor'],$tt['fillopacity'])=explode('/',$configs);
@@ -448,101 +459,96 @@ function gmap_parse_text($instring, $javascript='') {
       }
     $j++;
   }
+  gmap_sanitize($gmap);
   return $gmap;
 }
 
-function gmap_from_text($instring, $javascript='') {
-  $gmap=gmap_parse_text($instring,$javascript);
-  $gmap=gmap_sanitize($gmap);
-  $outtext = gmap_from_var($gmap,$javascript);
-  return $outtext;
+/**
+ *
+ * Creates a map that can be interactively used to fill a form with a
+ * location (latitude, longitude and zoom level)
+ *
+ * @param $map_macro
+ * A macro to use as the base map for setting a location.
+ * @param $lonform
+ * A form element for the longitude to be set.  Should be an associative array in drupal form format.
+ * @param $latform
+ * A form element for the latitude to be set.
+ * @param $zoomform
+ * A form element for the zoom to be set.
+ * @return
+ * A string with the google map code to be inserted onto the page.
+ *
+ */
+function gmap_set_location($map_macro,&$lonform,&$latform,&$zoomform) {
+//$longitude=false, $latitude=false, $zoom=false) {
+  $map=gmap_parse_macro($map_macro);
+  if (!$zoom || $zoom<1 || $zoom>20) {
+    $zoom=16;
+  }
+  $form['coordinates']=array('#type' => 'fieldset','#title' => t('Coordinates'));
+  $latform['#id']='gmap-latitude';
+  $latform['#attributes']['onchange']='gmap_textchange('.$map['id'].');';
+  $lonform['#id']='gmap-longitude';
+  $lonform['#attributes']['onchange']='gmap_textchange('.$map['id'].');';
+  $zoomform['#id']='gmap-zoom';  // why doesn't '#id' work for hidden forms?
+
+  $myjava = '';
+  if ($lonform['#default_value']!=0 || $latform['#default_value']!=0) {
+    $myjava .= '{id}.centerAndZoom(new GPoint('.$lonform['#default_value'].', '.$latform['#default_value'].'), $("gmap-zoom").value);'."\n".
+             '{id}.addOverlay(thispoint=new GMarker(new GPoint('.$lonform['#default_value'].', '.$latform['#default_value'].')));';
+  }
+//  else {
+//    $startat='map.centerAndZoom(new GPoint(0, 30), zoom);';
+//  }
+
+//  $out='<div id="map" style="width: 100%; height: 300px;"></div> ';
+
+
+  $myjava .=  ' GEvent.addListener({id}, "click", function(overlay, point) {
+                  if (point) {
+                    if (thispoint) {
+                      {id}.removeOverlay(thispoint);
+                    }
+                    $("gmap-zoom").value =$("gmap-zoom").value-2;
+                    if ($("gmap-zoom").value<1) $("gmap-zoom").value=1;
+                    {id}.centerAndZoom(point, $("gmap-zoom").value);
+                    {id}.addOverlay(thispoint=new GMarker(point));
+                    $("gmap-latitude").value=point.y;
+                    $("gmap-longitude").value=point.x;
+                  }
+                });
+                GEvent.addListener({id}, "zoom", function() {
+                  $("gmap-zoom").value={id}.getZoomLevel();
+                });
+              ';
+  $out=gmap_draw_map($map,$myjava);
+  return $out;
 }
 
-
 function _gmap_doheader(){
-
-  global $gmap_initialized;
+  static $gmap_initialized = FALSE;
   if (variable_get('gmap_method','Static')=='None' || $gmap_initialized) {
-
     drupal_set_html_head('<!--gmap_initialized already -->');
     return;
   }
-
-  $header_text = '<style type="text/css">
-               v\:* {
-                 behavior:url(#default#VML);
-               }
-               </style>
-                <script src="http://maps.google.com/maps?file=api&amp;v=1&amp;key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>
-                <script type="text/javascript">
-                 //<![CDATA[
-                 var gmap_torun= new Array();
-
-                 // note: this is to allow the page to finish loading before it tries to modify the DOM
-                   function gmap_onload() {
-
-                     for (i=0; i < gmap_torun.length; i++) {
-                        eval(gmap_torun[i]);
-                     }
-                   }
-                   var oldOnload = window.onload;
-                   if (typeof window.onload != \'function\') {
-                     window.onload = gmap_onload;
-                   }else {
-                     window.onload = function() {
-                       oldOnload();
-                       gmap_onload();
-                     }
-                   }
-
-              var baseIcon = new GIcon();
-              baseIcon.image = "http://www.google.com/mapfiles/marker.png";
-              baseIcon.shadow = "http://www.google.com/mapfiles/shadow50.png";
-              baseIcon.iconSize = new GSize(20, 34);
-              baseIcon.shadowSize = new GSize(37, 34);
-              baseIcon.iconAnchor = new GPoint(9, 34);
-              baseIcon.infoWindowAnchor = new GPoint(9, 2);
-              baseIcon.infoShadowAnchor = new GPoint(18, 25);
-
-              function createGMarker(point, htmltext, marker) {
-                if (marker.length >0) {
-                  var markerIcon = new GIcon(baseIcon);
-                  markerIcon.image = marker;
-                  var returnMarker = new GMarker(point, markerIcon);
-                }
-                else {
-                  var returnMarker = new GMarker(point);
-                }
-
-                // Show this htmltext  info window when it is clicked.
-                if (htmltext.length>0) {
-                  GEvent.addListener(returnMarker, \'click\', function() {
-                    returnMarker.openInfoWindowHtml(htmltext);
-                  });
-                }
-                return returnMarker;
-              }
-                  // ]]>
-               </script>
-              ';
-  if (variable_get('gmap_xmaps',0)) {
-    $header_text .= '<script src="'.variable_get('gmap_xmaps_script','misc/xmaps.1c.js').'" type="text/javascript"> </script>'."\n";
-  }
-  drupal_set_html_head($header_text);
-  $gmap_initialized = true;
+  gmap_load_google_scripts(); 
+  $gmap_initialized = TRUE;
 }
 
 function _gmap_prepare($intext) {
-  $out=FALSE;
+  $out = FALSE;
   $mapexp = '/\[gmap([^\[\]]+ )* \] /x';
+  $matches = array();
   preg_match_all($mapexp, $intext, $matches);
-  $i=0;
+  $i = 0;
 
   while (isset($matches[1][$i])) {
     $out[0][$i] = $matches[0][$i];
-    $out[1][$i] = gmap_from_text($matches[1][$i]);
+    $out[1][$i] = gmap_draw_map(gmap_parse_macro($matches[1][$i]));
     $i++;
   } // endwhile process macro
+
   return $out;
 }
 
@@ -562,15 +568,12 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
   switch ($op) {
     case 'list':
       return (array(0 => t('GMap filter')));
-      break;
 
     case 'name':
       return t('Google map filter');
-      break;
 
     case 'description':
       return t('converts a google map  macro into the html required for inserting a google map.');
-      break;
 
     case 'process':
       $gmaps=_gmap_prepare($text);   //returns an array of $tables[0] = table macro $table[1]= table html
@@ -580,20 +583,18 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
       else {
         return $text;
       }
-      break;
 
     case 'prepare':
       return $text;
-      break;
 
     case 'no cache':
-      return variable_get('gmap_method', 'Static')=='Dynamic';
-      break;
+    
+      return (variable_get('gmap_method', 'Static')=='Dynamic');
   }
 }
 
 function gmap_filter_tips($delta, $format, $long = false) {
-  return t('Insert Google Map macro. <a href="gmapmacro" target="_blank" >Create a macro</a>');
+  return t('Insert Google Map macro. <a href="%href" target="_blank" >Create a macro</a>', array('%href' => url('gmapmacro')));
 }
 
 function gmap_menu($may_cache) {
@@ -601,16 +602,16 @@ function gmap_menu($may_cache) {
 
   if ($may_cache) {
     $items[] = array('path' => 'gmapmacro',
-                     'type' => MENU_SUGGESTED_ITEM,
-                     'title' => t('Create a Google Map Macro'),
-                     'access' => user_access('create macro'),
-                     'callback' => 'gmap_macro_page' );
+      'type' => MENU_SUGGESTED_ITEM,
+      'title' => t('Create a Google Map Macro'),
+      'access' => user_access('create macro'),
+      'callback' => 'gmap_macro_page' );
     if (variable_get('gmap_user',0)) {
       $items[] = array('path' => 'users/map',
-                       'type' => MENU_NORMAL_ITEM,
-                       'title' => t('User Locations'),
-                       'access' => user_access('show user map'),
-                       'callback' => 'gmap_users_page' );
+        'type' => MENU_NORMAL_ITEM,
+        'title' => t('User locations'),
+        'access' => user_access('show user map'),
+        'callback' => 'gmap_users_page');
     }
   }
   if (!$may_cache && (strlen(variable_get('googlemap_api_key', '')) > 0)) {
@@ -619,521 +620,6 @@ function gmap_menu($may_cache) {
     }
   }
   return $items;
-}
-
-function gmap_user($op, &$edit, &$user, $category = NULL) {
-  if (variable_get('gmap_user',0)) {
-    switch ($op) {
-      case 'categories':
-        return array(array('name'=>'gmap_user', 'title'=> t('Location Map'),'weight'=>5));
-      case 'validate':
-        if (isset($edit['gmap_latitude'])){
-          if (!is_numeric($edit['gmap_latitude']) || abs($edit['gmap_latitude'])>90) {
-            form_set_error('gmap_latitude', t('Latitude must be between -90 and 90'));
-          }
-        }
-        if (isset($edit['gmap_longitude'])){
-          if (!is_numeric($edit['gmap_longitude']) || abs($edit['gmap_longitude'])>180) {
-            form_set_error('gmap_longitude', t('Longitude must be between -180 and 180'));
-          }
-        }
-        return;
-      case 'load':
-        $res=db_query("SELECT * FROM {gmap_user} WHERE uid=%d",$user->uid);
-        if ($gmap_user=db_fetch_array($res)) {
-          $user->latitude=$gmap_user['latitude'];
-          $user->longitude=$gmap_user['longitude'];
-          $user->gmap_zoom=$gmap_user['zoom'];
-        }
-        return;
-      case 'insert':
-      case 'update':
-        if ((isset($edit['gmap_latitude']) && $edit['gmap_latitude'] !=0) && (isset($edit['gmap_longitude']) && $edit['gmap_longitude'] !=0)) {
-          db_query('DELETE from {gmap_user} WHERE uid=%d',$user->uid);
-          db_query("INSERT INTO {gmap_user} (uid, latitude, longitude, zoom) VALUES (%d, %f, %f, %d)", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], $edit['gmap_zoom']);
-        }
-        return;
-
-        //db_query ("UPDATE {gmap_user} SET latitude='%f', longitude='%f', zoom=%d WHERE uid=%d", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], $edit['gmap_zoom']);
-        //return;
-      case 'delete':
-        db_query ('DELETE from {gmap_user} WHERE uid=%d', $user->uid);
-        return;
-      case 'form':
-        if ($category=='gmap_user') {
-          if (isset($user->latitude) && isset($user->longitude)) {
-            $usermap=_gmap_user_form($user->longitude,$user->latitude, $user->gmap_zoom);
-          }
-          else {
-            $usermap = _gmap_user_form();
-          }
-
-          $form['map']=array('#type' => 'fieldset','#title' => t('Google Map'));
-          $form['map']['gmap_user']=array('#type'=>'markup','#value'=>$usermap);
-          $form['coordinates']=array('#type' => 'fieldset','#title' => t('Coordinates'));
-          $form['coordinates']['gmap_latitude']=array('#type'=>'textfield', '#title'=>t('Latitude'), '#default_value'=>$user->latitude, '#size'=>30, '#maxlength'=>120, '#description'=>t('The latitude will automatically be entered here (or you can do it manually).'),'#onchange'=>'gmap_textchange();');
-          $form['coordinates']['gmap_longitude']=array('#type'=>'textfield', '#title'=>t('Longitude'), '#default_value'=>$user->longitude, '#size'=>30, '#maxlength'=>120, '#description'=>t('The longitude will automatically be entered here (or you can do it manually).'),'#onchange'=>'gmap_textchange();');
-          $form['coordinates']['gmap_user_zoom']=array('#type'=>'hidden', '#default_value'=>variable_get('gmap_user_zoom', 15));
-          return  $form;
- /*
-          $form2 = form_textfield(t('Latitude'), 'gmap_latitude', $user->latitude, 30,120, t('The latitude will automatically be entered here (or you can do it manually).'), array('onchange'=>'gmap_textchange();') );
-          $form2 .= form_textfield(t('Longitude'), 'gmap_longitude', $user->longitude, 30,120, t('The longitude will automatically be entered here (or you can do it manually).'), array('onchange'=>'gmap_textchange();') );
-          $form2 .= form_hidden('gmap_zoom', variable_get('gmap_user_zoom', 15));
-
-          return array(array('title'=>t('Google Map'), 'data'=>$form, 'weight'=>0),array('title'=>t('Coordinates'), 'data'=>$form2, 'weight'=>1));
-*/
-        }
-    }
-  }
-}
-
-/* Not used in Drupal 4.7 due to a bug in Drupal 4.7
-function gmap_onload() {
-  if (strlen(variable_get('googlemap_api_key', ''))>0) return array('gmap_onload()');
-}
-*/
-function gmap_settings() {
-  //note the same google api key variable name as in the googlemap module is used
-  //note the name of the variable for center of the map is latlong although the format is actually longitude, latitude
-
-  $form['initialization']=array('#type' => 'fieldset','#title' => t('Google Map Initialize'));
-  $form['initialization']['googlemap_api_key']=array('#type' => 'textfield', '#title' => t('Google map API key'), '#default_value'=>variable_get('googlemap_api_key', ''), '#size' => 50, '#maxlength' => 255,'#description' => t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.'));
-  $form['initialization']['gmap_method']=array('#type' => 'select', '#title' => t('Google map method'),  '#options'=> array('Static'=>t('Static'), 'Dynamic'=>t('Dynamic'), 'None'=>t('None')),'#default_value'=>variable_get('gmap_method','Static'),'#description' => t('How is the Google Map initialization script run:<br /><strong>Static</strong> - Loaded on every page, <br /><strong>Dynamic</strong> - Initialization script runs only on pages with google maps, but all pages with the gmap filter will not be cached. <br /><strong>None</strong> - Google map initialization script must be loaded some other way.'));
-  $form['initialization']['gmap_xmaps']=array('#type'=>'checkbox', '#title'=>t('Enable Xmaps features (circles and polygons)'), '#default_value'=>variable_get('gmap_xmaps',0),'#description'=>t('Enables XMaps features.  XMaps is currently a <em>beta</em> release available from <a href="http://xmaps.busmonster.com/">xmaps.busmonser.com</a>. '));
-  $form['initialization']['gmap_xmaps_script']=array('#type' => 'textfield', '#title' => t('Location of XMaps script'), '#default_value'=>variable_get('gmap_xmaps_script','misc/xmaps.1c.js'), '#size' => 25, '#maxlength' => 50);
-
-
-  $form['defaults']=array('#type' => 'fieldset', '#title' => t('Default map settings'));
-  $form['defaults']['gmap_default_width']=array('#type'=>'textfield', '#title'=>t('Default width'), '#default_value'=>variable_get('gmap_default_width', 300), '#size'=>25, '#maxlength'=>6, '#description'=>t('The default width of a Google map.'));
-  $form['defaults']['gmap_default_height']=array('#type'=>'textfield', '#title'=>t('Default height'), '#default_value'=>variable_get('gmap_default_height', 200), '#size'=>25, '#maxlength'=>6, '#description'=>t('The default height of a Google map.'));
-  $form['defaults']['gmap_default_latlong']=array('#type'=>'textfield', '#title'=>t('Default center'), '#default_value'=>variable_get('gmap_default_latlong', '-123.1, 49.2'), '#size'=>50, '#maxlength'=>255, '#description'=>t('The default longitude, latitude of a Google map.'));
-  $form['defaults']['gmap_default_zoom']=array('#type'=>'textfield', '#title'=>t('Default zoom'), '#default_value'=>variable_get('gmap_default_zoom', 7), '#size'=>25, '#maxlength'=>4, '#description'=>t('The default zoom level of a Google map (between 1 and 24).'));
-  $form['defaults']['gmap_default_control']=array('#type'=>'select', '#title'=>t('Default control type'), '#default_value'=>variable_get('gmap_default_control', 'Small'), '#options'=>array('None'=>t('None'),'Small'=>t('Small'),'Large'=>t('Large')));
-  $form['defaults']['gmap_default_type']=array('#type'=>'select', '#title'=>t('Default map type'), '#default_value'=>variable_get('gmap_default_type', 'Map'), '#options'=>array('Map'=>t('Map'),'Hybrid'=>t('Hybrid'),'Satellite'=>t('Satellite')));
-  $form['defaults']['gmap_default_line1_color']=array('#type'=>'textfield', '#title'=>t('Default Line 1 Color'), '#default_value'=>variable_get('gmap_default_line1_color', '#00cc00'), '#size'=>25, '#maxlength'=>7 );
-  $form['defaults']['gmap_default_line2_color']=array('#type'=>'textfield', '#title'=>t('Default Line 2 Color'), '#default_value'=>variable_get('gmap_default_line2_color', '#ff0000'), '#size'=>25, '#maxlength'=>7 );
-  $form['defaults']['gmap_default_line3_color']=array('#type'=>'textfield', '#title'=>t('Default Line 3 Color'), '#default_value'=>variable_get('gmap_default_line3_color', '#0000ff'), '#size'=>25, '#maxlength'=>7 );
-
-  $form['user']=array('#type' => 'fieldset', '#title' => t('User map settings'));
-  $form['user']['gmap_user']=array('#type'=>'checkbox', '#title'=>t('Enable Mapping of user locations'), '#default_value'=>variable_get('gmap_user',0),'#description'=>t('Ensure that the database table gmap_user is created before turning on the user location mapping functions.'));
-  $form['user']['gmap_user_map']=array('#type'=>'textfield', '#title'=>t('Default user map'), '#default_value'=>variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]'), '#size'=>50, '#description'=>t('The gmap macro where the user information will be diplayed on.'));
-  $form['user']['gmap_user_map_header']=array('#type'=>'textarea', '#title'=>t('Text at the top of the users/map page'), '#default_value'=>variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')), '#cols'=>50, '#rows'=>6 );
-
-  return $form;
-  /*  from 4.6 settings
-  $output  = form_group(t('Google map initializations'),
-             form_textfield(t('Google API Key'), 'googlemap_api_key', variable_get('googlemap_api_key', ''), 100, 255, t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.')).
-             form_select(t('Google map method'), 'gmap_map_method', variable_get('gmap_map method', 'Static'), array('Static'=>t('Static'), 'Dynamic'=>t('Dynamic'), 'None'=>t('None')),t('How is the Google Map initialization script run:<br /><strong>Static</strong> - Loaded on every page, <br /><strong>Dynamic</strong> - Initialization script runs only on pages with google maps, but all pages with the gmap filter will not be cached. <br /><strong>None</strong> - Google map initialization script must be loaded some other way.')));
-  $output .= form_group(t('Default map settings'),
-             form_textfield(t('Default width'), 'gmap_default_width', variable_get('gmap_default_width', 300), 100,4,t('The default width of a Google map.')).
-             form_textfield(t('Default height'), 'gmap_default_height', variable_get('gmap_default_height', 200), 100,4,t('The default height of a Google map.')).
-             form_textfield(t('Default center'), 'gmap_default_latlong', variable_get('gmap_default_latlong', '-123.1, 49.2'), 100,120,t('The default longitude, latitude of a Google map.')).
-             form_textfield(t('Default zoom'), 'gmap_default_zoom', variable_get('gmap_default_zoom', 7), 100,2,t('The default zoom level of a Google map.')).
-             form_select(t('Default Control type'), 'gmap_default_control', variable_get('gmap_default_control', 'Small'), array('None'=>t('None'), 'Small'=>t('Small'), 'Large'=>t('Large')),t('The default control type for the map.')).
-             form_select(t('Default map type'), 'gmap_map_type', variable_get('gmap_default_type', 'Map'),array('Map'=>t('Map'), 'Hybrid'=>t('Hybrid'), 'Satellite'=>t('Satellite')),t('The default map type.')).
-             form_textfield(t('Line1 color'), 'gmap_default_line1_color', variable_get('gmap_default_line1_color', '#00cc00'), 100,7).
-             form_textfield(t('Line2 color'), 'gmap_default_line2_color', variable_get('gmap_default_line2_color', '#ff0000'), 100,7).
-             form_textfield(t('Line3 color'), 'gmap_default_line3_color', variable_get('gmap_default_line3_color', '#0000ff'), 100,7));
-  $output .= form_group(t('User map settings'),
-             form_checkbox(t('Enable mapping of user locations.'),'gmap_user', 1, variable_get('gmap_user',0),t('Ensure that the database table gmap_user is created before turning on the user location mapping functions.')).
-             form_textfield(t('User Map View'), 'gmap_user_map', variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]'), 100,255));
-
-  return $output;
-  */
-}
-
-/**
- *
- * Creates a page that has all of the javascript required for the macro-creation tool.
- *
- */
-
-function gmap_macro_page() {
-
-   $line_colour=array(1=>variable_get('gmap_default_line1_color', '#00cc00'), variable_get('gmap_default_line2_color', '#ff0000'),variable_get('gmap_default_line3_color', '#0000ff'));
-  (isset($_REQUEST['width'])) ? $newwidth=$_REQUEST['width'] : $newwidth= variable_get('gmap_default_width', 300);
-  (isset($_REQUEST['height'])) ? $newheight=$_REQUEST['height'] : $newheight= variable_get('gmap_default_height', 200);
-  (isset($_REQUEST['longlat'])) ? $newlonglat=$_REQUEST['longlat'] : $newlonglat= variable_get('gmap_default_latlong', '-123.1, 49.2');
-  (isset($_REQUEST['zoom'])) ? $newzoom=$_REQUEST['zoom'] : $newzoom= variable_get('gmap_default_zoom', 7);
-  (isset($_REQUEST['control'])) ? $newcontrol=$_REQUEST['control'] : $newcontrol= variable_get('gmap_default_control', 'Small');
-  $control=''; $small=''; $large='';
-  (variable_get('clean_url', true)) ? $qurl='' : $qurl='?q=';
-  $none= ($newcontrol=='None') ? 'SELECTED ' :'';
-  $initiate = "//initiate variables\n";
-  if ($newcontrol=='Small') {
-    $small = 'SELECTED ';
-    $initiate .=  "map.addControl(mycontrol = new GSmallMapControl());\n";
-  }
-  if ($newcontrol=='Large') {
-    $large = 'SELECTED ';
-    $initiate .=  "map.addControl(mycontrol = new GLargeMapControl());\n";
-  }
-
-  for ($i=1; $i<=3; $i++) {
-    if (isset($_REQUEST['point'.$i]) && strlen($_REQUEST['point'.$i])>0) {
-      $newpoint[$i]=$_REQUEST['point'.$i];
-      $initiate .= 'point'.$i.'overlay=new GMarker(new GPoint('.$_REQUEST['point'.$i].'));'."\n";
-      $initiate .= 'map.addOverlay(point'.$i.'overlay);'."\n";
-    }
-    else {
-      $newpoint[$i]='';
-    }
-
-    if (isset($_REQUEST['line'.$i]) && strlen($_REQUEST['line'.$i])>0) {
-      $newline[$i]=$_REQUEST['line'.$i];
-      $initiate .= 'line'.$i.'overlay = new GPolyline([new GPoint('.str_replace(' + ','), new GPoint(',$newline[$i]).')],"'.$line_colour[$i].'", 5);'."\n";
-      $initiate .= 'map.addOverlay(line'.$i.'overlay);'."\n";
-    }
-    else {
-      $newline[$i]='';
-    }
-
-  }
-
-  $output='<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
-  <head>
-    <title>GMap Macro Creator</title>
-    <script src="http://maps.google.com/maps?file=api&v=1&key='.variable_get('googlemap_api_key', 'abcdef').'" type="text/javascript"></script>
-    <style type="text/css">
-      v\:* {
-        behavior:url(#default#VML);
-      }
-      body {
-        font-family: Helvetica, Arial, Lucida, Verdana, sans-serif;
-      }
-      h1 {
-        font-size: 1.2em;
-        font-weight: 700;
-      }
-    </style>
-  </head>
-  <body onload="makemacro(); gmapload();">
-    <h1>GMap Macro creation tool</h1>
-    <p>Using the controls on this page, set the map as to how you would like it to appear and then use the gmap macro filter to insert this
-    into a node.  Select the contents of the macro form (by clicking on macro text field) and then copy and paste it into a node where the
-    gmap filter has been enabled.
-    <p><div id="map" style="width: '.$newwidth.'; height: '.$newheight.'"></div>
-    <script type="text/javascript">
-    //<![CDATA[
-
-    function makemacro() {
-      var zooml = \' |zoom=\' + document.gmapform.zoom.value;
-      var center = \' |center=\' + document.gmapform.longlat.value;
-      var width = \' |width=\' + document.gmapform.width.value;
-      var height = \' |height=\' + document.gmapform.height.value;
-      var id = \' |id=\' + document.gmapform.id.value;
-      var control = \' |control=\' + document.gmapform.controltype.value;
-      var type = \' |type=\' + document.gmapform.maptype.value;
-      var alignment = \' |align=\' + document.gmapform.alignment.value;
-      if (points.length >0) {
-        var outpoints = \' |markers=\' + points.join(\' + \');
-      } else var outpoints=\'\';
-      if (document.gmapform.line1.value.length >0) {var line1 = \' |line1=\' + document.gmapform.line1.value} else line1=\'\';
-      if (document.gmapform.line2.value.length >0) {var line2 = \' |line2=\' + document.gmapform.line2.value} else line2=\'\';
-      if (document.gmapform.line3.value.length >0) {var line3 = \' |line3=\' + document.gmapform.line3.value} else line3=\'\';
-
-      document.gmapform.macro.value = \'[gmap\' + id + center + zooml + width + height +  alignment + control + type + outpoints + line1 + line2 + line3 + \']\';
-
-    }
-function mapat(instring) {
-     var splitstring=instring.split(",");
-     map.centerAtLatLng(new GPoint(splitstring[0],splitstring[1]));
-}
-
-function docontrol(incontrol) {
-     map.removeControl(mycontrol);
-     if (incontrol == "Small") map.addControl(mycontrol = new GSmallMapControl());
-     if (incontrol == "Large") map.addControl(mycontrol = new GLargeMapControl());
-     makemacro();
-}
-
-function changetype(intype) {
-    if (intype == "Map") map.setMapType(G_MAP_TYPE);
-    if (intype == "Hybrid") map.setMapType(G_HYBRID_TYPE);
-    if (intype == "Satellite") map.setMapType(G_SATELLITE_TYPE);
-    makemacro();
-}
-
-function doresize () {
-     var width = document.gmapform.width.value; //(in pixels, e.g. 500px)
-     var height = document.gmapform.height.value; //(in pixels, e.g. 300px)
-     if (mapdiv){
-           mapdiv.style.width=width;
-           mapdiv.style.height=height;
-     }
-     map.onResize();
-     makemacro();
-}
-
-var map=null;
-var mycontrol=null;
-var points=[];
-var pointsOverlays=[];
-
-var line1overlay=null;  var line1points=new Array(); var line1string=new String();
-var line2overlay=null;  var line2points=new Array(); var line2string=new String();
-var line3overlay=null;  var line3points=new Array(); var line3string=new String();
-
-    function gmapload() {
-      if (GBrowserIsCompatible()) {
-        map = new GMap(document.getElementById("map"));
-
-        map.centerAndZoom(new GPoint('.$newlonglat.'), '.$newzoom.');
-       '.$initiate.'
-
-
-        GEvent.addListener(map, "moveend", function() {
-          var center = map.getCenterLatLng();
-          var latLngStr = center.x + \', \' + center.y ;
-          document.gmapform.longlat.value = latLngStr;
-          makemacro();
-        });
-
-        GEvent.addListener(map, "zoom", function() {
-          var zooml = map.getZoomLevel();
-          document.gmapform.zoom.value = zooml;
-          document.gmapform.longlat.value = latLngStr;
-          makemacro();
-        });
-
-
-        GEvent.addListener(map, \'click\', function(overlay, point) {
-
-          if (overlay) {
-            var shft=false;
-            for (i=0; i<points.length; i++){
-              if (overlay==pointsOverlays[i]) {
-                shft=true;
-              }
-              if (shft==true) {
-                if (i<points.length) {
-                  pointsOverlays[i]=pointsOverlays[i+1];
-                  points[i]=points[i+1];
-                }
-              }
-            }
-            points.pop();
-            pointsOverlays.pop();
-            map.removeOverlay(overlay);
-          }
-          else if (point) {
-            if (document.gmapform.clicktype.value==\'Points\') {
-              map.addOverlay(marker=new GMarker(point));
-              pointsOverlays.push(marker);
-              points.push(point.x + \',\' + point.y);
-            }
-            else if (document.gmapform.clicktype.value==\'Line1\') {
-              line1points.push(point);
-              if (line1overlay) map.removeOverlay(line1overlay);
-              line1overlay=new GPolyline(line1points,"'.$line_colour[1].'", 5);
-              map.addOverlay(line1overlay);
-              if (line1string.length > 0) line1string += \' + \';
-              line1string += point.x + \',\' + point.y;
-              document.gmapform.line1.value = line1string;
-            }
-            else if (document.gmapform.clicktype.value==\'Line2\') {
-              line2points.push(point);
-              if (line2overlay) map.removeOverlay(line2overlay);
-              line2overlay=new GPolyline(line2points,"'.$line_colour[2].'", 5);
-              map.addOverlay(line2overlay);
-              if (line2string.length > 0) line2string += \' + \';
-              line2string += point.x + \',\' + point.y;
-              document.gmapform.line2.value = line2string;
-            }
-            else if (document.gmapform.clicktype.value==\'Line3\') {
-              line3points.push(point);
-              if (line3overlay) map.removeOverlay(line3overlay);
-              line3overlay=new GPolyline(line3points,"'.$line_colour[3].'", 5);
-              map.addOverlay(line3overlay);
-              if (line3string.length > 0) line3string += \' + \';
-              line3string += point.x + \',\' + point.y;
-              document.gmapform.line3.value = line3string;
-            }
-
-          }
-          makemacro();
-        });
-      }
-    }
-
-    function addpoint(formelement) {
-     var splitstring=formelement.value.split(",");
-     var point=new GPoint(splitstring[0],splitstring[1]);
-           if (document.gmapform.clicktype.value==\'Points\') {
-              map.addOverlay(marker=new GMarker(point));
-              pointsOverlays.push(marker);
-              points.push(formelement.value);
-            }
-            else if (document.gmapform.clicktype.value==\'Line1\') {
-              line1points.push(point);
-              if (line1overlay) map.removeOverlay(line1overlay);
-              line1overlay=new GPolyline(line1points,"'.$line_colour[1].'", 5);
-              map.addOverlay(line1overlay);
-              if (line1string.length > 0) line1string += \' + \';
-              line1string += point.x + \',\' + point.y;
-              document.gmapform.line1.value = line1string;
-            }
-            else if (document.gmapform.clicktype.value==\'Line2\') {
-              line2points.push(point);
-              if (line2overlay) map.removeOverlay(line2overlay);
-              line2overlay=new GPolyline(line2points,"'.$line_colour[2].'", 5);
-              map.addOverlay(line2overlay);
-              if (line2string.length > 0) line2string += \' + \';
-              line2string += point.x + \',\' + point.y;
-              document.gmapform.line2.value = line2string;
-            }
-            else if (document.gmapform.clicktype.value==\'Line3\') {
-              line3points.push(point);
-              if (line3overlay) map.removeOverlay(line3overlay);
-              line3overlay=new GPolyline(line3points,"'.$line_colour[3].'", 5);
-              map.addOverlay(line3overlay);
-              if (line3string.length > 0) line3string += \' + \';
-              line3string += point.x + \',\' + point.y;
-              document.gmapform.line3.value = line3string;
-            }
-
-          makemacro();
-
-}
-
-    function newid  ()
-    {
-      var newvalue = document.gmapform.id.value;
-      newvalue=newvalue.match(/^[0-9A-Za-z_-]+/);
-      if (newvalue.length==0) newvalue=\'map\';
-      makemacro();
-    };
-
-    //]]>
-    </script>
-
-    <form action="'.$qurl.'gmapmacro" name="gmapform" method="post">
-    <table>
-      <tr><td><a title="When multiple maps are to be shown on the same page, each one must have a unique id. (only letters numbers and - and _ are permitted)">ID:</a></td><td><input type="text" size="25" name="id" value="map"  onchange="newid(); " />
-          <td>Map type:</td><td><SELECT NAME="maptype" onchange="changetype(document.gmapform.maptype.value);">
-                                  <OPTION VALUE="Map" />Map
-                                  <OPTION VALUE="Hybrid" />Hybrid
-                                  <OPTION VALUE="Satellite" />Satellite
-                                </SELECT> </td> </tr>
-      <tr><td><a title="The Longitude and Latitude of the centre of the map">Long, Lat:</a></td><td colspan=3><input type="text" size="50" name="longlat" value="'.$newlonglat.'" onchange="mapat(document.gmapform.longlat.value); " />  </td>
-      <tr><td><a title="Map size">Width:</a></td><td><input type="text" size="25" name="width" value="'.$newwidth.'"  onchange="doresize();" /></td>
-          <td>Alignment:</td><td><SELECT NAME="alignment" onchange="makemacro();">
-                                  <OPTION VALUE="None" />None
-                                  <OPTION VALUE="Right" />Right
-                                  <OPTION VALUE="Left" />Left
-                                  <OPTION VALUE="Center" />Center
-                                </SELECT></td></tr>
-
-      <tr><td><a title="Map size">Height:</a></td><td><input type="text" size="25" name="height" value="'.$newheight.'"  onchange="doresize();" />  </td>
-          <td>Controls:</td><td><SELECT NAME="controltype" onchange="docontrol(document.gmapform.controltype.value);">
-                                  <OPTION VALUE="None" '.$none.'/>None
-                                  <OPTION VALUE="Small" '.$small.'/>Small
-                                  <OPTION VALUE="Large" '.$large.'/>Large
-                                </SELECT>
-
-      <tr><td><a title="What happens when you click on the map">Click type:</a></td><td><SELECT NAME="clicktype" >
-                                  <OPTION VALUE="Points" TITLE="Add Marker to map"/>Markers
-                                  <OPTION VALUE="Line1" />Line1
-                                  <OPTION VALUE="Line2" />Line2
-                                  <OPTION VALUE="Line3" />Line3
-                                </SELECT> </td>
-          <td><a title="The current magnification of the map">Magnification:</a></td><td><input type="text" size="5" name="zoom" value="'.$newzoom.'"  onchange="map.zoomTo(document.gmapform.zoom.value); " />  </td></tr>
-      <tr><td><a title="Manually enter a Long, Latitude for a marker or the line">Add Point:</a></td><td colspan=3><input type="text" size="50" name="newpoint" value="" onchange="addpoint(this); " />  </td>
-
-
-      <input type="hidden" size="50" name="line1" value="'.$newline[1].'" />
-      <input type="hidden" size="50" name="line2" value="'.$newline[2].'" />
-      <input type="hidden" size="50" name="line3" value="'.$newline[3].'" />
-
-    </table>
-    <textarea name="macro" cols="60" rows="10" onclick="document.gmapform.macro.select();">
-    </textarea>
-    </form>
-  </body>
-</html> ';
-  print $output;
-}
-function _gmap_user_form($longitude=false, $latitude=false, $zoom=false) {
-  if (!$zoom || $zoom<1 || $zoom>20) {
-    $zoom=16;
-  }
-  $myjava = '';
-  if ($longitude && $latitude) {
-    $myjava .= '{id}.centerAndZoom(new GPoint('.$longitude.', '.$latitude.'), zoomfield.value);'."\n".
-             '{id}.addOverlay(mypoint=new GMarker(new GPoint('.$longitude.', '.$latitude.')));';
-  }
-//  else {
-//    $startat='map.centerAndZoom(new GPoint(0, 30), zoom);';
-//  }
-
-//  $out='<div id="map" style="width: 100%; height: 300px;"></div> ';
-
-
-  $header='          <script type="text/javascript">
-              //<![CDATA[
-              var mypoint=false;
-              gmap_torun.push("gmap_user()");
-              function gmap_user() {
-                var areas = document.getElementsByTagName("input");
-                for (var i=0; i<areas.length; i++)  {
-                        if (areas[i].name.match("latitude"))  {
-                                latfield = areas[i];
-                        }
-                        if (areas[i].name.match("longitude"))  {
-                                longfield = areas[i];
-                        }
-                        if (areas[i].name.match("zoom"))  {
-                                zoomfield = areas[i];
-
-                        }
-                }
-                zoomfield.value='.$zoom.';
-              }
-              function gmap_textchange() {
-                if (mypoint) {
-                  mymap.removeOverlay(mypoint);
-                }
-                usermap.recenterOrPanToLatLng(newpoint=new GPoint(longfield.value, latfield.value));
-                usermap.addOverlay(mypoint=new GMarker(newpoint));
-              }
-              //]]>
-            </script>
-            ';
-
-
-  $myjava .=  '
-                if (mycontrol) {
-                  {id}.removeControl(mycontrol);
-                }
-                mycontrol=new GLargeMapControl();
-                {id}.addControl(mycontrol);
-                if (!mytypecontrol) {
-                  {id}.addControl(mytypecontrol=new GMapTypeControl());
-                }
-                GEvent.addListener({id}, \'click\', function(overlay, point) {
-                  if (point) {
-                    if (mypoint) {
-                      {id}.removeOverlay(mypoint);
-                    }
-                    {id}.addOverlay(mypoint=new GMarker(point));
-                    zoomfield.value =zoomfield.value-2;
-                    if (zoomfield.value<1) zoomfield.value=1;
-                    {id}.centerAndZoom(point, zoomfield.value);
-                    latfield.value=point.y;
-                    longfield.value=point.x;
-                  }
-                });
-                GEvent.addListener({id}, "zoom", function() {
-                  zoomfield.value={id}.getZoomLevel();
-                });
-
-
-              ';
-  $out=gmap_from_text(variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]'),$myjava);
-
-  drupal_set_html_head($header);
-  return $out;
 }
 
 function gmap_users_page() {
@@ -1147,18 +633,18 @@ function gmap_users_page() {
       $userpicture[$u['uid']]=$u['picture'];
     }
   } */
-  $output .= variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
+  $output .='<p>'.variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
 
 
-  $result=db_query('SELECT * FROM {gmap_user} WHERE longitude !=0 OR latitude !=0');
-  $thismap = gmap_parse_text(variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]'));
+  $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
+  $thismap = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]'));
   if (empty($thismap['markers'])) {
     $thismap['markers']=array();
   }
   while ($u=db_fetch_object($result)) {
     if (user_access('user locations')) {
-      $account = user_load(array('uid' => $u->uid));
-      
+      $account = user_load(array('uid' => $u->oid));
+
       $newmarker['label'] = theme('user_picture', $account);
       $newmarker['label'] .= theme('username', $account);
       $newmarker['point']= $u->longitude.','.$u->latitude;
@@ -1169,6 +655,251 @@ function gmap_users_page() {
     }
     $thismap['markers'][]=$newmarker;
   }
-  $output .= '<p>'.gmap_from_var($thismap);
+  $output .= '<p>'.gmap_draw_map($thismap);
   return $output;
+}
+
+function gmap_user($op, &$edit, &$user, $category = NULL) {
+  if (variable_get('gmap_user',0)) {
+    switch ($op) {
+      case 'categories':
+        return array(array('name'=>'gmap_user', 'title'=> t('location map'),'weight'=>5));
+      case 'validate':
+        if (isset($edit['gmap_latitude'])){
+          if (!is_numeric($edit['gmap_latitude']) || abs($edit['gmap_latitude'])>90) {
+            form_set_error('gmap_latitude', t('Latitude must be between -90 and 90'));
+          }
+        }
+        if (isset($edit['gmap_longitude'])){
+          if (!is_numeric($edit['gmap_longitude']) || abs($edit['gmap_longitude'])>180) {
+            form_set_error('gmap_longitude', t('Longitude must be between -180 and 180'));
+          }
+        }
+        return;
+      case 'load':
+        $res=db_query("SELECT * FROM {location} WHERE oid=%d AND type='user'",$user->uid);
+        if ($gmap_user=db_fetch_array($res)) {
+          $user->latitude=$gmap_user['latitude'];
+          $user->longitude=$gmap_user['longitude'];
+        }
+        return;
+      case 'insert':
+        if ((isset($edit['gmap_latitude']) && $edit['gmap_latitude'] !=0) && (isset($edit['gmap_longitude']) && $edit['gmap_longitude'] !=0)) {
+          db_query("INSERT INTO {location} (oid, type, latitude, longitude, source) VALUES (%d, 'user', %f, %f, %d)", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], 1); // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
+        }
+        return;
+      case 'update':
+        if ((isset($edit['gmap_latitude']) && $edit['gmap_latitude'] !=0) && (isset($edit['gmap_longitude']) && $edit['gmap_longitude'] !=0)) {
+          if (isset($user->latitude)) {
+            db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='' WHERE oid='%d' AND type='user'", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], $edit['gmap_zoom']);
+          }
+          else {
+            db_query("INSERT INTO {location} (oid, type, latitude, longitude, source) VALUES (%d, 'user', %f, %f, %d)", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], 1); // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
+          }
+        }
+        return;
+
+        //db_query ("UPDATE {gmap_user} SET latitude='%f', longitude='%f', zoom=%d WHERE uid=%d", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], $edit['gmap_zoom']);
+        //return;
+      case 'delete':
+        db_query ("DELETE from {location} WHERE oid=%d AND type='user'", $user->uid);
+        return;
+
+      case 'form':
+        if ($category=='gmap_user') {
+//          if (isset($user->latitude) && isset($user->longitude)) {
+//            $usermap=_gmap_user_form($user->longitude,$user->latitude, $user->gmap_zoom);
+//          }
+//          else {
+//            $usermap = _gmap_user_form();
+//          }
+
+          $form['map']=array('#type' => 'fieldset','#title' => t('Google Map'));
+          $form['map']['gmap_user']=array('#type'=>'markup','#value'=>'');
+          $form['coordinates']=array('#type' => 'fieldset','#title' => t('Coordinates'));
+          $form['coordinates']['gmap_latitude']=array('#type'=>'textfield',
+                                                      '#id'=>'gmap-latitude',
+                                                      '#title'=>t('Latitude'),
+                                                      '#default_value'=>$user->latitude,
+                                                      '#size'=>30,
+                                                      '#maxlength'=>120,
+                                                      '#description'=>t('The latitude will automatically be entered here (or you can do it manually).'),
+                                                      '#attributes'=>array('onchange'=>'gmap_textchange();'));
+          $form['coordinates']['gmap_longitude']=array('#type'=>'textfield',
+                                                       '#title'=>t('Longitude'),
+                                                       '#default_value'=>$user->longitude,
+                                                       '#size'=>30,
+                                                       '#maxlength'=>120,
+                                                       '#description'=>t('The longitude will automatically be entered here (or you can do it manually).'),
+                                                       '#attributes'=>array('onchange'=>'gmap_textchange();'));
+          $form['coordinates']['gmap_user_zoom']=array('#type'=>'textfield',
+                                                       '#title'=>t('Zoom'),
+                                                       '#size'=>30,
+                                                       '#attributes'=>array('id'=>'gmap-zoom'),  // why doesn't '#id' work for hidden maps?
+                                                       '#default_value'=>16);
+
+
+          $form['map']['gmap_user']['#value']= gmap_set_location(variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|control=Large|zoom=16|width=100%|height=400px]'),
+                                                 $form['coordinates']['gmap_longitude'],
+                                                 $form['coordinates']['gmap_latitude'],
+                                                 $form['coordinates']['gmap_user_zoom']);
+
+
+          return  $form;
+ /*
+          $form2 = form_textfield(t('Latitude'), 'gmap_latitude', $user->latitude, 30,120, t('The latitude will automatically be entered here (or you can do it manually).'), array('onchange'=>'gmap_textchange();') );
+          $form2 .= form_textfield(t('Longitude'), 'gmap_longitude', $user->longitude, 30,120, t('The longitude will automatically be entered here (or you can do it manually).'), array('onchange'=>'gmap_textchange();') );
+          $form2 .= form_hidden('gmap_zoom', variable_get('gmap_user_zoom', 15));
+
+          return array(array('title'=>t('Google Map'), 'data'=>$form, 'weight'=>0),array('title'=>t('Coordinates'), 'data'=>$form2, 'weight'=>1));
+*/
+        }
+    }
+  }
+}
+
+function gmap_settings() {
+  //note the same google api key variable name as in the googlemap module is used
+  //note the name of the variable for center of the map is latlong although the format is actually longitude, latitude
+
+  $form['initialization']=array('#type' => 'fieldset','#title' => t('Google Map Initialize'));
+  $form['initialization']['googlemap_api_key']=array('#type' => 'textfield', '#title' => t('Google map API key'), '#default_value'=>variable_get('googlemap_api_key', ''), '#size' => 50, '#maxlength' => 255,'#description' => t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.'));
+  $form['initialization']['gmap_method']=array('#type' => 'select', '#title' => t('Google map method'),  '#options'=> array('Static'=>t('Static'), 'Dynamic'=>t('Dynamic'), 'None'=>t('None')),'#default_value'=>GMAP_LOAD_METHOD,'#description' => t('How is the Google Map initialization script run:<br /><strong>Static</strong> - Loaded on every page, <br /><strong>Dynamic</strong> - Initialization script runs only on pages with google maps, but all pages with the gmap filter will not be cached. <br /><strong>None</strong> - Google map initialization script must be loaded some other way.'));
+  $form['initialization']['gmap_xmaps']=array('#type'=>'checkbox', '#title'=>t('Enable Xmaps features (circles and polygons)'), '#default_value'=>GMAP_XMAPS,'#description'=>t('Enables XMaps features.  XMaps is currently a <em>beta</em> release available from <a href="http://xmaps.busmonster.com/">xmaps.busmonser.com</a>. '));
+  $form['initialization']['gmap_xmaps_script']=array('#type' => 'textfield', '#title' => t('Location of XMaps script'), '#default_value'=>GMAP_XMAPS_SCRIPT, '#size' => 25, '#maxlength' => 50);
+
+  $form['defaults']=array('#type' => 'fieldset', '#title' => t('Default map settings'));
+  $form['defaults']['gmap_default_width']=array('#type'=>'textfield', '#title'=>t('Default width'), '#default_value'=>GMAP_WIDTH, '#size'=>25, '#maxlength'=>6, '#description'=>t('The default width of a Google map.'));
+  $form['defaults']['gmap_default_height']=array('#type'=>'textfield', '#title'=>t('Default height'), '#default_value'=>GMAP_HEIGHT, '#size'=>25, '#maxlength'=>6, '#description'=>t('The default height of a Google map.'));
+  $form['defaults']['gmap_default_latlong']=array('#type'=>'textfield', '#title'=>t('Default center'), '#default_value'=>GMAP_LONGLAT, '#size'=>50, '#maxlength'=>255, '#description'=>t('The default longitude, latitude of a Google map.'));
+  $form['defaults']['gmap_default_zoom']=array('#type'=>'select', '#title'=>t('Default zoom'), '#default_value'=>GMAP_ZOOM, '#options' => drupal_map_assoc(range(0, 17)), '#description'=>t('The default zoom level of a Google map.'));
+  $form['defaults']['gmap_default_control']=array('#type'=>'select', '#title'=>t('Default control type'), '#default_value'=>GMAP_CONTROL, '#options'=>array('None'=>t('None'),'Small'=>t('Small'),'Large'=>t('Large')));
+  $form['defaults']['gmap_default_type']=array('#type'=>'select', '#title'=>t('Default map type'), '#default_value'=>GMAP_TYPE, '#options'=>array('Map'=>t('Map'),'Satellite'=>t('Satellite'),'Hybrid'=>t('Hybrid')));
+  $form['defaults']['gmap_default_line1_color']=array('#type'=>'textfield', '#title'=>t('Default Line 1 Color'), '#default_value'=>GMAP_LINECOLOR1, '#size'=>25, '#maxlength'=>7 );
+  $form['defaults']['gmap_default_line2_color']=array('#type'=>'textfield', '#title'=>t('Default Line 2 Color'), '#default_value'=>GMAP_LINECOLOR2, '#size'=>25, '#maxlength'=>7 );
+  $form['defaults']['gmap_default_line3_color']=array('#type'=>'textfield', '#title'=>t('Default Line 3 Color'), '#default_value'=>GMAP_LINECOLOR3, '#size'=>25, '#maxlength'=>7 );
+
+  $form['user']=array('#type' => 'fieldset', '#title' => t('User map settings'));
+  $form['user']['gmap_user']=array('#type'=>'checkbox', '#title'=>t('Enable Mapping of user locations'), '#default_value'=>variable_get('gmap_user',0),'#description'=>t('Ensure that the database table gmap_user is created before turning on the user location mapping functions.'));
+  $form['user']['gmap_user_map']=array('#type'=>'textfield', '#title'=>t('Default user map'), '#default_value'=>variable_get('gmap_user_map', '[gmap|id=usermap|center=0,40|zoom=16|width=100%|height=400px]'), '#size'=>50, '#description'=>t('The gmap macro where the user information will be diplayed on.'));
+  $form['user']['gmap_user_map_header']=array('#type'=>'textarea', '#title'=>t('Text at the top of the users/map page'), '#default_value'=>variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')), '#cols'=>50, '#rows'=>6 );
+
+  return $form;
+}
+
+function gmap_macro_page() {
+  drupal_add_js(drupal_get_path('module','gmap'). '/gmapmacro.js');
+  gmap_load_google_scripts();         
+  return gmap_macro_form();
+}
+
+function gmap_macro_form() {
+  
+        $form['macroform'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Gmap macro creation'),
+    '#theme' => 'gmap_macro',
+  );
+  $linecolors = array(GMAP_LINECOLOR1, GMAP_LINECOLOR2, GMAP_LINECOLOR3); 
+  $form['macroform']['mapdiv']=array('#type'=>'markup','#value'=>'<div id="map" style="width: '.GMAP_WIDTH.'; height: '.GMAP_HEIGHT.';"></div>');
+  $form['macroform']['javascript'] = array(
+    '#value' => drupal_call_js('gmap_set_line_colors', $linecolors),
+  );
+  $form['macroform']['mapid'] = array(
+    '#type' => 'textfield',
+    '#id' => 'gmap-mapid',
+    '#title' => t('Map id attribute'),
+    '#default_value' => variable_get('gmap_default_mapid', 'map'),
+    '#attributes' => array('onchange' => 'set_gmap_mapid(this.value)'),
+  );
+  $form['macroform']['maptype'] = array(
+    '#type' => 'select', 
+    '#id' => 'gmap-maptype',
+    '#title' => t('Map type'), 
+    '#options' => drupal_map_assoc(array('Map', 'Satellite', 'Hybrid')), 
+    '#default_value' => GMAP_TYPE,
+    '#required' => FALSE,
+    '#attributes' => array('onchange' => 'set_gmap_type(this.value);'),
+  );
+  $form['macroform']['controltype'] = array(
+    '#type' => 'select', 
+    '#id' => 'gmap-controltype',
+    '#title' => t('Controls'), 
+    '#options' => drupal_map_assoc(array('None', 'Small', 'Large')), 
+    '#required' => FALSE,
+    '#default_value' => GMAP_CONTROL,
+    '#attributes' => array('onchange' => 'set_control_type(this.value);')
+  );  
+  $form['macroform']['longlat'] = array(
+    '#type' => 'textfield',
+    '#id' => 'gmap-longlat',
+    '#title' => t('The Longitude and Latitude of the centre of the map'),
+    '#default_value' => GMAP_LONGLAT,
+    '#size' => 50,
+    '#attributes' => array('onchange' => 'set_gmap_longlat(this.value);'),
+  );
+  $form['macroform']['width'] = array(
+    '#type' => 'textfield',
+    '#id' => 'gmap-width',
+    '#title' => t('Map width'),
+    '#default_value' => GMAP_WIDTH,
+    '#size' => 25,
+    '#attributes' => array('onchange' => 'set_gmap_dimension(this, \'width\');'),
+  ); 
+  $form['macroform']['height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Map height'),
+    '#id' => 'gmap-height',
+    '#default_value' => GMAP_HEIGHT,
+    '#size' => 25,
+    '#attributes' => array('onchange' => 'set_gmap_dimension(this, \'height\');'),
+  ); 
+  $form['macroform']['alignment'] = array(
+    '#type' => 'select', 
+    '#id' => 'gmap-alignment',
+    '#title' => t('Alignment'), 
+    '#options' => drupal_map_assoc(array('None', 'Right', 'Left', 'Center')), 
+//    '#default_value' => GMAP_ALIGNMENT,
+    '#required' => FALSE,
+    '#attributes' => array('onchange' => 'set_gmap_alignment(this.value);')
+  );  
+  $form['macroform']['clicktype'] = array(
+    '#type' => 'select', 
+    '#id' => 'gmap-clicktype',
+    '#title' => t('What happens when you click on the map'), 
+    '#options' => drupal_map_assoc(array('Points', 'Line1', 'Line2', 'Line3')), 
+    '#required' => FALSE,
+    '#default_value' => 'Points',
+//    '#attributes' => array('onchange' => 'docontrol(this.value);')
+  );    
+  $form['macroform']['zoom'] = array(
+    '#type' => 'select', 
+    '#id' => 'gmap-zoom',
+    '#title' => t('The current magnification of the map'),
+    '#default_value' => GMAP_ZOOM,
+    '#options' => drupal_map_assoc(range(0, 17)),
+    '#attributes' => array('onchange' => 'map.zoomTo(this.value);'),
+  );
+  $form['macroform']['textarea'] = array(
+    '#type' => 'textarea',
+    '#id' => 'gmap-macrotext',
+    '#title' => t('Macro text'),
+  );
+  return drupal_get_form('macroform', $form);
+}
+
+function gmap_load_google_scripts() {
+  static $loaded = false;
+        
+  // safety mechanism to make sure they only get loaded once
+  if (!$loaded) {
+    theme_add_style(drupal_get_path('module','gmap'). '/gmap.css');
+    drupal_add_js('misc/drupal.js');
+    drupal_add_js(drupal_get_path('module','gmap'). '/gmap.js');
+    $js = '<script src="http://maps.google.com/maps?file=api&v=1&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>';
+    drupal_set_html_head($js);
+    if (variable_get('gmap_xmaps',0)) {
+      drupal_add_js(variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
+    }
+  }
 }

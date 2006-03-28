@@ -45,9 +45,10 @@ Installation
    this will be on a 'html filtered' format, ensure that the weighting is
    such that the HTML filter comes before the gmap filter.
 
-7) (optional) If the user functionality will be used, a table must be added
-   to the database (as defined in gmap_user.mysql) and it must be turned
-   on in the gmap settings page.
+7) (optional) If the user functionality will be used and location.module is
+   not installed, the location  table must be added to the database (as
+   defined in location.mysql) and it must be turned on in the gmap settings
+   page.
 
 Instructions
 ------------
@@ -104,8 +105,6 @@ Bugs & quirks
   "collapseEnsureErrorsVisible()" in misc/collapse.js.
 - The "dynamic" gmap method of inserting the initialization script does not
   work with the filter functionality.  (It does work with user functionality).
-- The "track" method is not yet implemented.
-
 - When you preview a node, if the map is shown in the short version, it
   will not be shown on the long version of the node, this is because only
   one copy of a mapid can be shown on the same page.
@@ -135,6 +134,10 @@ James Blake
 http://www.webgeer.com/James
 
 Thanks to the following for their contributions:
+Robert Douglass - for revamping some parts that really needed to be
+  revamped and cleaning up a lot of little things.
+  
+
 
 
 History
