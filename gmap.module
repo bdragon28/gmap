@@ -15,6 +15,7 @@ define('GMAP_LINECOLOR2', variable_get('gmap_default_line2_color', '#ff0000'));
 define('GMAP_LINECOLOR3', variable_get('gmap_default_line3_color', '#0000ff'));
 define('GMAP_XMAPS', variable_get('gmap_xmaps',0));
 define('GMAP_XMAPS_SCRIPT', variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
+define('GMAP_CLUSTER', variable_get('gmap_cluster',0));
 
 /**
  * @file
@@ -170,6 +171,9 @@ function gmap_draw_map($gmap, $javascript='') {
     }
 
     if (isset($gmap['markers'])) {
+      if (GMAP_CLUSTER) {
+        $outtext .="\n var clusterer = new Clusterer(".$gmap['id'].");\n";
+      }
       $lastmarker='';
       foreach ($gmap['markers'] as $item) {
         $mymarker='';
@@ -192,7 +196,12 @@ function gmap_draw_map($gmap, $javascript='') {
         if (isset($item['label']) && strlen($item['label'])>0) {
           $mytext=$item['label'];
         }
-        $outtext .=$gmap['id'].'.addOverlay(createGMarker(new GPoint('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."'));\n";
+        if (GMAP_CLUSTER) {
+          $outtext .='clusterer.AddMarker(createGMarker(new GPoint('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."'));\n";
+        }
+        else {
+          $outtext .=$gmap['id'].'.addOverlay(createGMarker(new GPoint('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."'));\n";
+        }
       }
     }
     if (isset($gmap['shape']) && !variable_get('gmap_xmaps',0)) {
@@ -510,10 +519,12 @@ function gmap_set_location($map_macro,&$lonform,&$latform,&$zoomform) {
                     if (thispoint) {
                       {id}.removeOverlay(thispoint);
                     }
-                    $("gmap-zoom").value =$("gmap-zoom").value-2;
-                    if ($("gmap-zoom").value<1) $("gmap-zoom").value=1;
-                    {id}.centerAndZoom(point, $("gmap-zoom").value);
                     {id}.addOverlay(thispoint=new GMarker(point));
+             //       $("gmap-zoom").value =$("gmap-zoom").value-2;
+                    if ($("gmap-zoom").value<1) $("gmap-zoom").value=1;
+                    {id}.recenterOrPanToLatLng(point);
+                    {id}.zoomTo($("gmap-zoom").value);
+
                     $("gmap-latitude").value=point.y;
                     $("gmap-longitude").value=point.x;
                   }
@@ -607,7 +618,7 @@ function gmap_menu($may_cache) {
       'access' => user_access('create macro'),
       'callback' => 'gmap_macro_page' );
     if (variable_get('gmap_user',0)) {
-      $items[] = array('path' => 'users/map',
+      $items[] = array('path' => 'map/users',
         'type' => MENU_NORMAL_ITEM,
         'title' => t('User locations'),
         'access' => user_access('show user map'),
@@ -681,6 +692,7 @@ function gmap_user($op, &$edit, &$user, $category = NULL) {
         if ($gmap_user=db_fetch_array($res)) {
           $user->latitude=$gmap_user['latitude'];
           $user->longitude=$gmap_user['longitude'];
+          $user->location=TRUE;
         }
         return;
       case 'insert':
@@ -689,12 +701,14 @@ function gmap_user($op, &$edit, &$user, $category = NULL) {
         }
         return;
       case 'update':
+
         if ((isset($edit['gmap_latitude']) && $edit['gmap_latitude'] !=0) && (isset($edit['gmap_longitude']) && $edit['gmap_longitude'] !=0)) {
-          if (isset($user->latitude)) {
-            db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='' WHERE oid='%d' AND type='user'", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], $edit['gmap_zoom']);
+          if (isset($user->location)) {
+            db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='user'",  $edit['gmap_latitude'],$edit['gmap_longitude'], 1,$user->uid);
+            drupal_set_message(sprintf("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='user'",  $edit['gmap_latitude'],$edit['gmap_longitude'], 1,$user->uid));
           }
           else {
-            db_query("INSERT INTO {location} (oid, type, latitude, longitude, source) VALUES (%d, 'user', %f, %f, %d)", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], 1); // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
+            db_query("INSERT INTO {location} (oid, type, latitude, longitude, source) VALUES (%d, 'user', '%f', '%f', '%d')", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], 1); // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
           }
         }
         return;
@@ -767,6 +781,7 @@ function gmap_settings() {
   $form['initialization']['gmap_method']=array('#type' => 'select', '#title' => t('Google map method'),  '#options'=> array('Static'=>t('Static'), 'Dynamic'=>t('Dynamic'), 'None'=>t('None')),'#default_value'=>GMAP_LOAD_METHOD,'#description' => t('How is the Google Map initialization script run:<br /><strong>Static</strong> - Loaded on every page, <br /><strong>Dynamic</strong> - Initialization script runs only on pages with google maps, but all pages with the gmap filter will not be cached. <br /><strong>None</strong> - Google map initialization script must be loaded some other way.'));
   $form['initialization']['gmap_xmaps']=array('#type'=>'checkbox', '#title'=>t('Enable Xmaps features (circles and polygons)'), '#default_value'=>GMAP_XMAPS,'#description'=>t('Enables XMaps features.  XMaps is currently a <em>beta</em> release available from <a href="http://xmaps.busmonster.com/">xmaps.busmonser.com</a>. '));
   $form['initialization']['gmap_xmaps_script']=array('#type' => 'textfield', '#title' => t('Location of XMaps script'), '#default_value'=>GMAP_XMAPS_SCRIPT, '#size' => 25, '#maxlength' => 50);
+  $form['initialization']['gmap_cluster']=array('#type'=>'checkbox', '#title'=>t('Enable clusterer.js'), '#default_value'=>GMAP_CLUSTER,'#description'=>t('Enables Jef Poskanzer\'s excellent <a href="http://www.acme.com/javascript/#Clusterer">clusterer.js</a> script. (useful for a large number of markers on a single map)'));
 
   $form['defaults']=array('#type' => 'fieldset', '#title' => t('Default map settings'));
   $form['defaults']['gmap_default_width']=array('#type'=>'textfield', '#title'=>t('Default width'), '#default_value'=>GMAP_WIDTH, '#size'=>25, '#maxlength'=>6, '#description'=>t('The default width of a Google map.'));
@@ -782,7 +797,7 @@ function gmap_settings() {
   $form['user']=array('#type' => 'fieldset', '#title' => t('User map settings'));
   $form['user']['gmap_user']=array('#type'=>'checkbox', '#title'=>t('Enable Mapping of user locations'), '#default_value'=>variable_get('gmap_user',0),'#description'=>t('Ensure that the database table gmap_user is created before turning on the user location mapping functions.'));
   $form['user']['gmap_user_map']=array('#type'=>'textfield', '#title'=>t('Default user map'), '#default_value'=>variable_get('gmap_user_map', '[gmap|id=usermap|center=0,40|zoom=16|width=100%|height=400px]'), '#size'=>50, '#description'=>t('The gmap macro where the user information will be diplayed on.'));
-  $form['user']['gmap_user_map_header']=array('#type'=>'textarea', '#title'=>t('Text at the top of the users/map page'), '#default_value'=>variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')), '#cols'=>50, '#rows'=>6 );
+  $form['user']['gmap_user_map_header']=array('#type'=>'textarea', '#title'=>t('Text at the top of the map/users page'), '#default_value'=>variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')), '#cols'=>50, '#rows'=>6 );
 
   return $form;
 }
@@ -900,6 +915,9 @@ function gmap_load_google_scripts() {
     drupal_set_html_head($js);
     if (variable_get('gmap_xmaps',0)) {
       drupal_add_js(variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
+    }
+    if (GMAP_CLUSTER) {
+      drupal_add_js('http://www.acme.com/javascript/Clusterer.js');
     }
   }
 }
