@@ -520,7 +520,7 @@ function gmap_set_location($map_macro,&$lonform,&$latform,&$zoomform) {
                       {id}.removeOverlay(thispoint);
                     }
                     {id}.addOverlay(thispoint=new GMarker(point));
-             //       $("gmap-zoom").value =$("gmap-zoom").value-2;
+                    $("gmap-zoom").value =$("gmap-zoom").value-2;
                     if ($("gmap-zoom").value<1) $("gmap-zoom").value=1;
                     {id}.recenterOrPanToLatLng(point);
                     {id}.zoomTo($("gmap-zoom").value);
@@ -705,7 +705,8 @@ function gmap_user($op, &$edit, &$user, $category = NULL) {
         if ((isset($edit['gmap_latitude']) && $edit['gmap_latitude'] !=0) && (isset($edit['gmap_longitude']) && $edit['gmap_longitude'] !=0)) {
           if (isset($user->location)) {
             db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='user'",  $edit['gmap_latitude'],$edit['gmap_longitude'], 1,$user->uid);
-            drupal_set_message(sprintf("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='user'",  $edit['gmap_latitude'],$edit['gmap_longitude'], 1,$user->uid));
+     // debug message
+     //       drupal_set_message(sprintf("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='user'",  $edit['gmap_latitude'],$edit['gmap_longitude'], 1,$user->uid));
           }
           else {
             db_query("INSERT INTO {location} (oid, type, latitude, longitude, source) VALUES (%d, 'user', '%f', '%f', '%d')", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], 1); // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
