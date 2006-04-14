@@ -26,13 +26,13 @@ function gmap_init() {
 
    // extend the map object
   map.drupal = new Object();
-  map.drupal.mapid = "map";
+  map.drupal.latLongStr = $('gmap-latlong').value;
   map.drupal.currentControlType = 'Large';
   map.drupal.currentControl = mycontrol;
   map.drupal.currentMapType = "Map";
   map.drupal.linecolors = colors;
   map.drupal.points = new Array();
-  map.drupal.pointsOverlays = new Array()
+  map.drupal.pointsOverlays = new Array() ;
   map.drupal.line1overlay=null;  map.drupal.line1points=new Array(); map.drupal.line1string=new String(); map.drupal.gmapline1=new String();
   map.drupal.line2overlay=null;  map.drupal.line2points=new Array(); map.drupal.line2string=new String(); map.drupal.gmapline2=new String();
   map.drupal.line3overlay=null;  map.drupal.line3points=new Array(); map.drupal.line3string=new String(); map.drupal.gmapline3=new String();
@@ -127,6 +127,8 @@ function gmap_init() {
   map.setZoom($('gmap-zoom').value);
   set_gmap_type($('gmap-maptype').value);
   set_control_type($('gmap-controltype').value);
+  set_gmap_dimension($('gmap-height'), 'height');
+  set_gmap_dimension($('gmap-width'), 'width');
 }
 
 function gmap_set_line_colors(args) {
@@ -139,9 +141,8 @@ function gmap_set_line_colors(args) {
 function map_to_macro(gmap) {
   var zooml = ' |zoom=' + gmap.getZoom();
   var centerStr = ' |center=' + gmap.drupal.latLongStr;
-  container=gmap.getContainer();
-  var width = ' |width=' + container.style.width;
-  var height = ' |height=' + container.style.height;
+  var width = ' |width=' + $('gmap-width').value;
+  var height = ' |height=' + $('gmap-height').value;
   var id = ' |id=' + gmap.drupal.mapid;
   var control = ' |control=' + gmap.drupal.currentControlType;
   var type = ' |type=' + gmap.drupal.currentMapType;
@@ -187,21 +188,26 @@ function set_gmap_type(intype) {
 function set_gmap_dimension(elem, dimension) {
   var valid_value = validate_dim(elem.value);
   if (valid_value) {
+    container=map.getContainer();
     if (dimension == 'height') {
-      map.container.style.height = valid_value;
+      container.style.height = valid_value;
       elem.value = valid_value;
     } 
     else if (dimension == 'width') {
-          map.container.style.width = valid_value;
-          elem.value = valid_value;
-        } 
+      container.style.width = valid_value;
+      elem.value = valid_value;
+    }
  //   gmap_init(map);
-    map.onResize();
+    map.checkResize();
     $('gmap-macrotext').value = map_to_macro(map);
+    set_gmap_latlong($('gmap-latlong').value);
   }
 }
 
 function validate_dim(dim) {
+
+  return dim;
+  //needs to be fixed to allow either 'px' or '%'
   var reg = /(\d+)/;
   var ar = reg.exec(dim);
   try {
