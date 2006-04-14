@@ -1,5 +1,6 @@
  
- 
+/* $Id$ */
+
  var baseIcon;
  
  function gmap_init() {
@@ -39,6 +40,6 @@ function gmap_textchange(thismap) {
   if (thispoint) {
     thismap.removeOverlay(thispoint);
   }
-  map.recenterOrPanToLatLng(newpoint=new GPoint($("gmap-longitude").value, $("gmap-latitude").value));
-  map.addOverlay(thispoint=new GMarker(newpoint));
+  thismap.panTo(newpoint=new GLatLng($("gmap-latitude").value, $("gmap-longitude").value));
+  thismap.addOverlay(thispoint=new GMarker(newpoint));
 }

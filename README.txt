@@ -30,7 +30,7 @@ Installation
 
 2) edit the theme files to ensure that the html file has the following at
    the top of each page (the first one  is recommended by Google, the
-   second is required for the lines to work in IE:
+   second is required for the lines overlays to work in IE:
    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
 
@@ -103,6 +103,7 @@ Bugs & quirks
   the collapsing menus.  If want to use the xmaps functionality, it is
   recommended that you comment out all of the statements in the function
   "collapseEnsureErrorsVisible()" in misc/collapse.js.
+  (xmaps not currently available  so this is irreleveant now)
 - The "dynamic" gmap method of inserting the initialization script does not
   work with the filter functionality.  (It does work with user functionality).
 - When you preview a node, if the map is shown in the short version, it
@@ -115,11 +116,9 @@ To do
 - Significantly upgrade the macro creator
 - The documentation (both in the code and this file) needs to be significantly
   improved.
-- Import .plt file
 - create interface to geocoding for address or postal code to Long, Lat
   conversion.  Preferably on the client side of the javascript gmapmacro
-  page.
-- Change so number of markers is not limited. (currently maximum of 3).
+  page.   (Probably wont do this, leave this functionality to location.module)
 - Create an API that will allow the use of the macro creation tool in any
   module.
 - Create setting to suppress the option of changing some of the settings in
@@ -142,6 +141,7 @@ Robert Douglass - for revamping some parts that really needed to be
 
 History
 -------
+(I haven't been keeping up with this sorry)
 
 2005-12-xx:
  - forked the 4.6/4.7 version, both versions will continue to be developed
@@ -153,7 +153,7 @@ History
    of lines, ...
  - 37518-Info windows associated with points (markers) can be shown
  - can optionally include xgmap options such as circle/polygon/style types
- -
+
 
 2005-10-15 Quite a few fixes.  (some reported in the project and some just
 noted myself)

@@ -1,3 +1,5 @@
+
+/* $Id$ */
 var map;
 var mapdiv;
 var colors;
@@ -14,15 +16,15 @@ function gmap_init() {
   if (!GBrowserIsCompatible()) { return; }
   
   mapdiv = $('map');
-  map = new GMap(mapdiv);
+  map = new GMap2(mapdiv);
   
   var mycontrol = new GLargeMapControl();
   map.addControl(mycontrol);
   
   map.addControl(new GMapTypeControl());  
-  map.centerAndZoom(new GPoint(-10, 20), 16);
-  
-  // extend the map object
+  map.setCenter(new GLatLng(0,0), 3);
+
+   // extend the map object
   map.drupal = new Object();
   map.drupal.mapid = "map";
   map.drupal.currentControlType = 'Large';
@@ -37,23 +39,25 @@ function gmap_init() {
   $('gmap-macrotext').value = map_to_macro(map);
   
   // Event listeners
-  GEvent.addListener(map, "moveend", function() {
-    var center = map.getCenterLatLng();
-    map.drupal.longLatStr = center.x + ', ' + center.y ;
-    $('gmap-longlat').value = map.drupal.longLatStr;
+  GEvent.addListener(map, "dragend", function() {
+    var center = map.getCenter();
+    map.drupal.latLongStr = center.lat() + ', ' + center.lng() ;
+
+    $('gmap-latlong').value = map.drupal.latLongStr;
     $('gmap-macrotext').value = map_to_macro(map);
   });
   
-  GEvent.addListener(map, "zoom", function() {
-    $('gmap-zoom').value = map.getZoomLevel();
+  GEvent.addListener(map, "zoomend", function(previouszoom,newzoom) {
+    $('gmap-zoom').value = newzoom;
     $('gmap-macrotext').value = map_to_macro(map);
+
   });
   
   GEvent.addListener(map, "maptypechanged", function() {
     var maptype = map.getCurrentMapType();
-    if (maptype == G_MAP_TYPE) $('gmap-maptype').value = "Map";
-    if (maptype == G_HYBRID_TYPE) $('gmap-maptype').value = "Hybrid";
-    if (maptype == G_SATELLITE_TYPE) $('gmap-maptype').value = "Satellite";
+    if (maptype == G_NORMAL_MAP) $('gmap-maptype').value = "Map";
+    if (maptype == G_HYBRID_MAP) $('gmap-maptype').value = "Hybrid";
+    if (maptype == G_SATELLITE_MAP) $('gmap-maptype').value = "Satellite";
     $('gmap-macrotext').value = map_to_macro(map);
   });
 
@@ -82,7 +86,7 @@ function gmap_init() {
         case 'Points':
           map.addOverlay(marker=new GMarker(point));
           map.drupal.pointsOverlays.push(marker);
-          map.drupal.points.push(point.x + ',' + point.y);
+          map.drupal.points.push(point.lat() + ',' + point.lng());
           break;
     
         case 'Line1':
@@ -91,7 +95,7 @@ function gmap_init() {
           map.drupal.line1overlay=new GPolyline(map.drupal.line1points, map.drupal.linecolors[0], 5);
           map.addOverlay(map.drupal.line1overlay);
           if (map.drupal.line1string.length > 0) map.drupal.line1string += ' + ';
-          map.drupal.line1string += point.x + ',' + point.y;
+          map.drupal.line1string += point.lat() + ',' + point.lng();
           map.drupal.gmapline1 = map.drupal.line1string;
           break;
   
@@ -101,7 +105,7 @@ function gmap_init() {
           map.drupal.line2overlay=new GPolyline(map.drupal.line2points, map.drupal.linecolors[1], 5);
           map.addOverlay(map.drupal.line2overlay);
           if (map.drupal.line2string.length > 0) map.drupal.line2string += ' + ';
-          map.drupal.line2string += point.x + ',' + point.y;
+          map.drupal.line2string += point.lat() + ',' + point.lng();
           map.drupal.gmapline2 = map.drupal.line2string;
           break;
     
@@ -111,13 +115,18 @@ function gmap_init() {
           map.drupal.line3overlay=new GPolyline(map.drupal.line3points, map.drupal.linecolors[2], 5);
           map.addOverlay(map.drupal.line3overlay);
           if (map.drupal.line3string.length > 0) map.drupal.line3string += ' + ';
-          map.drupal.line3string += point.x + ',' + point.y;
+          map.drupal.line3string += point.lat() + ',' + point.lng();
           map.drupal.gmapline3 = map.drupal.line3string;
           break;
       }      
     }
     $('gmap-macrotext').value = map_to_macro(map);
   });
+  //initialize default values
+  set_gmap_latlong($('gmap-latlong').value);
+  map.setZoom($('gmap-zoom').value);
+  set_gmap_type($('gmap-maptype').value);
+  set_control_type($('gmap-controltype').value);
 }
 
 function gmap_set_line_colors(args) {
@@ -128,10 +137,11 @@ function gmap_set_line_colors(args) {
  * A generic function that takes the extended GMap object and returns a macro text.
  */
 function map_to_macro(gmap) {
-  var zooml = ' |zoom=' + gmap.getZoomLevel();
-  var centerStr = ' |center=' + gmap.drupal.longLatStr;
-  var width = ' |width=' + gmap.container.style.width;
-  var height = ' |height=' + gmap.container.style.height;
+  var zooml = ' |zoom=' + gmap.getZoom();
+  var centerStr = ' |center=' + gmap.drupal.latLongStr;
+  container=gmap.getContainer();
+  var width = ' |width=' + container.style.width;
+  var height = ' |height=' + container.style.height;
   var id = ' |id=' + gmap.drupal.mapid;
   var control = ' |control=' + gmap.drupal.currentControlType;
   var type = ' |type=' + gmap.drupal.currentMapType;
@@ -151,9 +161,9 @@ function map_to_macro(gmap) {
   return '[gmap' + id + centerStr + zooml + width + height +  /*alignment +*/ control + type + outpoints + line1 + line2 + line3 + ']';  
 }
 
-function set_gmap_longlat(instring) {
+function set_gmap_latlong(instring) {
   var splitstring=instring.split(",");
-  map.centerAtLatLng(new GPoint(splitstring[0],splitstring[1]));
+  map.panTo(new GLatLng(splitstring[0],splitstring[1]));
 }
 
 function set_control_type(incontrol) {
@@ -168,9 +178,9 @@ function set_control_type(incontrol) {
 
 function set_gmap_type(intype) {
   map.drupal.currentMapType = intype;
-  if (intype == "Map") map.setMapType(G_MAP_TYPE);
-  if (intype == "Hybrid") map.setMapType(G_HYBRID_TYPE);
-  if (intype == "Satellite") map.setMapType(G_SATELLITE_TYPE);
+  if (intype == "Map") map.setMapType(G_NORMAL_MAP);
+  if (intype == "Hybrid") map.setMapType(G_HYBRID_MAP);
+  if (intype == "Satellite") map.setMapType(G_SATELLITE_MAP);
   $('gmap-macrotext').value = map_to_macro(map);
 }
 
@@ -182,10 +192,10 @@ function set_gmap_dimension(elem, dimension) {
       elem.value = valid_value;
     } 
     else if (dimension == 'width') {
-	  map.container.style.width = valid_value;
-	  elem.value = valid_value;
-	} 
-    gmap_init(map);
+          map.container.style.width = valid_value;
+          elem.value = valid_value;
+        } 
+ //   gmap_init(map);
     map.onResize();
     $('gmap-macrotext').value = map_to_macro(map);
   }
