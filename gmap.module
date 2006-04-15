@@ -59,6 +59,7 @@ function gmap_perm() {
  *  shapes - an array of associative arrays for the overlays.
  *  track - a file containing a series of points in .plt format to be
  *  inserted into the node.
+ *  feeds - an associative array of rss feeds
  *
  *  Xmaps must be enabled for circle and polygon to work.
  *
@@ -73,6 +74,8 @@ function gmap_perm() {
 function gmap_draw_map($gmap, $javascript='') {
   global $base_url;
     _gmap_doheader();
+
+    $clusterset=false;
     (!isset($gmap['width'])) ? $gmap['width']=GMAP_WIDTH: NULL;
     (!isset($gmap['height'])) ? $gmap['height']=GMAP_HEIGHT:NULL;
     (!isset($gmap['zoom'])) ? $gmap['zoom']=GMAP_ZOOM:NULL;
@@ -175,6 +178,7 @@ function gmap_draw_map($gmap, $javascript='') {
     if (isset($gmap['markers'])) {
       if (GMAP_CLUSTER) {
         $outtext .="\n var clusterer = new Clusterer(".$gmap['id'].");\n";
+        $clusterset=true;
       }
       $lastmarker='';
       foreach ($gmap['markers'] as $item) {
@@ -200,6 +204,7 @@ function gmap_draw_map($gmap, $javascript='') {
         }
         if (GMAP_CLUSTER) {
           $outtext .='clusterer.AddMarker(createGMarker(new GLatLng('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."'));\n";
+          $clusterset=true;
         }
         else {
           $outtext .=$gmap['id'].'.addOverlay(createGMarker(new GLatLng('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."'));\n";
@@ -295,6 +300,22 @@ function gmap_draw_map($gmap, $javascript='') {
               $outtext .= "points.push(new GPoint($pvalue));\n";
             }
             $outtext .= $gmap['id'].".addOverlay(new XPolygon(points, lineStyle, fillStyle));\n";
+        }
+      }
+    }
+    if (isset($gmap['feeds'])) {
+//      if (GMAP_CLUSTER && !$clusterset) {
+//        $outtext .="\n var clusterer = new Clusterer(".$gmap['id'].");\n";
+ //     }
+      foreach ($gmap['feeds'] as $item) {
+        $mymarker='';
+        if (isset($item['markername'])){
+          if (file_exists(variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png')) {
+            $mymarker=$base_url.'/'.variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png';
+          }
+        }
+        if (isset($item['url'])) {
+          $outtext.= "parseGeoRSS(".$gmap['id'].",'".$item['url']."','$mymarker');\n";
         }
       }
     }
@@ -416,6 +437,12 @@ function gmap_parse_macro($instring,$ver=2) {
         }
         $tt['filename'] =$t[1];
         $gmap['track'][] = $tt;
+        break;
+        
+      case 'feed':
+
+        $tt['url'] =$t[1];
+        $gmap['feeds'][] = $tt;
         break;
 
       case 'line1':
@@ -652,7 +679,7 @@ function gmap_menu($may_cache) {
     if (variable_get('gmap_user',0)) {
       $items[] = array('path' => 'map/users',
         'type' => MENU_NORMAL_ITEM,
-        'title' => t('User locations'),
+        'title' => t('user locations'),
         'access' => user_access('show user map'),
         'callback' => 'gmap_users_page');
     }
@@ -873,7 +900,7 @@ function gmap_macro_form() {
     '#default_value' => GMAP_CONTROL,
     '#attributes' => array('onchange' => 'set_control_type(this.value);')
   );  
-  $form['macroform']['longlat'] = array(
+  $form['macroform']['latlong'] = array(
     '#type' => 'textfield',
     '#id' => 'gmap-latlong',
     '#title' => t('The Latitude and Longitude of the centre of the map'),
