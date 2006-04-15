@@ -25,3 +25,10 @@ must be edited to start with '[gmap1'
 It should be noted that xmaps is not compatible with the v2 of the google maps API and therefore, all of the
 functionality associated with it has been turned off.
 
+SETTINGS
+========
+
+The default settings must also be changed.  Your settings, probably are in the format of 'long, lat', these
+must be changed to 'lat, long'.  Also the default zoom should be changed, as the zoom levels have all changed.
+
+
