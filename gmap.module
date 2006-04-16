@@ -153,9 +153,8 @@ function gmap_draw_map($gmap, $javascript='') {
       $outtext .= $gmap['id'].".disableDragging(); \n";
     }
     else {
-      $outtest .= "keyboardhandler=new GKeyboardHandler(map);\n";
+      $outtext .= "keyboardhandler=new GKeyboardHandler(".$gmap['id'].");\n";
     }
-    $outext .= $gmap['id'].'.setCenter(new GLatLng('.$gmap['center'].'), '.$gmap['zoom'].");\n";
 
     if (isset($gmap['tracks'])) {
       foreach ($gmap['tracks'] as $value) {
