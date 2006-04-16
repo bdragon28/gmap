@@ -1,0 +1,165 @@
+GMAP API DOCUMENTATION
+
+The gmap API allows other modules to integrate Google Maps into their
+Drupal Site.  It can also be used by theme developers to integrate Google
+maps into portions of their theme.
+
+It can also be used to insert a map into any block of php.
+
+INSTALLATION
+
+To install the gmap API you must install the GMap.module.
+
+1) copy the gmap directory into the modules directory
+
+2) edit the theme files to ensure that the html file has the following at
+   the top of each page (the first one  is recommended by Google, the
+   second is required for the lines overlays to work in IE:
+   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+   <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+
+3) Get a GMap API Key at http://www.google.com/apis/maps/signup.html
+
+4) enable the 'gmap module' in drupal
+
+5) edit admin/settings/gmap to include the key you received from google and
+   change any other default setting.
+   
+If you are not using the filter built into the gmap.module and you do not
+intend to insert google maps into nodes, then you can use the "Dynamic"
+setting which will only load the google javascript on pages with Google
+maps.
+
+
+PROGRAMMING API
+
+There are two different methods of inserting a Google Map using the gmap
+API.  The first is using a macro as can be built from the macro creator
+included as part of this module.  The second uses the gmap associative
+array to define the Google Map function.
+
+Macro
+
+The macro is straight with each variable separated by a "|" and then uses
+an "=" to define that variable.  Possible parameters are:
+
+  id - the id for the map.  Each map on a page must have a unique id.
+  center - The comma separated latitude and longitude of the centre of
+       the map.
+  width - width of the map
+  height - height of the map
+  zoom - the zoom factor of the google map
+  align - the alignment of the map 'right', 'left' or 'center'
+  control - the control shown on the map 'Large', 'Small', or 'None'
+  type - 'Map', 'Hybrid' or 'Satellite'
+  points/markers - a string of points to mark on the map with + between
+        each point
+  line - the line is defined by a set of points separated by a +
+  track - Draws a line based on the points in the .plt file
+  feed - the RSS feed with geo:lat information to be parsed by js
+
+The following shape types require XMaps:  (xmaps is not currently functioning)
+  circle - a circle based on a center point and a radius in km separated
+          by a + and optionally can include the number of sizes.
+  rpolygon - a regular polygon is defined by the center point and a point
+          on the permiter separated by a +
+  polygon - a polygon is defined by a set of points
+
+For a more detailed explanation on how to make complicated macros see:
+  http://webgeer.com/gmapdemo
+  
+You can convert a macro into a gmap array with the function
+gmap_parse_macro($instring,$ver=2) $ver is only required if you need to
+use a macro generated with an old version of gmap where the format was
+longitude, latitude (set to 1 in that case).
+  
+Gmap Array
+
+The GMap Array is an associative array with the following definitions:
+
+  id - the id of the map every map on a page must have a unique id
+  width - width of the map should be either 'px' or '%'
+  height - height of the map
+  center - a string of the 'latitude,longitude' of the centre of the map
+  zoom - the zoom factor of the google map
+  align - the alignment of the map 'right', 'left' or 'center'
+  control - the control shown on the map 'Large', 'Small', or 'None'
+  tcontrol - whether the type control is on the map or not: 'off' or 'on'
+  type - 'Map', 'Hybrid' or 'Satellite'
+  drag - 'yes' or 'no' map is draggable.  Default is 'yes'
+  markers - an array of marker arrays.  Each marker array is an associative
+    array with the following elements:
+      'point' - the 'latitude,longitude' of the marker
+      'markername' - the marker icon to use. For example if it is set
+        to 'number', then the icons in the marker directory named
+        'number1.png', 'number2.png' etc.  will be used. If these don't
+        exist 'number.png' would be used.  If that doesn't exist then
+        the default marker will be used.  (optional)
+      'label' - html text to be located in a pop-up window when you click
+        on the marker.
+  shapes - an array of shape arrays.  Each shape array can have the
+    following elements:
+      'type' -  'line', 'circle', 'rpolygon', or 'polygon'
+      'color' - the hex for the color to create the line (eg. '#00dd00')
+      'width' - the width of the line in px
+      'opacity' - between 0 and 1 for the opacity of the line
+      'pattern' - a broken line definition '20 5 10 5' would mean 20 px
+         long line, 5x break, 10px line 5px break 20px line ...
+         (xmaps objects only)
+      'text' - the text used in the line (xmaps only)
+      'fillcolor' - the fill color for filled objects (xmaps objects only)
+      'fillopacity' - the opacity of the filled objects (xmaps object only)
+  tracks - an array of track arrays.  Each track array can have the
+    following elements:
+      'filename' - a filename for the track (.plt) file.  Should be
+         relative to the drupal base url.
+      'type', 'color', etc... same as the shape line.
+  feeds - an array of feed arrays.  Each feed array can have the
+    following elements:
+      'url' - the url of the feed.
+      'markername' - the marker icon to use.  same as for markers
+         except that numbered markers are not supported.
+
+The gmap marker is converted to the javascript to display the map using the
+function gmap_draw_map($gmap, $javascript=''), where $gmap is a map
+variable and javascript is some javascript to be run when the map is
+loaded.  Note that the string '{mapid}' in the javascript will be
+replaced with the mapid of the map being drawn.
+
+It should be noted that the default map settings provided on the
+admin/settings/gmap page will be used for any value that is not provided.
+
+An example of the gmap_draw_map function being used.
+
+$myshapes=array(array('color' => '#00dd00',
+                      'opacity' => '0.5',
+                      'points' => array( '49.19011831503412,-123.20737838745117',
+                                        '49.18506953036687,-123.16274642944336'),),
+                array('color' => '#00dd00',
+                      'opacity' => '0.5',
+                      'points' => array('49.20526157803394,-123.19965362548828'
+                                       '49.20077516864678,-123.16102981567383',)));
+
+$mymarkers=array(array('markername'=>'blue',
+                       'label' => 'Terminal bus stop',
+                       'point' =>'49.19236205396474,-123.1790542602539'),
+                 array('markername'=>'green',
+                       'label' => 'Service buildings bus stop',
+                       'point' =>'49.19224986943509,-123.1538200378418'),
+                 array('markername'=>'green',
+                       'label' => 'Transer to Vancouver bus',
+                       'point' =>'49.191801128772326,-123.14231872558594'));
+
+
+$mymap=array('id' => 'mymap',
+             'center' => '49.19258642226091, -123.17647933959961',
+              'zoom' => 13,
+              'width' => '100%',
+              'height' => '400px',
+              'type' => 'Satellite',
+              'shapes' => $shapes,
+              'markers' => $mymarkers);
+              
+gmap_draw_map($mymap);
+
+
