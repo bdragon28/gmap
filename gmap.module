@@ -709,7 +709,7 @@ function gmap_users_page() {
 
 
   $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
-  $thismap = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=0,30|zoom=16|width=100%|height=400px]'));
+  $thismap = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
   if (empty($thismap['markers'])) {
     $thismap['markers']=array();
   }
@@ -719,11 +719,11 @@ function gmap_users_page() {
 
       $newmarker['label'] = theme('user_picture', $account);
       $newmarker['label'] .= theme('username', $account);
-      $newmarker['point']= $u->longitude.','.$u->latitude;
-//      $newmarker['markername']='usermarker';
+      $newmarker['point']= $u->latitude.','.$u->longitude;
+      $newmarker['markername']='drupal';
     }
     else {
-      $newmarker['point']= $u->longitude.','.$u->latitude;
+      $newmarker['point']= $u->latitude.', '.$u->longitude;
     }
     $thismap['markers'][]=$newmarker;
   }
