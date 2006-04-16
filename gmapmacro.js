@@ -18,6 +18,8 @@ function gmap_init() {
   mapdiv = $('map');
   map = new GMap2(mapdiv);
   
+  keyboardhandler=new GKeyboardHandler(map);
+  
   var mycontrol = new GLargeMapControl();
   map.addControl(mycontrol);
   
@@ -26,10 +28,10 @@ function gmap_init() {
 
    // extend the map object
   map.drupal = new Object();
+  map.drupal.mapid=$('gmap-mapid').value
   map.drupal.latLongStr = $('gmap-latlong').value;
   map.drupal.currentControlType = 'Large';
   map.drupal.currentControl = mycontrol;
-  map.drupal.currentMapType = "Map";
   map.drupal.linecolors = colors;
   map.drupal.points = new Array();
   map.drupal.pointsOverlays = new Array() ;
@@ -39,7 +41,7 @@ function gmap_init() {
   $('gmap-macrotext').value = map_to_macro(map);
   
   // Event listeners
-  GEvent.addListener(map, "dragend", function() {
+  GEvent.addListener(map, "moveend", function() {
     var center = map.getCenter();
     map.drupal.latLongStr = center.lat() + ', ' + center.lng() ;
 
@@ -124,7 +126,7 @@ function gmap_init() {
   });
   //initialize default values
   set_gmap_latlong($('gmap-latlong').value);
-  map.setZoom($('gmap-zoom').value);
+  map.setZoom(parseInt($('gmap-zoom').value));
   set_gmap_type($('gmap-maptype').value);
   set_control_type($('gmap-controltype').value);
   set_gmap_dimension($('gmap-height'), 'height');
@@ -146,7 +148,10 @@ function map_to_macro(gmap) {
   var id = ' |id=' + gmap.drupal.mapid;
   var control = ' |control=' + gmap.drupal.currentControlType;
   var type = ' |type=' + gmap.drupal.currentMapType;
-  
+  var maptype = map.getCurrentMapType();
+  if (maptype == G_NORMAL_MAP) var type = ' |type=' + "Map";
+  if (maptype == G_HYBRID_MAP) var type = ' |type=' + "Hybrid";
+  if (maptype == G_SATELLITE_MAP) var type = ' |type=' + "Satellite";
   // I don't know what alignment does or how to use it. Needs updating
 //  var alignment = ' |align=' + gmapObj.alignment;
 
@@ -160,6 +165,11 @@ function map_to_macro(gmap) {
   line3 = gmap.drupal.gmapline3.length >0 ? ' |line3=' + gmap.drupal.gmapline3 : '';
 
   return '[gmap' + id + centerStr + zooml + width + height +  /*alignment +*/ control + type + outpoints + line1 + line2 + line3 + ']';  
+}
+
+function set_gmap_mapid(instring) {
+   map.drupal.mapid=instring;
+   $('gmap-macrotext').value=map_to_macro(map);
 }
 
 function set_gmap_latlong(instring) {
@@ -182,6 +192,11 @@ function set_gmap_type(intype) {
   if (intype == "Map") map.setMapType(G_NORMAL_MAP);
   if (intype == "Hybrid") map.setMapType(G_HYBRID_MAP);
   if (intype == "Satellite") map.setMapType(G_SATELLITE_MAP);
+  $('gmap-macrotext').value = map_to_macro(map);
+}
+
+function setgmapZoom(invalue) {
+  map.setZoom(parseInt(invalue));
   $('gmap-macrotext').value = map_to_macro(map);
 }
 

@@ -48,14 +48,14 @@ function gmap_perm() {
  *  id - the id of the map every map on a page must have a unique id
  *  width - width of the map
  *  height - height of the map
- *  center - a string of the longitude and latitude of the centre of the map
+ *  center - a string of the latitude, longitude of the centre of the map
  *  zoom - the zoom factor of the google map
  *  align - the alignment of the map 'right', 'left' or 'center'
  *  control - the control shown on the map 'Large', 'Small', or 'None'
  *  tcontrol - whether the type control is on the map or not: 'off' or 'on'
  *  type - 'Map', 'Hybrid' or 'Satellite'
  *  drag - 'yes' or 'no' map is draggable.  Default is 'yes'
- *  points - an array of associative arrays for the points.
+ *  markers - an array of associative arrays for the markers.
  *  shapes - an array of associative arrays for the overlays.
  *  track - a file containing a series of points in .plt format to be
  *  inserted into the node.
@@ -152,10 +152,13 @@ function gmap_draw_map($gmap, $javascript='') {
     if (isset($gmap['drag']) && strtolower($gmap['drag'])=='no') {
       $outtext .= $gmap['id'].".disableDragging(); \n";
     }
+    else {
+      $outtest .= "keyboardhandler=new GKeyboardHandler(map);\n";
+    }
     $outext .= $gmap['id'].'.setCenter(new GLatLng('.$gmap['center'].'), '.$gmap['zoom'].");\n";
 
-    if (isset($gmap['track'])) {
-      foreach ($gmap['track'] as $value) {
+    if (isset($gmap['tracks'])) {
+      foreach ($gmap['tracks'] as $value) {
         $tt=$value;
         $tt['type']='line';
         $tt['points']=array();
@@ -212,7 +215,7 @@ function gmap_draw_map($gmap, $javascript='') {
       }
     }
     if (isset($gmap['shape']) && !variable_get('gmap_xmaps',0)) {
-      //if xmaps is not enabled then just show the lines using gma;
+      //if xmaps is not enabled then just show the lines using straight google maps.
       foreach ($gmap['shape'] as $value) {
         $style ='';
         if (trim($value['type'])=='line') {
@@ -436,7 +439,7 @@ function gmap_parse_macro($instring,$ver=2) {
           list($tt['color'],$tt['width'],$tt['opacity'],$tt['pattern'],$tt['text'])=explode('/',$configs);
         }
         $tt['filename'] =$t[1];
-        $gmap['track'][] = $tt;
+        $gmap['tracks'][] = $tt;
         break;
         
       case 'feed':
@@ -948,7 +951,7 @@ function gmap_macro_form() {
     '#title' => t('The current magnification of the map'),
     '#default_value' => GMAP_ZOOM,
     '#options' => drupal_map_assoc(range(0, 17)),
-    '#attributes' => array('onchange' => 'map.setZoom(this.value);'),
+    '#attributes' => array('onchange' => 'setgmapZoom(this.value);'),
   );
   $form['macroform']['textarea'] = array(
     '#type' => 'textarea',
