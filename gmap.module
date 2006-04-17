@@ -396,6 +396,13 @@ function gmap_sanitize(&$gmap){
  *
  */
 function gmap_parse_macro($instring,$ver=2) {
+
+  if (substr($instring,-1)==']') {
+    $instring=substr($instring, 0, -1);
+  }
+  if (substr($instring, 0,5)=='[gmap') {
+    $instring=substr($instring, 6);
+  }
   $statements=explode('|', $instring);
   $j=0;
 
@@ -546,29 +553,27 @@ function gmap_set_location($map_macro,&$lonform,&$latform) {
     $myjava .= '{id}.panTo(new GLatLng('.$latform['#default_value'].', '.$lonform['#default_value'].'));'."\n".
              '{id}.addOverlay(thispoint=new GMarker(new GLatLng('.$latform['#default_value'].', '.$lonform['#default_value'].')));'."\n";
   }
-//  else {
-//    $startat='map.centerAndZoom(new GPoint(0, 30), zoom);';
-//  }
-
-//  $out='<div id="map" style="width: 100%; height: 300px;"></div> ';
 
   $myjava .=  '   GEvent.addListener({id}, "click", function(overlay, point) {
                   {id}.checkResize();
                   if (point) {
-                    {id}.panTo(point);
+                    {id}.zoomIn();
+                    {id}.zoomIn();
                     if (thispoint) {
                       {id}.removeOverlay(thispoint);
                     }
                     {id}.addOverlay(thispoint=new GMarker(point));
 
-                    {id}.zoomIn();
                     $("gmap-latitude").value=point.lat();
                     $("gmap-longitude").value=point.lng();
+                    {id}.panTo(point);
                   }
                 });
                 GEvent.addListener({id}, "dragend", function() {{id}.checkResize();} )
               ';
-  $out=gmap_draw_map($map,$myjava);
+  $out = gmap_draw_map($map,$myjava);
+  
+
   return $out;
 }
 
@@ -851,11 +856,15 @@ function gmap_settings() {
   $form['defaults']['gmap_default_line2_color']=array('#type'=>'textfield', '#title'=>t('Default Line 2 Color'), '#default_value'=>GMAP_LINECOLOR2, '#size'=>25, '#maxlength'=>7 );
   $form['defaults']['gmap_default_line3_color']=array('#type'=>'textfield', '#title'=>t('Default Line 3 Color'), '#default_value'=>GMAP_LINECOLOR3, '#size'=>25, '#maxlength'=>7 );
 
-  $form['user']=array('#type' => 'fieldset', '#title' => t('User map settings'));
+  $form['user']=array('#type' => 'fieldset', '#title' => t('Location settings'));
   $form['user']['gmap_user']=array('#type'=>'checkbox', '#title'=>t('Enable Mapping of user locations'), '#default_value'=>variable_get('gmap_user',0),'#description'=>t('Ensure that the database table gmap_user is created before turning on the user location mapping functions.'));
   $form['user']['gmap_user_map']=array('#type'=>'textfield', '#title'=>t('Default user map'), '#default_value'=>variable_get('gmap_user_map', '[gmap|id=usermap|center=0,40|zoom=16|width=100%|height=400px]'), '#size'=>50, '#description'=>t('The gmap macro where the user information will be diplayed on.'));
   $form['user']['gmap_user_map_header']=array('#type'=>'textarea', '#title'=>t('Text at the top of the map/users page'), '#default_value'=>variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')), '#cols'=>50, '#rows'=>6 );
-
+  $form['user']['gmap_location_map']=array('#type'=>'textfield',
+                                           '#title'=>t('Default user map'),
+                                           '#default_value'=>variable_get('gmap_user_map','[gmap|id=locmap|center=40,0|zoom=3|width=100%|height=400px]'),
+                                           '#size'=>50,
+                                           '#description'=>t('The gmap macro where the user information will be diplayed on.'));
   return $form;
 }
 
