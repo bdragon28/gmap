@@ -568,6 +568,12 @@ function gmap_set_location($map_macro,&$lonform,&$latform) {
                     $("gmap-longitude").value=point.lng();
                     {id}.panTo(point);
                   }
+                  else {
+                    {id}.removeOverlay(thispoint);
+                    $("gmap-latitude").value="";
+                    $("gmap-longitude").value="";
+                    thispoint=null;
+                  }
                 });
                 GEvent.addListener({id}, "dragend", function() {{id}.checkResize();} )
               ';
@@ -858,13 +864,13 @@ function gmap_settings() {
 
   $form['user']=array('#type' => 'fieldset', '#title' => t('Location settings'));
   $form['user']['gmap_user']=array('#type'=>'checkbox', '#title'=>t('Enable Mapping of user locations'), '#default_value'=>variable_get('gmap_user',0),'#description'=>t('Ensure that the database table gmap_user is created before turning on the user location mapping functions.'));
-  $form['user']['gmap_user_map']=array('#type'=>'textfield', '#title'=>t('Default user map'), '#default_value'=>variable_get('gmap_user_map', '[gmap|id=usermap|center=0,40|zoom=16|width=100%|height=400px]'), '#size'=>50, '#description'=>t('The gmap macro where the user information will be diplayed on.'));
+  $form['user']['gmap_user_map']=array('#type'=>'textfield', '#title'=>t('Default user map'), '#default_value'=>variable_get('gmap_user_map', '[gmap |id=usermap|center=40,0|zoom=3|width=100%|height=400px]'), '#size'=>50, '#description'=>t('The gmap macro where the user information will be diplayed on.'));
   $form['user']['gmap_user_map_header']=array('#type'=>'textarea', '#title'=>t('Text at the top of the map/users page'), '#default_value'=>variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')), '#cols'=>50, '#rows'=>6 );
   $form['user']['gmap_location_map']=array('#type'=>'textfield',
-                                           '#title'=>t('Default user map'),
-                                           '#default_value'=>variable_get('gmap_user_map','[gmap|id=locmap|center=40,0|zoom=3|width=100%|height=400px]'),
+                                           '#title'=>t('Default location map'),
+                                           '#default_value'=>variable_get('gmap_location_map','[gmap|id=locmap|center=40,0|zoom=3|width=100%|height=400px]'),
                                            '#size'=>50,
-                                           '#description'=>t('The gmap macro where the user information will be diplayed on.'));
+                                           '#description'=>t('The gmap macro wused in the location.module for setting latitude and longitude.'));
   return $form;
 }
 
