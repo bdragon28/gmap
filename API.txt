@@ -163,3 +163,9 @@ $mymap=array('id' => 'mymap',
 gmap_draw_map($mymap);
 
 
+TO DO
+=====
+- change gmap macro so that it is easier to manipulate latitude and longitude
+  (this probably means storing them separately.)
+
+
