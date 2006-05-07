@@ -3,24 +3,21 @@ $Id$
 Description
 -----------
 
-The GMap module is a module that has 4 essential parts.  The first part
-an API that allows other modules or administrators to convert either an
-array of specifications or a macro text into a html/javascript text that
+The main GMap module is primarily an API module.  The API that allows
+other modules or administrators to convert either an array of
+specifications or a macro text into a html/javascript text that
 will include the google map on their page.
 
-The second part is a macro generator which will allow you to interactively
-create a gmap macro suitable for using with this module.
+The module includes a macro generator which will allow you to interactively
+create a gmap macro suitable for using for a variety of purposes with this
+module.
 
-The third part is the filter, which allows you to take the text created
-from the macro and insert it into a node and the filter will convert this
-into a google map shown on the node.
+Included with this module is a filter, which allows you to take the text
+created from the macro and insert it into a node and the filter will
+convert this into a google map shown on the node.
 
-The fourth part is a user interface that allows users to enter their location
-in a google map and then a map can be viewed that can show where users are
-from around the world.  Note that the user functionality must have a table
-added to the database.  However, the rest of the module will work fine if
-this table is not activated and the user functionality is not turned on in
-the settings page.
+Also packaged with this module is the module gmap_location.module.  This
+lets one display location information from nodes or users on google maps.
 
 
 Installation
@@ -48,10 +45,14 @@ Installation
 7) (optional) If the user functionality will be used and location.module is
    not installed, the location  table must be added to the database (as
    defined in location.mysql) and it must be turned on in the gmap settings
-   page.
+   page. (This is just a temporary approach until the location module has
+   the ability to add users' lat/long.)
 
 Instructions
 ------------
+
+Macro
+-----
 
 A gmap macro can be created on the gmapmacro page and the text can then be
 copied and pasted into any node where the gmap filter is enabled.
@@ -73,15 +74,6 @@ points that you get from a GPS.
 It should be noted that currently the macro parsing (filter) has much more
 functionality than can be created using the macro creator.
 
-Demo
-----
-
-To see the macro creation tool go to:
-http://vancouver.cyclehome.org/gmapmacro
-
-To see an example a node with the macro inserted go to:
-http://vancouver.cyclehome.org/
-
 User
 ----
 
@@ -95,10 +87,60 @@ a map of all of the user locations at: q=gmapusers if a user has permission
 to "user location" when they click on the marker they will see what user it
 is.
 
+Nodes
+-----
+
+In order to set the location of a node using an interactive gmap, the user
+must have access permission to enter lat/longitude in location.module.
+
+The location of the current node can be shown by activating the block
+"location".  This block can be displayed below the content or anywhere
+else that blocks can be displayed.
+
+A map showing all of the nodes with location information can be viewed at
+map/node
+
+
+Markers
+-------
+
+You can set a custom marker.  A number of custom markers are located in the
+markers directory.  Markers that don't use the standard shape are located in
+subdirectories.  small is for a small markers, large is for an oversized marker
+and flat is for markers without shadows.
+
+If you would like to create your own marker, the best way to do it is to take
+an existing marker and make the changes you want, you should keep the same
+size and shape.  it must be saved with a '.png' extension.
+
+I would like to increase the library of markers, so if you create an interesting
+marker, please e-mail it to me.
+
+Demo
+----
+
+For a few pages that show some of the items mentioned above see:
+http://www.webgeer.com/gmapmacro
+http://www.webgeer.com/gmapdemo
+http://www.webgeer.com/map/users
+
+For a website that uses the location.module and gmap.module integration
+with gmap_location.module see:
+http://photo-tips.ca/
 
 Bugs & quirks
 -------------
 
+- The gmap.module user location setting functionality is not compatible with
+  the location.module module user setting functionality.  Furthermore, the
+  location.module does not let you insert the lat/long manually.  If you
+  would like to display ther users on a map, I recommend disabling the
+  user functionality within location.module.
+- If a gmap is in a collapsed area when it is uncollapsed it will not display
+  the whole map, if you drag the map, it will be redrawn and the whole map
+  will be visible.
+- xmaps does not work with google map v2 yet, so that functionality has been
+  disabled.
 - There is a conflict between the xmaps script and the javascript that does
   the collapsing menus.  If want to use the xmaps functionality, it is
   recommended that you comment out all of the statements in the function
@@ -113,7 +155,9 @@ Bugs & quirks
 To do
 -----
 
-- Significantly upgrade the macro creator
+- rationalize all of the different default map variables, so that most of them
+  use the 'default map' settings of the gmap.
+- Significantly upgrade the macro creator.
 - The documentation (both in the code and this file) needs to be significantly
   improved.
 - create interface to geocoding for address or postal code to Long, Lat
@@ -135,6 +179,8 @@ http://www.webgeer.com/James
 Thanks to the following for their contributions:
 Robert Douglass - for revamping some parts that really needed to be
   revamped and cleaning up a lot of little things.
+Paul Rollo - for his contribution on showing how to include a location map
+  in a block.
   
 
 
