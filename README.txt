@@ -181,6 +181,8 @@ Robert Douglass - for revamping some parts that really needed to be
   revamped and cleaning up a lot of little things.
 Paul Rollo - for his contribution on showing how to include a location map
   in a block.
+Nick Jehlen - who commissioned much of the initial work of gmap_location.module
+  for the website http://enoughfear.com.
   
 
 
