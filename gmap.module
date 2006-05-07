@@ -1,6 +1,16 @@
 <?php
 /* $Id$ */
 
+/**
+ * @file
+ * GMap Filters is a module to include Google Map in a module
+ *
+ * GMap filter allows the insertion of a googlemap in a module.  It has
+ * a page to creat a macro and then a filter to convet the macro into the
+ * html and javascript code required to insert a google map.
+ */
+
+
 define('GMAP_LOAD_METHOD', variable_get('gmap_method','Static'));
 define('GMAP_WIDTH', variable_get('gmap_default_width', '300px'));
 define('GMAP_HEIGHT', variable_get('gmap_default_height', '200px'));
@@ -18,13 +28,10 @@ define ('GMAP_XMAPS',0); //xmaps not currently compatible with v2 of google maps
 define('GMAP_XMAPS_SCRIPT', variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
 define('GMAP_CLUSTER', variable_get('gmap_cluster',0));
 
+
 /**
- * @file
- * GMap Filters is a module to include Google Map in a module
+ * Implementation of hook_help.
  *
- * GMap filter allows the insertion of a googlemap in a module.  It has
- * a page to creat a macro and then a filter to convet the macro into the
- * html and javascript code required to insert a google map.
  */
 
 function gmap_help($section) {
@@ -34,8 +41,13 @@ function gmap_help($section) {
   }
 }
 
+/**
+ * Implementation of hook_perm.
+ *
+ */
+
 function gmap_perm() {
-  return array('create macro', 'override defaults', 'show user map', 'user locations');
+  return array('create macro');
 }
 
 /**
@@ -413,7 +425,17 @@ function gmap_parse_macro($instring,$ver=2) {
       case 'center':
         $gmap['center']=gmap_dopoint(trim($t[1]),$ver);
         break;
-        
+      case 'zoom':
+        if ($ver==1) {
+          $gmap['zoom'] = 18-trim($t[1]);
+          if ($gmap['zoom']<1) {
+             $gmap['zoom']=1;
+          }
+        }
+        else {
+          $gmap['zoom'] = trim($t[1]);
+        }
+        break;
       case 'points':
       case 'markers':
         unset($markername);
@@ -689,13 +711,13 @@ function gmap_menu($may_cache) {
       'title' => t('Create a Google Map Macro'),
       'access' => user_access('create macro'),
       'callback' => 'gmap_macro_page' );
-    if (variable_get('gmap_user',0)) {
-      $items[] = array('path' => 'map/users',
-        'type' => MENU_NORMAL_ITEM,
-        'title' => t('user locations'),
-        'access' => user_access('show user map'),
-        'callback' => 'gmap_users_page');
-    }
+//    if (variable_get('gmap_user',0)) {
+//      $items[] = array('path' => 'map/users',
+//        'type' => MENU_NORMAL_ITEM,
+//        'title' => t('user locations'),
+//        'access' => user_access('show user map'),
+//        'callback' => 'gmap_users_page');
+//    }
   }
   if (!$may_cache && (strlen(variable_get('googlemap_api_key', '')) > 0)) {
     if (variable_get('gmap_method', 'Static')=='Static') {
@@ -862,15 +884,12 @@ function gmap_settings() {
   $form['defaults']['gmap_default_line2_color']=array('#type'=>'textfield', '#title'=>t('Default Line 2 Color'), '#default_value'=>GMAP_LINECOLOR2, '#size'=>25, '#maxlength'=>7 );
   $form['defaults']['gmap_default_line3_color']=array('#type'=>'textfield', '#title'=>t('Default Line 3 Color'), '#default_value'=>GMAP_LINECOLOR3, '#size'=>25, '#maxlength'=>7 );
 
-  $form['user']=array('#type' => 'fieldset', '#title' => t('Location settings'));
-  $form['user']['gmap_user']=array('#type'=>'checkbox', '#title'=>t('Enable Mapping of user locations'), '#default_value'=>variable_get('gmap_user',0),'#description'=>t('Ensure that the database table gmap_user is created before turning on the user location mapping functions.'));
-  $form['user']['gmap_user_map']=array('#type'=>'textfield', '#title'=>t('Default user map'), '#default_value'=>variable_get('gmap_user_map', '[gmap |id=usermap|center=40,0|zoom=3|width=100%|height=400px]'), '#size'=>50, '#description'=>t('The gmap macro where the user information will be diplayed on.'));
-  $form['user']['gmap_user_map_header']=array('#type'=>'textarea', '#title'=>t('Text at the top of the map/users page'), '#default_value'=>variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')), '#cols'=>50, '#rows'=>6 );
-  $form['user']['gmap_location_map']=array('#type'=>'textfield',
+  $form['location']=array('#type' => 'fieldset', '#title' => t('Location settings'));
+  $form['location']['gmap_location_map']=array('#type'=>'textfield',
                                            '#title'=>t('Default location map'),
                                            '#default_value'=>variable_get('gmap_location_map','[gmap|id=locmap|center=40,0|zoom=3|width=100%|height=400px]'),
                                            '#size'=>50,
-                                           '#description'=>t('The gmap macro wused in the location.module for setting latitude and longitude.'));
+                                           '#description'=>t('The gmap macro for the map to be used in the location.module for setting latitude and longitude.'));
   return $form;
 }
 
