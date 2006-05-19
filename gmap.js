@@ -40,7 +40,7 @@ function gmap_init() {
 
 }
 
-function createGMarker(point, htmltext, marker) {
+function createGMarker(point, htmltext, marker, tooltip) {
   if (marker.length >0) {
     var re = /markers\/([a-zA-Z0-9]+)\//;
     var m = re.exec(marker);
@@ -50,10 +50,14 @@ function createGMarker(point, htmltext, marker) {
         var bicon=m[1];
       }
     }
-
     var markerIcon = new GIcon(baseIcon[bicon]);
     markerIcon.image = marker;
-    var returnMarker = new GMarker(point, markerIcon);
+    if (gxmarkerjs) {
+      var returnMarker = new GxMarker(point, markerIcon, tooltip);
+    }
+    else {
+      var returnMarker = new GMarker(point, markerIcon);
+    }
   }
   else {
     var returnMarker = new GMarker(point);
