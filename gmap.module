@@ -17,7 +17,6 @@ define('GMAP_HEIGHT', variable_get('gmap_default_height', '200px'));
 define('GMAP_ZOOM', variable_get('gmap_default_zoom', 3));
 define('GMAP_CONTROL', variable_get('gmap_default_control', 'Small'));
 //define('GMAP_ALIGNMENT', variable_get('gmap_default_allignment', ???));
-// variable still defined as gmap_default_latlong to avoid having to upgrade the database
 define('GMAP_LONGLAT', variable_get('gmap_default_latlong', '40,0'));
 define('GMAP_TYPE', variable_get('gmap_default_type', 'Map'));
 define('GMAP_LINECOLOR1', variable_get('gmap_default_line1_color', '#00cc00'));
@@ -27,7 +26,6 @@ define('GMAP_LINECOLOR3', variable_get('gmap_default_line3_color', '#0000ff'));
 define ('GMAP_XMAPS',0); //xmaps not currently compatible with v2 of google maps api
 define('GMAP_XMAPS_SCRIPT', variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
 define('GMAP_CLUSTER', variable_get('gmap_cluster',0));
-
 
 /**
  * Implementation of hook_help.
@@ -86,6 +84,13 @@ function gmap_perm() {
 function gmap_draw_map($gmap, $javascript='') {
   global $base_url;
     _gmap_doheader();
+    
+    if (file_exists('misc/gxmarker.2.js')) {
+      $gxmarkerjs=1;
+    }
+    else {
+      $gxmarkerjs=0;
+    }
 
     $clusterset=false;
     (!isset($gmap['width'])) ? $gmap['width']=GMAP_WIDTH: NULL;
@@ -125,11 +130,11 @@ function gmap_draw_map($gmap, $javascript='') {
     $outtext.='<div id="'.$gmap['id'].'" style="'.$style.'"></div>
               <script type="text/javascript">
               //<![CDATA[
-              //initialize gmap variables
+              //initialize global gmap variables
               var mycontrol=null;
               var mytypecontrol=null;
               var '.$gmap['id'].'=null;
-              
+              var gxmarkerjs='.$gxmarkerjs.';
               addLoadEvent(gmap_init);  
               addLoadEvent(gmap_load_'.$gmap['id'].');
            
@@ -213,15 +218,34 @@ function gmap_draw_map($gmap, $javascript='') {
             $mymarker=$base_url.'/'.variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png';
           }
         }
-        if (isset($item['label']) && strlen($item['label'])>0) {
+        if (isset($item['text']) && strlen($item['text'])>0) {
+          $mytext=$item['text'];
+        }
+        elseif (isset($item['label']) && strlen($item['label'])>0) {
           $mytext=$item['label'];
         }
+        $divstyle='';
+        if (isset($item['winwidth']) && trim($item['winwidth']) != '') {
+          $divstyle='width: '.$item['winwidth'].'; ';
+        }
+        if (strlen($divstyle) >0) {
+          $mytext = '<div class="gmap-popup" style="'.$divstyle.'">'.$mytext.'</div>';
+        }
+        else {
+          $mytext = '<div class="gmap-popup">'.$mytext.'</div>';
+        }
+        if (isset($item['tooltip'])) {
+          $tooltip='<p class="gmap-tooltip">'.$item['tooltip'].'</p>';
+        }
+        else {
+          $tooltip='';
+        }
         if (GMAP_CLUSTER) {
-          $outtext .='clusterer.AddMarker(createGMarker(new GLatLng('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."'));\n";
+          $outtext .='clusterer.AddMarker(createGMarker(new GLatLng('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."','$tooltip'));\n";
           $clusterset=true;
         }
         else {
-          $outtext .=$gmap['id'].'.addOverlay(createGMarker(new GLatLng('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."'));\n";
+          $outtext .=$gmap['id'].'.addOverlay(createGMarker(new GLatLng('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."','$tooltip'));\n";
         }
       }
     }
@@ -409,8 +433,8 @@ function gmap_sanitize(&$gmap){
  */
 function gmap_parse_macro($instring,$ver=2) {
 
-  if (substr($instring,-1)==']') {
-    $instring=substr($instring, 0, -1);
+  if (substr(trim($instring),-1)==']') {
+    $instring=substr(trim($instring), 0, -1);
   }
   if (substr($instring, 0,5)=='[gmap') {
     $instring=substr($instring, 6);
@@ -471,8 +495,13 @@ function gmap_parse_macro($instring,$ver=2) {
         break;
         
       case 'feed':
-
+        if (strpos($t[1],'::')) { // note: we don't care about case starting with ':'
+          list($markername,$t[1])=explode('::',$t[1],2);
+        }
         $tt['url'] =$t[1];
+        if (isset($markername)){
+          $tt['markername']=$markername;
+        }
         $gmap['feeds'][] = $tt;
         break;
 
@@ -619,8 +648,16 @@ function _gmap_doheader(){
   if (variable_get('gmap_xmaps',0)) {
     drupal_add_js(variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
   }
-  if (GMAP_CLUSTER) {
-    drupal_add_js('http://www.acme.com/javascript/Clusterer2.js');
+  if (GMAP_CLUSTER){
+    if (file_exists('misc/Clusterer2.js')) {
+      drupal_add_js('misc/Clusterer2.js');
+    }
+    else {
+      drupal_add_js('http://www.acme.com/javascript/Clusterer2.js');
+    }
+  }
+  if (file_exists('misc/gxmarker.2.js')){
+      drupal_add_js('misc/gxmarker.2.js');
   }
   $gmap_initialized = TRUE;
 }
@@ -771,12 +808,12 @@ function gmap_user($op, &$edit, &$user, $category = NULL) {
         return array(array('name'=>'gmap_user', 'title'=> t('location map'),'weight'=>5));
       case 'validate':
         if (isset($edit['gmap_latitude'])){
-          if (!is_numeric($edit['gmap_latitude']) || abs($edit['gmap_latitude'])>90) {
+          if (abs($edit['gmap_latitude'])>90) {
             form_set_error('gmap_latitude', t('Latitude must be between -90 and 90'));
           }
         }
         if (isset($edit['gmap_longitude'])){
-          if (!is_numeric($edit['gmap_longitude']) || abs($edit['gmap_longitude'])>180) {
+          if (abs($edit['gmap_longitude'])>180) {
             form_set_error('gmap_longitude', t('Longitude must be between -180 and 180'));
           }
         }
@@ -796,14 +833,20 @@ function gmap_user($op, &$edit, &$user, $category = NULL) {
         return;
       case 'update':
 
-        if ((isset($edit['gmap_latitude']) && $edit['gmap_latitude'] !=0) && (isset($edit['gmap_longitude']) && $edit['gmap_longitude'] !=0)) {
+        if (isset($edit['gmap_latitude']) && isset($edit['gmap_longitude'])) {
           if (isset($user->location)) {
-            db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='user'",  $edit['gmap_latitude'],$edit['gmap_longitude'], 1,$user->uid);
-     // debug message
-     //       drupal_set_message(sprintf("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='user'",  $edit['gmap_latitude'],$edit['gmap_longitude'], 1,$user->uid));
+            if (is_numeric($edit['gmap_latitude']) && is_numeric($edit['gmap_longitude'])) {
+              db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='user'",  $edit['gmap_latitude'],$edit['gmap_longitude'], 1,$user->uid);
+            }
+            else {
+              db_query("UPDATE {location} SET latitude=null, longitude=null, source='%d' WHERE oid='%d' AND type='user'", 0,$user->uid);
+
+            }
           }
           else {
-            db_query("INSERT INTO {location} (oid, type, latitude, longitude, source) VALUES (%d, 'user', '%f', '%f', '%d')", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], 1); // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
+            if (is_numeric($edit['gmap_latitude']) && is_numeric($edit['gmap_longitude'])) {
+              db_query("INSERT INTO {location} (oid, type, latitude, longitude, source) VALUES (%d, 'user', '%f', '%f', '%d')", $user->uid, $edit['gmap_latitude'],$edit['gmap_longitude'], 1); // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
+            }
           }
         }
         return;
