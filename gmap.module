@@ -380,19 +380,19 @@ function gmap_draw_map($gmap, $javascript='') {
  */
 function gmap_sanitize(&$gmap){
   //sanitizes the gmap variables to reduce the possibility of javascript inserts
-  reset($gmap);
-  $value=current($gmap);
-  do {
-    if (key($gmap)=='id') {
-            $out = array();
+  foreach ($gmap as $key=>$value) {
+    if ($key=='id') {
+      $out = array();
       preg_match('([a-zA-Z1-9_-]*)', $value, $out);
-      if (strlen($out[0])==0) $out[0]='map';
-      $gmap[key($gmap)]=$out[0];
+      if (strlen($out[0])==0)  {
+        $out[0]='map';
+      }
+      $gmap[$key]=$out[0];
     }
     else {
-      $gmap[key($gmap)]=str_replace(';','',$value);
+      $gmap[$key]=str_replace(';','',$value);
     }
-  } while ($value=next($gmap));
+  }
 }
 
 /**
