@@ -1,3 +1,14 @@
 v\:* {
   behavior:url(#default#VML);
 }
+
+.gmap-popup{
+
+}
+
+.gmap-tooltip{
+   padding: 2px;
+   margin: 0;
+   border: solid black 1px;
+
+}
