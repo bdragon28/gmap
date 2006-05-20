@@ -76,10 +76,11 @@ function gmap_location_users_page() {
       $newmarker['label'] .= theme('username', $account);
       $newmarker['point']= $u->latitude.','.$u->longitude;
       $newmarker['markername']=variable_get('gmap_user_map_marker', 'drupal');
-      $newmarker['tooltip']=$account->name;
+      $newmarker['tooltip']=check_plain($account->name);
     }
     else {
       $newmarker['point']= $u->latitude.', '.$u->longitude;
+      $newmarker['markername']=variable_get('gmap_user_map_marker', 'drupal');
     }
     $thismap['markers'][]=$newmarker;
   }
@@ -131,7 +132,7 @@ function gmap_location_node_page($nn=null) {
          // strtr($newmarker['label'],"'\n",'" ');
           break;
         case 'image':
-          $newmarker['label'] = '<a href="'.url('node/'.$locn->oid).'">'.$n->title.'</a> <br>';
+          $newmarker['label'] = '<a href="'.url('node/'.$n->nid).'">'.check_plain($n->title).'</a> <br>';
           $newmarker['label'] .= image_display($n,'thumbnail');
           break;
         default:
@@ -139,7 +140,7 @@ function gmap_location_node_page($nn=null) {
       }
       $newmarker['point']= $locn->latitude.','.$locn->longitude;
       $newmarker['markername']=variable_get('gmap_node_map_marker_'.$n->type, '');
-      $newmarker['tooltip']=$n->title;
+      $newmarker['tooltip']=check_plain($n->title);
       $thismap['markers'][]=$newmarker;
     }
   }
