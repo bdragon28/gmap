@@ -40,7 +40,7 @@ function gmap_init() {
 
 }
 
-function createGMarker(point, htmltext, marker, tooltip) {
+function createGMarker(point, htmltext, marker, tooltip, towebsite) {
   if (marker.length >0) {
     var re = /markers\/([a-zA-Z0-9]+)\//;
     var m = re.exec(marker);
@@ -62,9 +62,14 @@ function createGMarker(point, htmltext, marker, tooltip) {
   else {
     var returnMarker = new GMarker(point);
   }
-
+  if (!towebsite) towebsite='';
   // Show this htmltext  info window when it is clicked.
-  if (htmltext.length>0) {
+  if (towebsite.length>0 && gxmarkerjs){
+    GEvent.addListener(returnMarker, 'click', function() {
+      open(towebsite,'_self');
+    });
+  }
+  else if (htmltext.length>0) {
     GEvent.addListener(returnMarker, 'click', function() {
       returnMarker.openInfoWindowHtml(htmltext);
     });
@@ -114,7 +119,7 @@ function createMarkerFromRSS(item,icon) {
   //alert('Lat: '+lat);
   var point = new GLatLng(parseFloat(lat), parseFloat(lng));
   var html = "<a href=\"" + link + "\">" + title + "</a>";
-  var marker=createGMarker(point, html, icon);
+  var marker=createGMarker(point, html, icon, title, link);
 
 return marker;
 }
