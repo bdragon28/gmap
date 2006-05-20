@@ -135,6 +135,7 @@ function gmap_draw_map($gmap, $javascript='') {
               var mytypecontrol=null;
               var '.$gmap['id'].'=null;
               var gxmarkerjs='.$gxmarkerjs.';
+              var markerlink='.variable_get('gmap_on_click',0).';
               addLoadEvent(gmap_init);  
               addLoadEvent(gmap_load_'.$gmap['id'].');
            
@@ -218,21 +219,24 @@ function gmap_draw_map($gmap, $javascript='') {
             $mymarker=$base_url.'/'.variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png';
           }
         }
-        if (isset($item['text']) && strlen($item['text'])>0) {
+        if (isset($item['text']) && strlen(trim($item['text']))>0) {
           $mytext=$item['text'];
         }
-        elseif (isset($item['label']) && strlen($item['label'])>0) {
+        elseif (isset($item['label']) && strlen(trim($item['label']))>0) {
           $mytext=$item['label'];
         }
         $divstyle='';
         if (isset($item['winwidth']) && trim($item['winwidth']) != '') {
           $divstyle='width: '.$item['winwidth'].'; ';
         }
-        if (strlen($divstyle) >0) {
+        if (strlen($divstyle) >0 && strlen(trim($mytext))>0) {
           $mytext = '<div class="gmap-popup" style="'.$divstyle.'">'.$mytext.'</div>';
         }
-        else {
+        elseif (strlen(trim($mytext))>0){
           $mytext = '<div class="gmap-popup">'.$mytext.'</div>';
+        }
+        else {
+          $mytext='';
         }
         if (isset($item['tooltip'])) {
           $tooltip='<p class="gmap-tooltip">'.$item['tooltip'].'</p>';
@@ -915,6 +919,11 @@ function gmap_settings() {
 //  $form['initialization']['gmap_xmaps']=array('#type'=>'checkbox', '#title'=>t('Enable Xmaps features (circles and polygons)'), '#default_value'=>GMAP_XMAPS,'#description'=>t('Enables XMaps features.  XMaps is currently a <em>beta</em> release available from <a href="http://xmaps.busmonster.com/">xmaps.busmonser.com</a>. '));
 //  $form['initialization']['gmap_xmaps_script']=array('#type' => 'textfield', '#title' => t('Location of XMaps script'), '#default_value'=>GMAP_XMAPS_SCRIPT, '#size' => 25, '#maxlength' => 50);
   $form['initialization']['gmap_cluster']=array('#type'=>'checkbox', '#title'=>t('Enable clusterer.js'), '#default_value'=>GMAP_CLUSTER,'#description'=>t('Enables Jef Poskanzer\'s excellent <a href="http://www.acme.com/javascript/#Clusterer">clusterer.js</a> script. (useful for a large number of markers on a single map)'));
+  $form['initialization']['gmap_on_click']=array('#type'=>'radios',
+                                                 '#title'=>t('On Click Marker'),
+                                                 '#default_value'=>variable_get('gmap_on_click',0),
+                                                 '#options'=>array(t('Open info window'), t('Open link')),
+                                                 '#description'=>t('For markers that have link associated with them, it can either an info window or go directly to the link.'));
 
   $form['defaults']=array('#type' => 'fieldset', '#title' => t('Default map settings'));
   $form['defaults']['gmap_default_width']=array('#type'=>'textfield', '#title'=>t('Default width'), '#default_value'=>GMAP_WIDTH, '#size'=>25, '#maxlength'=>6, '#description'=>t('The default width of a Google map.'));
