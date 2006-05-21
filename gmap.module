@@ -239,7 +239,7 @@ function gmap_draw_map($gmap, $javascript='') {
           $mytext='';
         }
         if (isset($item['tooltip'])) {
-          $tooltip='<p class="gmap-tooltip">'.$item['tooltip'].'</p>';
+          $tooltip='<p class="gmap-tooltip">'.check_plain($item['tooltip']).'</p>';
         }
         else {
           $tooltip='';
@@ -806,7 +806,7 @@ function gmap_users_page() {
 }
 
 function gmap_user($op, &$edit, &$user, $category = NULL) {
-  if (variable_get('gmap_user',0)) {
+  if (user_access('show user map')) {
     switch ($op) {
       case 'categories':
         return array(array('name'=>'gmap_user', 'title'=> t('location map'),'weight'=>5));
