@@ -140,7 +140,7 @@ function gmap_location_node_page($nn=null) {
       }
       $newmarker['point']= $locn->latitude.','.$locn->longitude;
       $newmarker['markername']=variable_get('gmap_node_map_marker_'.$n->type, '');
-      $newmarker['tooltip']=check_plain($n->title);
+      $newmarker['tooltip']=$n->title;
       $thismap['markers'][]=$newmarker;
     }
   }
