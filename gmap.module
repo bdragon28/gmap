@@ -1052,3 +1052,37 @@ function gmap_macro_form() {
   return drupal_get_form('macroform', $form);
 }
 
+/**
+ * Implementation of hook_views_style_plugins()
+ */
+function gmap_views_style_plugins() {
+  return array(
+    'gmap' => array(
+      'name' => t('Gmap View'),
+      'theme' => 'views_view_gmap',
+      'needs_fields' => true,
+      'validate' => 'views_ui_plugin_validate_list',
+    )
+  );
+}
+
+/**
+ * Display the nodes of a view in a Google Map
+ */
+function theme_views_view_gmap($view, $nodes) {
+  $fields = _views_get_fields();
+  foreach ($nodes as $node) {
+    $node_data = node_load(array("nid"=>$node->nid));
+    $location = $node_data->location;
+    $newmarker['label'] = '';
+    foreach ($view->field as $field) {
+      $newmarker['label'] .= "<p>" . views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node) . "</p>";
+    }
+    $newmarker['point']= $location['lat'] . ',' . $location['lon'];
+    $newmarker['markername']='drupal_view';
+    $thismap['markers'][]= $newmarker;
+  }
+  $output .= gmap_draw_map($thismap);
+  return $output;
+}
+
