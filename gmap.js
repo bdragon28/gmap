@@ -60,11 +60,16 @@ function createGMarker(point, htmltext, marker, tooltip, towebsite) {
     }
   }
   else {
-    var returnMarker = new GMarker(point);
+    if (gxmarkerjs) {
+      var returnMarker = new GxMarker(point,'', tooltip);
+    }
+    else {
+      var returnMarker = new GMarker(point);
+    }
   }
   if (!towebsite) towebsite='';
   // Show this htmltext  info window when it is clicked.
-  if (towebsite.length>0 && gxmarkerjs){
+  if (towebsite.length>0 && markerlink){
     GEvent.addListener(returnMarker, 'click', function() {
       open(towebsite,'_self');
     });
