@@ -61,26 +61,48 @@ function gmap_location_menu($may_cache) {
 
 function gmap_location_users_page() {
   global $user, $base_url;
-  $output .='<p>'.variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
+  $output ='<p>'.variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
 
   $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
   $thismap = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
+
+  // Find default marker
+  $default_marker = variable_get('gmap_user_map_marker', 'drupal');
+
+  // Determine if any roles override default setting
+  $roles = user_roles(TRUE);
+  $roles_override = array();
+  foreach ($roles as $rid => $role) {
+    if (variable_get("gmap_role_map_marker_$rid", $default_marker) != $default_marker) {
+      $roles_override[$rid] = $role;
+    }
+  }
+
+
   if (empty($thismap['markers'])) {
     $thismap['markers']=array();
   }
   while ($u=db_fetch_object($result)) {
-    if (user_access('user locations')) {
-      $account = user_load(array('uid' => $u->oid));
 
-      $newmarker['label'] = theme('user_picture', $account);
-      $newmarker['label'] .= theme('username', $account);
+    $account = user_load(array('uid' => $u->oid));
+    $dupes = array_intersect($account->roles, $roles_override);
+    if (empty($dupes)) {
+      $marker = $default_marker;
+    }
+    else {
+      $key = key($dupes);
+      $marker = variable_get("gmap_role_map_marker_$key", $default_marker);
+    }
+
+    if (user_access('user locations')) {
+      $newmarker['label'] = theme('gmap_location_user_html',$account);
       $newmarker['point']= $u->latitude.','.$u->longitude;
-      $newmarker['markername']=variable_get('gmap_user_map_marker', 'drupal');
+      $newmarker['markername']=$marker;
       $newmarker['tooltip']=check_plain($account->name);
     }
     else {
       $newmarker['point']= $u->latitude.', '.$u->longitude;
-      $newmarker['markername']=variable_get('gmap_user_map_marker', 'drupal');
+      $newmarker['markername']=$marker;
     }
     $thismap['markers'][]=$newmarker;
   }
@@ -113,7 +135,7 @@ function gmap_location_node_page($nn=null) {
     }
   }
 
-  $output .='<p>'.variable_get('gmap_node_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
+  $output .='<p>'.variable_get('gmap_node_map_header', t('This map illustrates the extent of nodes of this website.'))."</p>\n";
 
   $result=db_query("SELECT * FROM {location} WHERE (longitude!=0 OR latitude !=0) AND type='node'");
   $thismap = gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
@@ -123,41 +145,83 @@ function gmap_location_node_page($nn=null) {
   while ($locn=db_fetch_object($result)) {
     $n=node_load(array('vid'=>$locn->oid));
     if ($n && node_access('view',$n)) {
-      $newmarker=array();
-      switch ($n->type) {
-        case 'acidfree':
-          //$newmarker['label'] = '<a href="'.url('node/'.$locn->oid).'">'.$n->title.'</a> ';
-          $newmarker['label'] = strtr(theme_acidfree_print_thumb_photo($n),"'\n",'" ');                   //<table><tr><td> </td></tr></table>
-          $newmarker['winwidth'] = (variable_get('acidfree_thumb_dim', IMAGE_THUMB_SIZE)+40).'px';
-         // strtr($newmarker['label'],"'\n",'" ');
-          break;
-        case 'image':
-          $newmarker['label'] = '<a href="'.url('node/'.$n->nid).'">'.check_plain($n->title).'</a> <br>';
-          $newmarker['label'] .= image_display($n,'thumbnail');
-          break;
-        default:
-          // Allow a module (where the module name matches the node type name)
-          // to define a custom display for the google map label.
-          // For this to work with flexinode defined data types,
-          // a module called 'flexinode_#.module' in your site's module
-          // directory and add hook_gmapnodelabel($node, $location) to it.
-          // Be sure to enable your 'flexinode_#.module'.
-          if($labelresult=module_invoke(strtr($n->type,'-','_'), 'gmapnodelabel', $n, $locn)) {
-              $newmarker['label'] = strtr($labelresult, "'\n\r", '"  ');
-          } else {
-              $newmarker['label'] = strtr(theme('node',$n,true),"'\n\r",'"  ');    //make sure it all goes on one line.
-          }
-      }
-      $newmarker['point']= $locn->latitude.','.$locn->longitude;
-      $newmarker['markername']=variable_get('gmap_node_map_marker_'.$n->type, '');
-      $newmarker['tooltip']=$n->title;
-      $newmarker['link']=url('node/'.$n->nid);
-      $thismap['markers'][]=$newmarker;
+      $thismap=gmap_location_node_map($n,$thismap,false);
     }
   }
   $output .= '<p>'.gmap_draw_map($thismap);
   return $output;
 }
+
+
+/**
+ * Adds the location information from a node for a gmap.
+ *
+ * @param $n
+ * The node number to add to the map.
+ *
+ * @param $thismap
+ * A gmap var with the map that will be used as the basemap
+ *
+ * @param $single
+ * true if this is the only node being looked at (will center the map and possible add
+ * additional information.
+ *
+ * @return
+ * A gmap centred on the
+ */
+
+function gmap_location_node_map($n,$thismap,$single=false){
+
+  if (isset($n->location['latitude']) && isset($n->location['longitude'])){
+    $newmarker=array();
+    $width=0;
+
+    if (!($newmarker['text'] = theme(strtr($n->type,'-','_').'_gmapnodelabel',$n))) {
+      $newmarker['text'] = theme('gmapnodelabel',$n);
+    }
+    $newmarker['point']= $n->location['latitude'].','.$n->location['longitude'];
+    $newmarker['markername']=variable_get('gmap_node_map_marker_'.$n->type, '');
+    $newmarker['tooltip']=$n->title;
+    $newmarker['link']=url('node/'.$n->nid);
+    switch ($n->type) {
+      case 'acidfree':
+        $newmarker['winwidth'] = (variable_get('acidfree_thumb_dim', IMAGE_THUMB_SIZE)+40).'px';
+        break;
+    }
+    $thismap['markers'][]=$newmarker;
+    if ($single){
+      $thismap['center']=$n->location['latitude'].','.$n->location['longitude'];
+    }
+
+  }
+  if ($single) {
+    //do special things for certain nodes when it is the only node shown
+    switch ($n->type) {
+      case 'og':
+        $result=db_query(og_list_users_sql(), $n->nid);
+        while ($user = db_fetch_object($result)) {
+          if (isset($user->location['latitude']) && isset($user->location['longitude'])) {
+            if (user_access('user locations')) {
+              $newmarker=array();
+              $newmarker['label'] = theme('user_picture', $user);
+              $newmarker['label'] .= theme('username', $user);
+              $newmarker['point']= $n->location['latitude'].','.$n->location['longitude'];
+              $newmarker['markername']=variable_get('gmap_user_map_marker', 'drupal');
+              $thismap['markers'][]=$newmarker;
+            }
+          }
+          else {
+            $newmarker['point']= $u->latitude.', '.$u->longitude;
+            $thismap['markers'][]=$newmarker;
+          }
+        }
+        break;
+    }
+  }
+  return $thismap;
+}
+
+
 
 /**
  * Implementation of hook_settings.
@@ -165,6 +229,15 @@ function gmap_location_node_page($nn=null) {
  */
 
 function gmap_location_settings() {
+   $markerdir=variable_get('gmap_markerfiles','modules/gmap/markers');
+  // Retrieve and sort a list of available markers
+  $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
+//  $marker_images=array();
+  foreach ($marker_images as $marker) {
+    $thisfile=substr($marker->filename,strlen($markerdir)+1,-4);
+    $markers[$thisfile] = $thisfile;
+  }
+  asort($markers);
 
   $form['user']=array('#type' => 'fieldset', '#title' => t('Location settings for users'));
   $form['user']['gmap_user_map']=array('#type'=>'textfield',
@@ -178,10 +251,28 @@ function gmap_location_settings() {
                                               '#default_value'=>variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')),
                                               '#cols'=>50,
                                               '#rows'=>6 );
-  $form['user']['gmap_user_map_marker']=array('#type'=>'textfield',
+  $form['user']['gmap_user_map_marker']=array('#type'=>'select',
                                               '#title'=>t('Marker for users'),
                                               '#default_value'=>variable_get('gmap_user_map_marker', 'drupal'),
-                                              '#size'=>50);
+                                              '#options'=>$markers);
+  // Option to use a different marker for each role
+  $form['user']['roles']=array('#type'=>'fieldset',
+                               '#title'=>t('Markers per role'),
+                               '#description'=>t('Use a different marker to denote users in the following roles.'));
+
+  // Retrieve and sort list of roles, sans anonymous user
+  $roles = user_roles(TRUE);
+  asort($roles);
+
+  // Create a selection box per role
+  foreach ($roles as $rid => $role) {
+    $form['user']['roles']["gmap_role_map_marker_$rid"]=array('#type'=>'select',
+                                                              '#title'=>$role,
+                                                              '#default_value'=>variable_get("gmap_role_map_marker_$rid", variable_get('gmap_user_map_marker', 'drupal')),
+                                                              '#options'=>$markers);
+  }
+
+
   $form['node']=array('#type' => 'fieldset', '#title' => t('Location settings for nodes'));
   $form['node']['gmap_node_map']=array('#type'=>'textfield',
                                        '#title'=>t('Default node map'),
@@ -195,14 +286,13 @@ function gmap_location_settings() {
                                               '#default_value'=>variable_get('gmap_node_map_header', t('This map illustrates the locations of the nodes on this website. Each marker indicates a node associated with a specific location.')),
                                               '#cols'=>50,
                                               '#rows'=>6 );
-//change these to allow arbitrary node types
   $ntypes=node_get_types();
   foreach ($ntypes as $key => $value) {
     if (variable_get('location_'. $key, 0)) {
-      $form['node']['gmap_node_map_marker_'.$key]=array('#type'=>'textfield',
+      $form['node']['gmap_node_map_marker_'.$key]=array('#type'=>'select',
                                                         '#title'=>t('Marker for '.$value),
                                                         '#default_value'=>variable_get('gmap_node_map_marker_'.$key, ''),
-                                                        '#size'=>50);
+                                                        '#options'=>$markers);
     }
   }
   return $form;
@@ -291,64 +381,6 @@ function gmap_location_block_view($nid) {
 }
 
 
-/**
- * Adds the location information from a node for a gmap.
- *
- * @param $n
- * The node number to add to the map.
- *
- * @param $thismap
- * A gmap var with the map that will be used as the basemap
- *
- * @return
- * A gmap centred on the
- */
-
-function gmap_location_node_map($n,$thismap){
-   switch ($n->type) {
-      case 'acidfree':
-
-        if (isset($n->location['latitude']) && isset($n->location['longitude'])){
-          $label = theme_acidfree_print_thumb_photo($n);                    //<table><tr><td> </td></tr></table>
-          $label = '<div style="width:140px;">'.strtr($label,"'\n",'" ').'</div>';
-          $thismap = gmap_location_map_add_node($thismap, $n, $label);
-        }
-        break;
-      case 'image':
-         $label=image_display($n,'thumbnail');
-         $thismap = gmap_location_map_add_node($thismap, $n, $label);
-        break;
-      case 'og':
-        if (isset($n->location['latitude']) && isset($n->location['longitude'])){
-          $label = strtr(theme('node',$n,true),"'\n\r",'"  ');    //make sure it all goes on one line.
-          $thismap = gmap_location_map_add_node($thismap, $n, $label);
-
-        }
-
-        $result=db_query(og_list_users_sql(), $n->nid);
-        while ($user = db_fetch_object($result)) {
-          if (isset($user->location['latitude']) && isset($user->location['longitude'])) {
-            if (user_access('user locations')) {
-              $newmarker['label'] = theme('user_picture', $user);
-              $newmarker['label'] .= theme('username', $user);
-              $newmarker['point']= $n->location['latitude'].','.$n->location['longitude'];
-              $newmarker['markername']=variable_get('gmap_user_map_marker', 'drupal');
-            }
-          }
-          else {
-            $newmarker['point']= $u->latitude.', '.$u->longitude;
-          }
-        }
-        break;
-      default:
-        if (isset($n->location['latitude']) && isset($n->location['longitude'])) {
-          $label = strtr(theme('node',$n,true),"'\n\r",'"  ');    //make sure it all goes on one line.
-          $thismap = gmap_location_map_add_node($thismap, $n, $label);
-        }
-      }
-      return $thismap;
-}
-
 function gmap_location_map_add_node($basemap, $node, $label='') {
   if (empty($basemap['markers'])) {
     $thismap['markers']=array();
@@ -362,3 +394,32 @@ function gmap_location_map_add_node($basemap, $node, $label='') {
 }
 
 
+//Any module can create a default theme for the display of nodes of the node type by
+//creating a function theme_hook_gmapnodelabel a theme could then further specify it
+//by creating a mytheme_nodetype_gmapnodelabel or could simply create a default
+//node type by creating a mytheme_gmapnodelabel
+
+function theme_acidfree_gmapnodelabel($n) {
+  $out = strtr(theme_acidfree_print_thumb_photo($n),"'\n",'" ');                   //<table><tr><td> </td></tr></table>
+  $width=120;
+  return $out;
+}
+function theme_image_gmapnodelabel($n) {
+  $out = '<a href="'.url('node/'.$n->nid).'">'.check_plain($n->title).'</a> <br>';
+  $out .= image_display($n,'thumbnail');
+}
+function theme_gmapnodelabel($n) {
+          // Allow a module (where the module name matches the node type name)
+          // to define a custom display for the google map label.
+          // For this to work with flexinode defined data types,
+          // a module called 'flexinode_#.module' in your site's module
+          // directory and add theme_hook_gmapnodelabel($node, $location) to it.
+          // Be sure to enable your 'flexinode_#.module'.
+  return strtr(theme('node',$n,true),"'\n\r",'"  ');    //make sure it all goes on one line.
+}
+
+function theme_gmap_location_user_html($account) {
+  $returntxt = theme('user_picture', $account);
+  $returntxt .= theme('username', $account);
+  return $returntxt;
+}
