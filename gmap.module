@@ -127,7 +127,7 @@ function gmap_draw_map($gmap, $javascript='') {
     }
 
 //    $outtext .= "\n<!--\n\n".print_r($gmap)."\n\n -->\n";
-    $outtext.='<div id="'.$gmap['id'].'" style="'.$style.'"></div>
+    $outtext.='<div id="'.$gmap['id'].'" style="'.$style.'" class="gmap-map"></div>
               <script type="text/javascript">
               //<![CDATA[
               //initialize global gmap variables
