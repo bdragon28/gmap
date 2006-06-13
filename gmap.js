@@ -14,8 +14,8 @@ function gmap_init() {
   baseIcon['standard'].infoShadowAnchor = new GPoint(18, 25);
    
   baseIcon['big']=new GIcon();
-  baseIcon['big'].image='modules/gmap/markers/big/blue.png';
-  baseIcon['big'].shadow='modules/gmap/markers/big/shadow.png';
+  baseIcon['big'].image= gmapMarkerLocation + "/big/blue.png";
+  baseIcon['big'].shadow=gmapMarkerLocation + "/big/shadow.png";
   baseIcon['big'].iconsize=new GSize(30,51);
   baseIcon['big'].shadowSize=new GSize(56,51);
   baseIcon['big'].iconAnchor=new GPoint(13,34);
@@ -23,15 +23,15 @@ function gmap_init() {
   baseIcon['big'].infoShadowAnchor=new GPoint(27,37);
    
   baseIcon['small'] = new GIcon();
-  baseIcon['small'].image = "modules/gmap/markers/small/red.png";
-  baseIcon['small'].shadow = "modules/gmap/markers/small/shadow.png";
+  baseIcon['small'].image = gmapMarkerLocation + "/small/red.png";
+  baseIcon['small'].shadow = gmapMarkerLocation + "/small/shadow.png";
   baseIcon['small'].iconSize = new GSize(12, 20);
   baseIcon['small'].shadowSize = new GSize(22, 20);
   baseIcon['small'].iconAnchor = new GPoint(6, 20);
   baseIcon['small'].infoWindowAnchor = new GPoint(5, 1);
   
   baseIcon['flat'] = new GIcon();
-  baseIcon['flat'].image = "modules/gmap/markers/flat/x.png";
+  baseIcon['flat'].image = gmapMarkerLocation + "/flat/x.png";
   baseIcon['flat'].shadow = "";
   baseIcon['flat'].iconSize = new GSize(16, 16);
   baseIcon['flat'].shadowSize = new GSize(0, 0);
@@ -52,20 +52,11 @@ function createGMarker(point, htmltext, marker, tooltip, towebsite) {
     }
     var markerIcon = new GIcon(baseIcon[bicon]);
     markerIcon.image = marker;
-    if (gxmarkerjs) {
-      var returnMarker = new GxMarker(point, markerIcon, tooltip);
-    }
-    else {
-      var returnMarker = new GMarker(point, markerIcon);
-    }
+    var returnMarker = new GMarker(point, {icon: markerIcon, title: tooltip});
+
   }
   else {
-    if (gxmarkerjs) {
-      var returnMarker = new GxMarker(point,'', tooltip);
-    }
-    else {
-      var returnMarker = new GMarker(point);
-    }
+    var returnMarker = new GMarker(point, {title: tooltip});
   }
   if (!towebsite) towebsite='';
   // Show this htmltext  info window when it is clicked.
