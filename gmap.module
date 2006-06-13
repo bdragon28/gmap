@@ -135,6 +135,7 @@ function gmap_draw_map($gmap, $javascript='') {
               var mytypecontrol=null;
               var '.$gmap['id'].'=null;
               var gxmarkerjs='.$gxmarkerjs.';
+              var gmapMarkerLocation="/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'";
               var markerlink='.variable_get('gmap_on_click',0).';
               addLoadEvent(gmap_init);  
               addLoadEvent(gmap_load_'.$gmap['id'].');
@@ -213,10 +214,10 @@ function gmap_draw_map($gmap, $javascript='') {
             $i=1;
           }
           if (file_exists(variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].$i.'.png')) {
-            $mymarker=$base_url.'/'.variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].$i.'.png';
+            $mymarker=$base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].$i.'.png';
           }
           elseif (file_exists(variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png')) {
-            $mymarker=$base_url.'/'.variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png';
+            $mymarker=$base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].'.png';
           }
         }
         if (isset($item['text']) && strlen(trim($item['text']))>0) {
@@ -239,7 +240,7 @@ function gmap_draw_map($gmap, $javascript='') {
           $mytext='';
         }
         if (isset($item['tooltip'])) {
-          $tooltip='<p class="gmap-tooltip">'.check_plain($item['tooltip']).'</p>';
+          $tooltip=check_plain($item['tooltip']);
         }
         else {
           $tooltip='';
@@ -359,7 +360,7 @@ function gmap_draw_map($gmap, $javascript='') {
         $mymarker='';
         if (isset($item['markername'])){
           if (file_exists(variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png')) {
-            $mymarker=$base_url.'/'.variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png';
+            $mymarker=$base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].'.png';
           }
         }
         if (isset($item['url'])) {
@@ -746,7 +747,13 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
 }
 
 function gmap_filter_tips($delta, $format, $long = false) {
-  return t('Insert Google Map macro. <a href="%href" target="_blank" >Create a macro</a>', array('%href' => url('gmapmacro')));
+
+  if(user_access('create macro')) { // only display macro if user can create one
+    return t('Insert Google Map macro.').'<a href="'.url('gmapmacro').'" target="_blank" >'.t('Create a macro').'</a>';
+  }
+  else {
+    return t('Insert Google Map macro.');
+  }
 }
 
 function gmap_menu($may_cache) {
@@ -774,45 +781,8 @@ function gmap_menu($may_cache) {
   return $items;
 }
 
-function gmap_users_page() {
-  // get array of users for lookups.  There is probably a better way of doing this, but I'm not
-  // sure what it is.  Only necessary if user has view
- /* if (user_access('user locations')) {
-    $result=db_query('SELECT uid, name, picture FROM {users}');
-    $usernames=array();
-    while ($u=db_fetch_array($result)) {
-      $username[$u['uid']]=$u['name'];
-      $userpicture[$u['uid']]=$u['picture'];
-    }
-  } */
-  $output .='<p>'.variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
-
-
-  $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
-  $thismap = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
-  if (empty($thismap['markers'])) {
-    $thismap['markers']=array();
-  }
-  while ($u=db_fetch_object($result)) {
-    if (user_access('user locations')) {
-      $account = user_load(array('uid' => $u->oid));
-
-      $newmarker['label'] = theme('user_picture', $account);
-      $newmarker['label'] .= theme('username', $account);
-      $newmarker['point']= $u->latitude.','.$u->longitude;
-      $newmarker['markername']='drupal';
-    }
-    else {
-      $newmarker['point']= $u->latitude.', '.$u->longitude;
-    }
-    $thismap['markers'][]=$newmarker;
-  }
-  $output .= '<p>'.gmap_draw_map($thismap);
-  return $output;
-}
-
 function gmap_user($op, &$edit, &$user, $category = NULL) {
-  if (user_access('show user map')) {
+  if (module_exist('gmap_location') && user_access('show user map')) {
     switch ($op) {
       case 'categories':
         return array(array('name'=>'gmap_user', 'title'=> t('location map'),'weight'=>5));
@@ -934,7 +904,11 @@ function gmap_settings() {
   $form['defaults']=array('#type' => 'fieldset', '#title' => t('Default map settings'));
   $form['defaults']['gmap_default_width']=array('#type'=>'textfield', '#title'=>t('Default width'), '#default_value'=>GMAP_WIDTH, '#size'=>25, '#maxlength'=>6, '#description'=>t('The default width of a Google map.'));
   $form['defaults']['gmap_default_height']=array('#type'=>'textfield', '#title'=>t('Default height'), '#default_value'=>GMAP_HEIGHT, '#size'=>25, '#maxlength'=>6, '#description'=>t('The default height of a Google map.'));
-  $form['defaults']['gmap_default_latlong']=array('#type'=>'textfield', '#title'=>t('Default center'), '#default_value'=>GMAP_LONGLAT, '#size'=>50, '#maxlength'=>255, '#description'=>t('The default longitude, latitude of a Google map.'));
+  $form['defaults']['gmap_default_latlong']=array('#type'=>'textfield',
+                                                  '#title'=>t('Default center'),
+                                                  '#default_value'=>GMAP_LONGLAT,
+                                                  '#description'=>'The decimal latitude,longitude of the centre of the map.  The "." is used for decimal, and "," is used to separate latitude and longitude.',
+                                                  '#size'=>50, '#maxlength'=>255, '#description'=>t('The default longitude, latitude of a Google map.'));
   $form['defaults']['gmap_default_zoom']=array('#type'=>'select', '#title'=>t('Default zoom'), '#default_value'=>GMAP_ZOOM, '#options' => drupal_map_assoc(range(0, 17)), '#description'=>t('The default zoom level of a Google map.'));
   $form['defaults']['gmap_default_control']=array('#type'=>'select', '#title'=>t('Default control type'), '#default_value'=>GMAP_CONTROL, '#options'=>array('None'=>t('None'),'Small'=>t('Small'),'Large'=>t('Large')));
   $form['defaults']['gmap_default_type']=array('#type'=>'select', '#title'=>t('Default map type'), '#default_value'=>GMAP_TYPE, '#options'=>array('Map'=>t('Map'),'Satellite'=>t('Satellite'),'Hybrid'=>t('Hybrid')));
