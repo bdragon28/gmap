@@ -119,6 +119,28 @@ The GMap Array is an associative array with the following definitions:
       'url' - the url of the feed.
       'markername' - the marker icon to use.  same as for markers
          except that numbered markers are not supported.
+  wmss - an array of WMS services arrays.  Each WMS service array can have the
+    following elements:
+      'name' - the name of the custom map (no spaces or special chars).
+      'url' - the url of the WMS service.
+      'format' - image format to retrieve. Depends of WMS service:
+         'image/gif','image/png','image/jpeg'
+      'layers' - a comma separated list of layers advertized by WMS service
+         to show in this custom map.
+      'minresolution' - lowest zoom level of this custom map.
+      'maxresolution' - highest zoom level of this custom map.
+      'copyrights' - an array of copyrights to display. Each copyright array
+         can have the following elements:
+           'minzoom' - lowest zoom level at which this information applies.
+           'bounds' - a comma separated list of coordinates defining a
+              region to which this copyright information applies: 'S,W,N,E'
+           'text' - text of the copyright message.
+      'overlaywith' - (optional) overlay WMS layers with this Google layers:
+         'Map', 'Hybrid', 'Satellite' or 'None'(default)
+      'merczoomlevel' - (optional) zoom factor of the google map where WMS service
+         should advertize layers in Transverse Mercator projection instead
+         of WGS84 projection. See discussion of this topic here:
+         http://johndeck.blogspot.com/#112679047816546118
 
 The gmap marker is converted to the javascript to display the map using the
 function gmap_draw_map($gmap, $javascript=''), where $gmap is a map
