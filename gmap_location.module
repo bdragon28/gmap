@@ -99,6 +99,7 @@ function gmap_location_users_page() {
       $newmarker['point']= $u->latitude.','.$u->longitude;
       $newmarker['markername']=$marker;
       $newmarker['tooltip']=check_plain($account->name);
+      $locationbyuser[$u->oid] = $u->latitude.','.$u->longitude;
     }
     else {
       $newmarker['point']= $u->latitude.', '.$u->longitude;
@@ -106,6 +107,24 @@ function gmap_location_users_page() {
     }
     $thismap['markers'][]=$newmarker;
   }
+  
+  if (user_access('user locations') && function_exists('buddylist_get_buddies')) {
+    //create lines for buddies
+    if (!isset($thismap['shapes'])) {
+      $thismap['shapes']=array();
+    }
+    ksort($locationbyuser);
+    foreach ($locationbyuser as $key=>$value) {
+      $buddies= buddylist_get_buddies($key);
+      foreach ($buddies as $bkey=>$bvalue) {
+        if ($bkey > $key && isset($locationbyuser[$bkey])) {
+          $thismap['shape'][]= array('points'=>array($locationbyuser[$key],$locationbyuser[$bkey]),
+                                      'type'=>'line');
+        }
+      }
+    }
+  }
+  
   $output .= '<p>'.gmap_draw_map($thismap);
   if ($user->uid>0) {
     $output .= '<p>'.t('To add/change your location to the user map, ').l(t('edit your location'),'user/'.$user->uid.'/edit/gmap_user');
