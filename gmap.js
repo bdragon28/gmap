@@ -90,14 +90,14 @@ function gmap_geocodeaddress(thismap) {
     $("gmap-address").value,
     function(point) {
       if (!point) {
-        alert(address + " not found");
+        alert($("gmap-address").value + " not found");
       } else {
         if (thispoint) {
           thismap.removeOverlay(thispoint);
         }
-        map.setCenter(point, 13);
+        thismap.setCenter(point, 13);
         var thispoint = new GMarker(point);
-        map.addOverlay(thispoint);
+        thismap.addOverlay(thispoint);
 
      $("gmap-latitude").value=point.lat();
      $("gmap-longitude").value=point.lng();
