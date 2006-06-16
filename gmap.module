@@ -132,6 +132,7 @@ function gmap_draw_map($gmap, $javascript='') {
               <script type="text/javascript">
               //<![CDATA[
               //initialize global gmap variables
+              var  geocoder = null;
               var mycontrol=null;
               var mytypecontrol=null;
               var '.$gmap['id'].'=null;
@@ -143,6 +144,7 @@ function gmap_draw_map($gmap, $javascript='') {
            
               function gmap_load_'.$gmap['id'].'() {
                  '.$gmap['id'].' = new GMap2($("'.$gmap['id'].'"));
+                   geocoder = new GClientGeocoder();
                  ';
                  
 
@@ -699,11 +701,11 @@ function gmap_set_location($map_macro,&$lonform,&$latform) {
 
 //  $form['coordinates']=array('#type' => 'fieldset','#title' => t('Coordinates'));
   $latform['#id']='gmap-latitude';
-  $latform['#attributes']['onchange']='gmap_textchange('.$map['id'].');';
+  $latform['#attributes']=array('onchange'=>'gmap_textchange('.$map['id'].');');
   $lonform['#id']='gmap-longitude';
-  $lonform['#attributes']['onchange']='gmap_textchange('.$map['id'].');';
+  $lonform['#attributes']= array('onchange'=>'gmap_textchange('.$map['id'].');');
 
-  if ($lonform['#default_value']!=0 || $latform['#default_value']!=0) {
+ if ($lonform['#default_value']!=0 || $latform['#default_value']!=0) {
     $myjava .= '{id}.panTo(new GLatLng('.$latform['#default_value'].', '.$lonform['#default_value'].'));'."\n".
              '{id}.addOverlay(thispoint=new GMarker(new GLatLng('.$latform['#default_value'].', '.$lonform['#default_value'].')));'."\n";
   }
@@ -746,7 +748,7 @@ function _gmap_doheader(){
   theme_add_style(drupal_get_path('module','gmap'). '/gmap.css');
   drupal_add_js('misc/drupal.js');
   drupal_add_js(drupal_get_path('module','gmap'). '/gmap.js');
-  $js = '<script src="http://maps.google.com/maps?file=api&v=2&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>';
+  $js = '<script src="http://maps.google.com/maps?file=api&v=2.x&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>';
   drupal_set_html_head($js);
   if (GMAP_XMAPS) {
     drupal_add_js(variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
