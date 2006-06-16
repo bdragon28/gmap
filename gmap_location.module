@@ -732,7 +732,7 @@ function _gmap_location_map_form(&$form, &$edit, $type) {
       '#size'=>30,
       '#maxlength'=>120,
       '#id'=>'gmap-address',
-      '#attributes'=>array('onchange'=>'gmap_geocodeaddress('.$map['id'].');'),
+      '#attributes'=>array('onchange'=>'gmap_geocodeaddress('.$type.'map)'),
       '#description'=>t('The address is used by the geocoding built into Google Maps.'),
     );
   }
