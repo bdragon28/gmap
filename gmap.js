@@ -2,6 +2,7 @@
 /* $Id$ */
 
 var baseIcon=new Array();
+var geocoder = null;
  
 function gmap_init() {
   baseIcon['standard'] = new GIcon();
@@ -77,6 +78,32 @@ function createGMarker(point, htmltext, marker, tooltip, towebsite) {
 thispoint=false;
 
 function gmap_textchange(thismap) {
+  if (thispoint) {
+    thismap.removeOverlay(thispoint);
+  }
+  thismap.panTo(newpoint=new GLatLng($("gmap-latitude").value, $("gmap-longitude").value));
+  thismap.addOverlay(thispoint=new GMarker(newpoint));
+}
+
+function gmap_geocodeaddress(thismap) {
+  geocoder.getLatLng(
+    $("gmap-address").value,
+    function(point) {
+      if (!point) {
+        alert(address + " not found");
+      } else {
+        if (thispoint) {
+          thismap.removeOverlay(thispoint);
+        }
+        map.setCenter(point, 13);
+        var thispoint = new GMarker(point);
+        map.addOverlay(thispoint);
+
+     $("gmap-latitude").value=point.lat();
+     $("gmap-longitude").value=point.lng();
+      }
+    }
+  );
   if (thispoint) {
     thismap.removeOverlay(thispoint);
   }
