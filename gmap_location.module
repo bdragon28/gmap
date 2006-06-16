@@ -39,16 +39,19 @@ function gmap_location_menu($may_cache) {
   $items=array();
 
   if ($may_cache) {
-      $items[] = array('path' => 'map/users',
+    $items[] = array(
+      'path' => 'map/user',
         'type' => MENU_NORMAL_ITEM,
-        'title' => t('User locations'),
+      'title' => t('user locations'),
         'access' => user_access('show user map'),
-        'callback' => 'gmap_location_users_page');
+      'callback' => 'gmap_location_user_page'
+    );
       $items[] = array('path' => 'map/node',
         'type' => MENU_NORMAL_ITEM,
-        'title' => t('Node locations'),
+      'title' => t('node locations'),
         'access' => user_access('show node map'),
-        'callback' => 'gmap_location_node_page');
+      'callback' => 'gmap_location_node_page'
+    );
   }
 
   return $items;
@@ -59,12 +62,9 @@ function gmap_location_menu($may_cache) {
  *
  */
 
-function gmap_location_users_page() {
-  global $user, $base_url;
+function gmap_location_user_page() {
+  global $user;
   $output ='<p>'.variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
-
-  $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
-  $thismap = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
 
   // Find default marker
   $default_marker = variable_get('gmap_user_map_marker', 'drupal');
@@ -78,12 +78,13 @@ function gmap_location_users_page() {
     }
   }
 
-
+  $thismap = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
   if (empty($thismap['markers'])) {
     $thismap['markers']=array();
   }
-  while ($u=db_fetch_object($result)) {
+  $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
 
+  while ($u=db_fetch_object($result)) {
     $account = user_load(array('uid' => $u->oid));
     $dupes = array_intersect($account->roles, $roles_override);
     if (empty($dupes)) {
@@ -93,7 +94,6 @@ function gmap_location_users_page() {
       $key = key($dupes);
       $marker = variable_get("gmap_role_map_marker_$key", $default_marker);
     }
-
     if (user_access('user locations')) {
       $newmarker['label'] = theme('gmap_location_user_html',$account);
       $newmarker['point']= $u->latitude.','.$u->longitude;
@@ -118,8 +118,10 @@ function gmap_location_users_page() {
       $buddies= buddylist_get_buddies($key);
       foreach ($buddies as $bkey=>$bvalue) {
         if ($bkey > $key && isset($locationbyuser[$bkey])) {
-          $thismap['shape'][]= array('points'=>array($locationbyuser[$key],$locationbyuser[$bkey]),
-                                      'type'=>'line');
+          $thismap['shape'][]= array(
+            'points'=>array($locationbyuser[$key],$locationbyuser[$bkey]),
+            'type'=>'line'
+          );
         }
       }
     }
@@ -140,12 +142,12 @@ function gmap_location_users_page() {
  */
 
 
-function gmap_location_node_page($nn=null) {
-  if ($nn && $n=node_load($nn)){
+function gmap_location_node_page($nid=null) {
+  if ($nid && $n=node_load($nid)){
     if (node_access('view',$n)) {
       $output .='<p>'.variable_get('gmap_node_map_header', t('This map illustrates the extent of nodes of this website. '))."</p>\n";
       $thismap = gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=nodemap|center=30,0|zoom=2|width=100%|height=400px]'));
-      $thismap = gmap_location_node_map($n,$thismap);
+      $thismap = gmap_location_node_map($n,$thismap,true);
       $output .= '<p>'.gmap_draw_map($thismap);
       return $output;
     }
@@ -156,17 +158,18 @@ function gmap_location_node_page($nn=null) {
 
   $output .='<p>'.variable_get('gmap_node_map_header', t('This map illustrates the extent of nodes of this website.'))."</p>\n";
 
-  $result=db_query("SELECT * FROM {location} WHERE (longitude!=0 OR latitude !=0) AND type='node'");
+  $result=db_query("SELECT oid, longitude, latitude FROM {location} WHERE (longitude!=0 OR latitude !=0) AND type='node'");
   $thismap = gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
   if (empty($thismap['markers'])) {
     $thismap['markers']=array();
   }
   while ($locn=db_fetch_object($result)) {
-    $n=node_load(array('vid'=>$locn->oid));
+    $n=node_load($locn->oid);
     if ($n && node_access('view',$n)) {
       $thismap=gmap_location_node_map($n,$thismap,false);
     }
   }
+
   $output .= '<p>'.gmap_draw_map($thismap);
   return $output;
 }
@@ -176,7 +179,7 @@ function gmap_location_node_page($nn=null) {
  * Adds the location information from a node for a gmap.
  *
  * @param $n
- * The node number to add to the map.
+ * The node object to add to the map.
  *
  * @param $thismap
  * A gmap var with the map that will be used as the basemap
@@ -190,16 +193,18 @@ function gmap_location_node_page($nn=null) {
  */
 
 function gmap_location_node_map($n,$thismap,$single=false){
+  if ((isset($n->gmap_location_latitude) && isset($n->gmap_location_longitude)) || (isset($n->location['latitude']) && isset($n->location['longitude']))){
+    $latitude = isset($n->gmap_location_latitude) ? $n->gmap_location_latitude : $n->location['latitude'];
+    $longitude = isset($n->gmap_location_longitude) ? $n->gmap_location_longitude : $n->location['longitude'];
 
-  if (isset($n->location['latitude']) && isset($n->location['longitude'])){
     $newmarker=array();
     $width=0;
 
     if (!($newmarker['text'] = theme(strtr($n->type,'-','_').'_gmapnodelabel',$n))) {
       $newmarker['text'] = theme('gmapnodelabel',$n);
     }
-    $newmarker['point']= $n->location['latitude'].','.$n->location['longitude'];
-    $newmarker['markername']=variable_get('gmap_node_map_marker_'.$n->type, '');
+    $newmarker['point']= $latitude.','.$longitude;
+    $newmarker['markername']=variable_get('gmap_node_marker_'.$n->type, '');
     $newmarker['tooltip']=$n->title;
     $newmarker['link']=url('node/'.$n->nid);
     switch ($n->type) {
@@ -209,7 +214,7 @@ function gmap_location_node_map($n,$thismap,$single=false){
     }
     $thismap['markers'][]=$newmarker;
     if ($single){
-      $thismap['center']=$n->location['latitude'].','.$n->location['longitude'];
+      $thismap['center']=$latitude.','.$longitude;
     }
 
   }
@@ -224,7 +229,7 @@ function gmap_location_node_map($n,$thismap,$single=false){
               $newmarker=array();
               $newmarker['label'] = theme('user_picture', $user);
               $newmarker['label'] .= theme('username', $user);
-              $newmarker['point']= $n->location['latitude'].','.$n->location['longitude'];
+              $newmarker['point']= $latitude.','.$longitude;
               $newmarker['markername']=variable_get('gmap_user_map_marker', 'drupal');
               $thismap['markers'][]=$newmarker;
             }
@@ -240,8 +245,6 @@ function gmap_location_node_map($n,$thismap,$single=false){
   return $thismap;
 }
 
-
-
 /**
  * Implementation of hook_settings.
  *
@@ -251,33 +254,58 @@ function gmap_location_settings() {
    $markerdir=variable_get('gmap_markerfiles','modules/gmap/markers');
   // Retrieve and sort a list of available markers
   $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
-//  $marker_images=array();
   foreach ($marker_images as $marker) {
     $thisfile=substr($marker->filename,strlen($markerdir)+1,-4);
     $markers[$thisfile] = $thisfile;
   }
   asort($markers);
 
-  $form['user']=array('#type' => 'fieldset', '#title' => t('Location settings for users'));
-  $form['user']['gmap_user_map']=array('#type'=>'textfield',
+  $form['user'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Location settings for users'),
+  );
+  $form['user']['gmap_user'] = array(
+    '#type'=>'checkbox',
+    '#title'=>t('Profile map'),
+    '#default_value'=>variable_get('gmap_user', true),
+    '#description'=>t('Let users set/edit their location in their profile.'),
+  );
+  $form['user']['gmap_user_profile_category'] = array(
+    '#type'=>'textfield',
+    '#title'=>t('Profile category title'),
+    '#default_value'=>variable_get('gmap_user_profile_category', "Location map"),
+    '#size'=>50,
+    '#maxlength'=>50,
+    '#description'=>t('Let users set/edit their location in their profile.'),
+  );
+  $form['user']['gmap_user_map'] = array(
+    '#type'=>'textfield',
                                        '#title'=>t('Default user map'),
                                        '#default_value'=>variable_get('gmap_user_map', '[gmap |id=usermap|center=40,0|zoom=3|width=100%|height=400px]'),
                                        '#size'=>50,
                                        '#maxlength'=>500,
-                                       '#description'=>t('The gmap macro where the user information will be diplayed on.'));
-  $form['user']['gmap_user_map_header']=array('#type'=>'textarea',
+    '#description'=>t('The gmap macro where the user information will be diplayed on.'),
+  );
+  $form['user']['gmap_user_map_header'] = array(
+    '#type'=>'textarea',
                                               '#title'=>t('Text at the top of the map/users page'),
                                               '#default_value'=>variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')),
                                               '#cols'=>50,
-                                              '#rows'=>6 );
-  $form['user']['gmap_user_map_marker']=array('#type'=>'select',
+    '#rows'=>6 ,
+  );
+  $form['user']['gmap_user_map_marker'] = array(
+    '#type'=>'select',
                                               '#title'=>t('Marker for users'),
                                               '#default_value'=>variable_get('gmap_user_map_marker', 'drupal'),
-                                              '#options'=>$markers);
+    '#options'=>$markers,
+  );
+
   // Option to use a different marker for each role
-  $form['user']['roles']=array('#type'=>'fieldset',
+  $form['user']['roles'] = array(
+    '#type'=>'fieldset',
                                '#title'=>t('Markers per role'),
-                               '#description'=>t('Use a different marker to denote users in the following roles.'));
+    '#description'=>t('Use a different marker to denote users in the following roles.'),
+  );
 
   // Retrieve and sort list of roles, sans anonymous user
   $roles = user_roles(TRUE);
@@ -285,33 +313,44 @@ function gmap_location_settings() {
 
   // Create a selection box per role
   foreach ($roles as $rid => $role) {
-    $form['user']['roles']["gmap_role_map_marker_$rid"]=array('#type'=>'select',
+    $form['user']['roles']["gmap_role_map_marker_$rid"] = array(
+      '#type'=>'select',
                                                               '#title'=>$role,
                                                               '#default_value'=>variable_get("gmap_role_map_marker_$rid", variable_get('gmap_user_map_marker', 'drupal')),
-                                                              '#options'=>$markers);
+      '#options'=>$markers,
+    );
   }
 
 
-  $form['node']=array('#type' => 'fieldset', '#title' => t('Location settings for nodes'));
-  $form['node']['gmap_node_map']=array('#type'=>'textfield',
+  $form['node'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Location settings for nodes'),
+  );
+  $form['node']['gmap_node_map'] = array(
+    '#type'=>'textfield',
                                        '#title'=>t('Default node map'),
-                                       '#default_value'=>variable_get('gmap_node_map',
-                                       '[gmap |id=nodemap|center=40,0|zoom=3|width=100%|height=400px]'),
+    '#default_value'=>variable_get('gmap_node_map', '[gmap |id=nodemap|center=40,0|zoom=3|width=100%|height=400px]'),
                                        '#size'=>50,
                                        '#maxlength'=>500,
-                                       '#description'=>t('The gmap macro where the user information will be diplayed on.'));
-  $form['node']['gmap_node_map_header']=array('#type'=>'textarea',
+    '#description'=>t('The gmap macro where the user information will be diplayed on.'),
+  );
+  $form['node']['gmap_node_map_header'] = array(
+    '#type'=>'textarea',
                                               '#title'=>t('Text at the top of the map/nodes page'),
                                               '#default_value'=>variable_get('gmap_node_map_header', t('This map illustrates the locations of the nodes on this website. Each marker indicates a node associated with a specific location.')),
                                               '#cols'=>50,
-                                              '#rows'=>6 );
+    '#rows'=>6 
+  );
+
   $ntypes=node_get_types();
   foreach ($ntypes as $key => $value) {
     if (variable_get('location_'. $key, 0)) {
-      $form['node']['gmap_node_map_marker_'.$key]=array('#type'=>'select',
+      $form['node']['gmap_node_marker_'.$key]=array(
+        '#type'=>'select',
                                                         '#title'=>t('Marker for '.$value),
-                                                        '#default_value'=>variable_get('gmap_node_map_marker_'.$key, ''),
-                                                        '#options'=>$markers);
+        '#default_value'=>variable_get('gmap_node_marker_'.$key, ''),
+        '#options'=>$markers,
+      );
     }
   }
   return $form;
@@ -323,7 +362,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
   switch ($op) {
     case 'list':
       $blocks[0]['info'] = t('Location map');
-
+ //     $blocks[1]['info'] = t('Author map');  More work than I originally thought.  I will get back to this soon...
       return $blocks;
     case 'configure':
       $form = array();
@@ -346,7 +385,30 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
                                                           '#title' => t('Map Macro for '.$value),
                                                           '#size' => 60,
                                                           '#maxlength'=>500,
-                                                          '#default_value' => variable_get('gmap_location_block_macro_'.$key, ''),        );
+             '#default_value' => variable_get('gmap_location_block_macro_'.$key, ''),
+            );
+          }
+        }
+      }
+      elseif ($delta == 1) {
+         $form['gmap_location_auther_block_macro'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Map Macro'),
+          '#size' => 60,
+          '#maxlength'=>500,
+          '#description' => t('A macro to be used as a base map for the location block author.  This map will be recentered on the location, so the center is not that important.'),
+          '#default_value' =>
+            variable_get('gmap_location_author_block_macro', '[gmap |id=block0|zoom=10 |width=100% |height=200px |control=Small |type=Map] '),
+        );
+
+        $ntypes=node_get_types();
+        foreach ($ntypes as $key => $value) {
+          if (variable_get('location_'. $key, 0)) {
+            $form['gmap_location_author_block_'.$key]=array(
+                              '#type' => 'checkbox',
+                              '#title' => t('Authoer block enabled '.$value),
+                              '#default_value' => variable_get('gmap_location_author_block_'.$key, 0),
+            );
           }
         }
       }
@@ -354,11 +416,21 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
     case 'save':
       if ($delta == 0) {
         // Have Drupal save the string to the database.
-        variable_set('gmap_location_block_macro', $edit['gmap_location_block_macro']);
+        variable_set('gmap_location_author_block_macro', $edit['gmap_location_author_block_macro']);
         $ntypes=node_get_types();
         foreach ($ntypes as $key => $value) {
           if (variable_get('location_'. $key, 0)) {
             variable_set('gmap_location_block_macro_'.$key,$edit['gmap_location_block_macro_'.$key]);
+          }
+        }
+      }
+      elseif ($delta == 1) {
+        // Have Drupal save the string to the database.
+        variable_set('gmap_location_author_block_macro', $edit['gmap_location_author_block_macro']);
+        $ntypes=node_get_types();
+        foreach ($ntypes as $key => $value) {
+          if (variable_get('location_'. $key, 0)) {
+            variable_set('gmap_location_author_block_'.$key,$edit['gmap_location_author_block_'.$key]);
           }
         }
       }
@@ -376,6 +448,15 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
           list($node, $nid) = array_values(explode('/', $path));
           if ($node == 'node') {
             $block=gmap_location_block_view($nid);
+          }
+          break;
+        case 1:
+          // The subject is displayed at the top of the block. Note that it
+          // should be passed through t() for translation.
+          $path = drupal_get_normal_path($_GET['q']);
+          list($node, $nid) = array_values(explode('/', $path));
+          if ($node == 'node') {
+            $block=gmap_location_author_block_view($nid);
           }
           break;
       }
@@ -399,13 +480,32 @@ function gmap_location_block_view($nid) {
   return $block;
 }
 
+function gmap_location_author_block_view($nid) {
+  $block=array();
+/*
+  $node = node_load(array('nid' => $nid));
+  if (variable_get('gmap_location_author_block_'.$node->type)) {
+    $block['subject'] = t('Author Location');
+    load_user(array($node->author))
+    if (strlen(variable_get('gmap_location_block_macro_'.$node->type, '')) > 0) {
+      $macro=variable_get('gmap_location_block_macro_'.$node->type, '');
+    }
+    else {
+      $macro=variable_get('gmap_location_block_macro', '[gmap |id=block0|zoom=10 |width=100% |height=200px |control=Small |type=Map] ');
+    }
+    $block['content'] = gmap_draw_map(gmap_location_map_add_node( gmap_parse_macro($macro),$node));
+  }
+*/
+  return $block;
+}
+
 
 function gmap_location_map_add_node($basemap, $node, $label='') {
   if (empty($basemap['markers'])) {
     $thismap['markers']=array();
   }
   $newmarker['point']= $node->location['latitude'].','.$node->location['longitude'];
-  $newmarker['markername']=variable_get('gmap_node_map_marker_'.$node->type, '');
+  $newmarker['markername']=variable_get('gmap_node_marker_'.$node->type, '');
   $newmarker['label']=$label;
   $basemap['markers'][]=$newmarker;
   $basemap['center']= $node->location['latitude'].','.$node->location['longitude'];
@@ -441,4 +541,206 @@ function theme_gmap_location_user_html($account) {
   $returntxt = theme('user_picture', $account);
   $returntxt .= theme('username', $account);
   return $returntxt;
+}
+
+function gmap_location_user($op, &$edit, &$user, $category = NULL) {
+  if (module_exist('gmap') && variable_get('gmap_user', 0)) {
+    $object->gmap_location_latitude = $edit['gmap_location_latitude'];
+    $object->gmap_location_longitude = $edit['gmap_location_longitude'];
+    $object->oid = $user->uid;
+
+    switch ($op) {
+      case 'categories':
+        return array(array('name'=>'gmap_user', 'title'=> variable_get('gmap_user_profile_category', t('location map')),'weight'=>5));
+      case 'validate':
+        _gmap_location_validate_form($object);
+        return;
+      case 'load':
+        $res=db_query("SELECT * FROM {location} WHERE oid=%d AND type='user'",$user->uid);
+        if ($gmap_user=db_fetch_array($res)) {
+          if ($gmap_user['latitude'] !=0) $user->gmap_location_latitude=  $gmap_user['latitude'];
+          if ($gmap_user['longitude']!=0) $user->gmap_location_longitude= $gmap_user['longitude'];
+          $user->gmap_location_set=true;
+        }
+        return;
+      case 'insert':
+        _gmap_location_store_location($object, 'user', false);
+        return;
+
+      case 'update':
+        _gmap_location_store_location($object, 'user', isset($user->gmap_location_set));
+        return;
+
+      case 'delete':
+        db_query ("DELETE from {location} WHERE oid=%d AND type='user'", $user->uid);
+        return;
+
+      case 'form':
+        if($category == 'gmap_user') _gmap_location_map_form(&$form, $edit, 'user');
+
+        return  $form;
+    }
+  }
+}
+
+
+function gmap_location_form_alter($form_id, &$form) {
+  $type = $form['type']['#value'];
+  $node = $form['#node'];
+
+  if (module_exist('location')) {
+    return;
+  }
+
+  if ($form_id == $type .'_node_settings') {
+
+    $markerdir=variable_get('gmap_markerfiles','modules/gmap/markers');
+    // Retrieve and sort a list of available markers
+    $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
+    foreach ($marker_images as $marker) {
+      $thisfile=substr($marker->filename,strlen($markerdir)+1,-4);
+      $markers[$thisfile] = $thisfile;
+    }
+    asort($markers);
+
+    $form['gmap'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Google Maps'),
+        '#weight' => 0);             //0 puts at the top, 1 puts it at the bottom below the submit??
+    $form['gmap']['gmap_node_'. $type] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Allow users to add Google Maps info to this node type'),
+        '#default_value' => variable_get('gmap_node_'. $type, 0),
+        '#description' => t('The location information will be available to the google maps module, and can be shown in a block.'),
+        '#required' => FALSE,
+    );
+    $form['gmap']['gmap_node_marker_'.$type] = array(
+        '#type'=>'select',
+        '#title'=>t('Marker for this nodetype'),
+        '#default_value'=>variable_get('gmap_node_marker_'.$type, variable_get('gmap_user_map_marker', 'drupal')),
+        '#options'=>$markers,
+    );
+  }
+}
+
+/**
+ *  implementation of hook_form()
+ */
+
+function gmap_location_form(&$node, &$param) {
+  if(variable_get('gmap_node_'. $node->type, 0))
+    $edit = array();
+    $form = array();
+    _gmap_location_map_form($form, $edit, 'node');
+    return $form;
+}
+
+function gmap_location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  if(variable_get('gmap_node_'. $node->type, 0)) {
+    $object->gmap_location_latitude = $node->gmap_location_longitude;
+    $object->gmap_location_longitude = $node->gmap_location_longitude;
+    $object->oid = $node->nid;
+
+    switch ($op) {
+      case 'load':
+        $res=db_query("SELECT * FROM {location} WHERE oid=%d AND type='node'",$node->nid);
+        if ($gmap_node=db_fetch_array($res)) {
+          if ($gmap_node['latitude'] !=0) $node->gmap_location_latitude= $gmap_node['latitude'];
+          if ($gmap_node['longitude']!=0) $node->gmap_location_longitude=$gmap_node['longitude'];
+          $node->gmap_location_set=true;
+        }
+        return;
+
+      case 'validate':
+        _gmap_location_validate_form($object);
+        return;
+
+      case 'insert':
+        _gmap_location_store_location($object, 'node', false);
+        return;
+
+      case 'update':
+        _gmap_location_store_location($object, 'node', isset($node->gmap_location_set));
+        return;
+
+      case 'delete':
+        db_query ("DELETE from {location} WHERE oid=%d AND type='node'", $node->nid);
+        return;
+
+    }
+  }
+}
+
+function _gmap_location_map_form(&$form, &$edit, $type) {
+  if($type=="user") {
+    $latitude = $edit['gmap_location_latitude'];
+    $longitude = $edit['gmap_location_longitude'];
+  }
+  else {
+    $latitude = $form['#node']->gmap_location_latitude;
+    $longitude = $form['#node']->gmap_location_longitude;
+  }
+
+  $form['coordinates']=array(
+    '#type' => 'fieldset',
+    '#title' => t('Coordinates'),
+    '#weight' => 5,
+    '#collapsible' => $type!='user', 
+    '#collapsed' => false,
+  );
+  $form['coordinates']['gmap_node']=array(
+    '#type'=>'markup',
+    '#value'=>'');
+  $form['coordinates']['gmap_location_latitude']=array(
+    '#type'=>'textfield',
+    '#id'=>'gmap-latitude',
+    '#title'=>t('Latitude'),
+    '#default_value'=>$latitude,
+    '#size'=>30,
+    '#maxlength'=>120,
+    '#attributes'=>array('onchange'=>'gmap_textchange();'),
+  );
+  $form['coordinates']['gmap_location_longitude']=array(
+    '#type'=>'textfield',
+    '#title'=>t('Longitude'),
+    '#default_value'=>$longitude,
+    '#size'=>30,
+    '#maxlength'=>120,
+    '#description'=>t('The latitude and longitude will be entered here when you click on a location in the interactive map below. You can also fill in the values manually.'),
+    '#attributes'=>array('onchange'=>'gmap_textchange();'),
+  );
+  $form['coordinates']['gmap_node']['#value']= gmap_set_location(
+       variable_get('gmap_'.$type.'_map', '[gmap|id='.$type.'map|center=0,30|control=Large|type=Hybrid|zoom=16|width=100%|height=400px]'),
+       $form['coordinates']['gmap_location_longitude'],
+       $form['coordinates']['gmap_location_latitude']);
+}
+
+function _gmap_location_validate_form(&$object) {
+  if (isset($object->latitude)){
+    if (!is_numeric($object->latitude) || abs($object->latitude)>90) {
+      form_set_error('gmap_location_latitude', t('Latitude must be between -90 and 90'));
+    }
+  }
+  if (isset($object->longitude)){
+    if (!is_numeric($object->longitude) || abs($object->longitude)>180) {
+      form_set_error('gmap_location_longitude', t('Longitude must be between -180 and 180'));
+    }
+  }
+}
+
+function _gmap_location_store_location(&$object, $type, $update = false) {
+  if (isset($object->gmap_location_latitude) && isset($object->gmap_location_longitude)) {
+    if ($update) {
+      db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='%s'",  
+      $object->gmap_location_latitude,$object->gmap_location_longitude, 1,$object->oid, $type);
+    }
+    else {
+      // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
+      db_query("INSERT INTO {location} (oid, type, latitude, longitude, source) VALUES (%d, '%s', '%f', '%f', '%d')", 
+      $object->oid, $type, $object->gmap_location_latitude,$object->gmap_location_longitude, 1); 
+    }
+    unset($object->gmap_location_latitude);
+    unset($object->gmap_location_longitude);
+    unset($object->gmap_location_set);
+  }
 }
