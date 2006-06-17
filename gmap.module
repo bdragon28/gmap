@@ -682,30 +682,33 @@ function gmap_parse_macro($instring,$ver=2) {
  * Creates a map that can be interactively used to fill a form with a
  * location (latitude, longitude and zoom level)
  *
- * @param $map_macro
- * A macro to use as the base map for setting a location.
- * @param $lonform
- * A form element for the longitude to be set.  Should be an associative array in drupal form format.
- * @param $latform
- * A form element for the latitude to be set.
- * @param $zoomform
- * A form element for the zoom to be set.
+ * @param $map
+ * Either a macro to use as the base map for setting a location, or an already set map associative array.
+ * @param $form
+ * A formset associative array.  Cannot be more than one deep.
+ * @param $fields
+ * An associative array for the field names.  'latitude', 'longitude'=>name of respective array, 'address' is optional.
  * @return
  * A string with the google map code to be inserted onto the page.
  *
  */
-function gmap_set_location($map_macro,&$lonform,&$latform) {
-//&$zoomform=NULL) {
-  $map=gmap_parse_macro($map_macro);
+function gmap_set_location($map,&$form,$fields) {
+
+  if (!is_array($map)){
+    $map=gmap_parse_macro($map);
+  }
   $zoom=$map['zoom'];
 
-//  $form['coordinates']=array('#type' => 'fieldset','#title' => t('Coordinates'));
-  $latform['#id']='gmap-latitude';
-  $latform['#attributes']=array('onchange'=>'gmap_textchange('.$map['id'].');');
-  $lonform['#id']='gmap-longitude';
-  $lonform['#attributes']= array('onchange'=>'gmap_textchange('.$map['id'].');');
+  $form[$fields['latitude']]['#id']='gmap-latitude';
+  $form[$fields['latitude']]['#attributes']=array('onchange'=>'gmap_textchange('.$map['id'].');');
+  $form[$fields['longitude']]['#id']='gmap-longitude';
+  $form[$fields['longitude']]['#attributes']= array('onchange'=>'gmap_textchange('.$map['id'].');');
+  if (isset($fields['address'])) {
+    $form[$fields['address']]['#id']='gmap-address';
+    $form[$fields['address']]['#attributes']= array('onchange'=>'gmap_geocodeaddress('.$map['id'].', this.value);');
+  }
 
- if ($lonform['#default_value']!=0 || $latform['#default_value']!=0) {
+  if ($lonform['#default_value']!=0 || $latform['#default_value']!=0) {
     $myjava .= '{id}.panTo(new GLatLng('.$latform['#default_value'].', '.$lonform['#default_value'].'));'."\n".
              '{id}.addOverlay(thispoint=new GMarker(new GLatLng('.$latform['#default_value'].', '.$lonform['#default_value'].')));'."\n";
   }
@@ -731,7 +734,7 @@ function gmap_set_location($map_macro,&$lonform,&$latform) {
                     thispoint=null;
                   }
                 });
-                GEvent.addListener({id}, "dragend", function() {{id}.checkResize();} )
+               // GEvent.addListener({id}, "dragend", function() {{id}.checkResize();} )
               ';
   $out = gmap_draw_map($map,$myjava);
   
