@@ -85,12 +85,12 @@ function gmap_textchange(thismap) {
   thismap.addOverlay(thispoint=new GMarker(newpoint));
 }
 
-function gmap_geocodeaddress(thismap) {
+function gmap_geocodeaddress(thismap, address) {
   geocoder.getLatLng(
-    $("gmap-address").value,
+    address,
     function(point) {
       if (!point) {
-        alert($("gmap-address").value + " not found");
+        alert(address + " not found");
       } else {
         if (thispoint) {
           thismap.removeOverlay(thispoint);
@@ -99,8 +99,8 @@ function gmap_geocodeaddress(thismap) {
         var thispoint = new GMarker(point);
         thismap.addOverlay(thispoint);
 
-     $("gmap-latitude").value=point.lat();
-     $("gmap-longitude").value=point.lng();
+       $("gmap-latitude").value=point.lat();
+       $("gmap-longitude").value=point.lng();
       }
     }
   );
