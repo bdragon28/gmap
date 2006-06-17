@@ -726,7 +726,7 @@ function _gmap_location_map_form(&$form, &$edit, $type) {
     '#attributes'=>array('onchange'=>'gmap_textchange();'),
   );
   $fields=array('longitude'=>'gmap_location_longitude',
-                             'latitude'=>'gmap_location_latitude',)
+                             'latitude'=>'gmap_location_latitude',);
   if (variable_get('gmap_geocode', 1)) {
      $form['coordinates']['gmap_location_address']=array(
       '#type'=>'textfield',
