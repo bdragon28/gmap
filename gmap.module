@@ -866,12 +866,12 @@ function gmap_menu($may_cache) {
   $items=array();
 
   if ($may_cache) {
-    $items[] = array(
+/*    $items[] = array(
       'path' => 'map',
       'type' => MENU_ITEM_GROUPING,
       'title' => t('google maps'),
       'access' => user_access('create macro')||user_access('show user map')||user_access('show node map'),
-    );
+    );  */
     $items[] = array(
       'path' => 'map/macro',
       'type' => MENU_NORMAL_ITEM,
@@ -1136,6 +1136,26 @@ function gmap_views_style_plugins() {
       'needs_fields' => true,
       'validate' => 'views_ui_plugin_validate_list',
   ));
+}
+
+function gmap_get_markers(){
+
+  static $markers='';
+  if (!is_array($markers)){
+    $markers=array();
+    $markerdir=variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap').'/markers');
+    // Retrieve and sort a list of available markers
+    $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
+    foreach ($marker_images as $marker) {
+      preg_match('/markers\/([a-z]*\/*[a-zA-Z_-]+)\d*\.png/',$marker->filename,$matches);
+      if ($matches) {
+        //$thisfile=substr($marker->filename,strlen($markerdir)+1,-4);
+        $markers[$matches[1]] = $matches[1];
+      }
+    }
+    asort($markers);
+  }
+  return $markers;
 }
 
 /**
