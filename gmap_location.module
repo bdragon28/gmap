@@ -251,15 +251,9 @@ function gmap_location_node_map($n,$thismap,$single=false){
  */
 
 function gmap_location_settings() {
-   $markerdir=variable_get('gmap_markerfiles','modules/gmap/markers');
-  // Retrieve and sort a list of available markers
-  $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
-  foreach ($marker_images as $marker) {
-    $thisfile=substr($marker->filename,strlen($markerdir)+1,-4);
-    $markers[$thisfile] = $thisfile;
-  }
-  asort($markers);
 
+  $markers=gmap_get_markers();
+  
   $form['geocoding'] = array(
     '#type' => 'fieldset',
     '#title' => t('Geocode Locations'),
@@ -607,14 +601,7 @@ function gmap_location_form_alter($form_id, &$form) {
 
   switch ($form_id) {
     case $type .'_node_settings':
-      $markerdir=variable_get('gmap_markerfiles','modules/gmap/markers');
-      // Retrieve and sort a list of available markers
-      $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
-      foreach ($marker_images as $marker) {
-        $thisfile=substr($marker->filename,strlen($markerdir)+1,-4);
-        $markers[$thisfile] = $thisfile;
-      }
-      asort($markers);
+      $markers=gmap_get_markers();
 
       $form['gmap'] = array(
         '#type' => 'fieldset',
