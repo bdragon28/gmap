@@ -470,10 +470,22 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
   }
 }
 
+function _gmap_location_getlatlon($node) {
+  if (isset($node->gmap_location_latitude) && isset($node->gmap_location_longitude)) {
+    return array('latitude'=>$node->gmap_location_latitude, 'longitude'=>$node->gmap_location_longitude);
+  }
+  elseif (isset( $node->location['latitude']) &&  isset($node->location['longitude'])) {
+    return array('latitude'=>$node->location['latitude'], 'longitude'=>$node->location['longitude']);
+  }
+  else {
+    return false;
+  }
+}
+
 function gmap_location_block_view($nid) {
   $block=array();
   $node = node_load(array('nid' => $nid));
-  if (isset( $node->location['latitude']) &&  isset($node->location['longitude'])) {
+  if (_gmap_location_getlatlon($node)) {
     $block['subject'] = t('Location');
     if (strlen(variable_get('gmap_location_block_macro_'.$node->type, '')) > 0) {
       $macro=variable_get('gmap_location_block_macro_'.$node->type, '');
@@ -507,14 +519,15 @@ function gmap_location_author_block_view($nid) {
 
 
 function gmap_location_map_add_node($basemap, $node, $label='') {
+  $location=_gmap_location_getlatlon($node);
   if (empty($basemap['markers'])) {
     $thismap['markers']=array();
   }
-  $newmarker['point']= $node->location['latitude'].','.$node->location['longitude'];
+  $newmarker['point']= $location['latitude'].','.$location['longitude'];
   $newmarker['markername']=variable_get('gmap_node_marker_'.$node->type, '');
   $newmarker['label']=$label;
   $basemap['markers'][]=$newmarker;
-  $basemap['center']= $node->location['latitude'].','.$node->location['longitude'];
+  $basemap['center']= $location['latitude'].','.$location['longitude'];
   return $basemap;
 }
 
@@ -640,7 +653,7 @@ function gmap_location_form(&$node, &$param) {
 
 function gmap_location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   if(variable_get('gmap_node_'. $node->type, 0)) {
-    $object->gmap_location_latitude = $node->gmap_location_longitude;
+    $object->gmap_location_latitude = $node->gmap_location_latitude;
     $object->gmap_location_longitude = $node->gmap_location_longitude;
     $object->oid = $node->nid;
 
@@ -748,12 +761,13 @@ function _gmap_location_store_location(&$object, $type, $update = false) {
     if ($update) {
       db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='%s'",  
       $object->gmap_location_latitude,$object->gmap_location_longitude, 1,$object->oid, $type);
+
     }
     else {
       // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
       db_query("INSERT INTO {location} (oid, type, latitude, longitude, source) VALUES (%d, '%s', '%f', '%f', '%d')", 
       $object->oid, $type, $object->gmap_location_latitude,$object->gmap_location_longitude, 1); 
-    }
+          }
     unset($object->gmap_location_latitude);
     unset($object->gmap_location_longitude);
     unset($object->gmap_location_set);
