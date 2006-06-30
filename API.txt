@@ -85,6 +85,8 @@ The GMap Array is an associative array with the following definitions:
   align - the alignment of the map 'right', 'left' or 'center'
   control - the control shown on the map 'Large', 'Small', or 'None'
   tcontrol - whether the type control is on the map or not: 'off' or 'on'
+  scontrol - whether the scale control is on the map or not: 'off' or 'on'
+  ocontrol - the 'width,height' of the overview map control
   type - 'Map', 'Hybrid' or 'Satellite'
   drag - 'yes' or 'no' map is draggable.  Default is 'yes'
   markers - an array of marker arrays.  Each marker array is an associative
