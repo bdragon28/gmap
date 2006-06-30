@@ -63,6 +63,8 @@ function gmap_perm() {
  *  align - the alignment of the map 'right', 'left' or 'center'
  *  control - the control shown on the map 'Large', 'Small', or 'None'
  *  tcontrol - whether the type control is on the map or not: 'off' or 'on'
+ *  scontrol - whether the scale control is on the map or not: 'off' or 'on'
+ *  ocontrol - width and height of the overview control map: 'width,height'
  *  type - 'Map', 'Hybrid' or 'Satellite'
  *  drag - 'yes' or 'no' map is draggable.  Default is 'yes'
  *  markers - an array of associative arrays for the markers.
@@ -102,6 +104,8 @@ function gmap_draw_map($gmap, $javascript='') {
     (!isset($gmap['control'])) ? $gmap['control']=GMAP_CONTROL:NULL;
     (!isset($gmap['type'])) ? $gmap['type']=GMAP_TYPE:NULL;
     (!isset($gmap['tcontrol'])) ? $gmap['tcontrol']='off':NULL;
+    (!isset($gmap['scontrol'])) ? $gmap['scontrol']='off':NULL;
+//    (!isset($gmap['ocontrol'])) ? $gmap['ocontrol']='off':NULL;
     (!isset($gmap['drag'])) ? $gmap['drag']='yes':NULL;
 
     if (!isset($gmap['center'])&& isset($gmap['latlong'])){
@@ -204,9 +208,20 @@ function gmap_draw_map($gmap, $javascript='') {
                       $outtext.= "var l_".$map_name."1=[]; \n                 ";
             }
           }
-        $outtext.= 'var l_'.$map_name.'2=[t_'.$map_name.'];
-                 var l_'.$map_name.'=l_'.$map_name.'2.concat(l_'.$map_name.'1);
-                 var m_'.$map_name.' = new GMapType(l_'.$map_name.', G_SATELLITE_MAP.getProjection(), "'.$item['name'].'", G_SATELLITE_MAP);
+        $outtext.= 'var l_'.$map_name.'2=[t_'.$map_name.'];';
+
+            switch (strtolower($item['overlaywith'])) {
+              case 'hybrid':
+              $outtext.= '
+                 var l_'.$map_name.'=l_'.$map_name.'2.concat(l_'.$map_name.'1);';
+                break;
+              default:
+              $outtext.= '
+                 var l_'.$map_name.'=l_'.$map_name.'1.concat(l_'.$map_name.'2);';
+            }
+
+        $outtext.= '                 
+                 var m_'.$map_name.' = new GMapType(l_'.$map_name.', G_SATELLITE_MAP.getProjection(), "'.$item['name'].'", G_SATELLITE_MAP); 
                  '.$gmap['id'].'.addMapType(m_'.$map_name.');
                  ';
       }
@@ -235,6 +250,17 @@ function gmap_draw_map($gmap, $javascript='') {
     if (strtolower($gmap['tcontrol'])=='on' || strtolower($gmap['tcontrol'])=='yes') {
       $outtext .= $gmap['id'].'.addControl(mytypecontrol=new GMapTypeControl());
                 ';
+    }
+    if (strtolower($gmap['scontrol'])=='on' || strtolower($gmap['scontrol'])=='yes') {
+      $outtext .= $gmap['id'].'.addControl(myscalecontrol=new GScaleControl());
+                ';
+    }
+    if (isset($gmap['ocontrol']) && strlen($gmap['ocontrol']) > 0) {
+      $osize = explode(",", $gmap['ocontrol']);
+      if (intval($osize[0]) > 0 and intval($osize[1]) > 0) {
+        $outtext .= $gmap['id'].'.addControl(myovcontrol=new GOverviewMapControl(new GSize('.$osize[0].','.$osize[1].')));
+                ';
+      }
     }
 
     switch (strtolower($gmap['type'])) {
