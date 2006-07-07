@@ -64,6 +64,8 @@ function gmap_location_menu($may_cache) {
 
 function gmap_location_user_page() {
   global $user;
+  $locationbyuser=array();
+
   $output ='<p>'.variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
 
   // Find default marker
@@ -108,7 +110,7 @@ function gmap_location_user_page() {
     $thismap['markers'][]=$newmarker;
   }
   
-  if (user_access('user locations') && function_exists('buddylist_get_buddies')) {
+  if (user_access('user locations') && function_exists('buddylist_get_buddies') && count($locationbyuser)>0) {
     //create lines for buddies
     if (!isset($thismap['shapes'])) {
       $thismap['shapes']=array();
@@ -596,7 +598,7 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
         return;
 
       case 'form':
-        if($category == 'gmap_user') _gmap_location_map_form(&$form, $edit, 'user');
+        if($category == 'gmap_user') _gmap_location_map_form($form, $edit, 'user');
 
         return  $form;
     }
@@ -637,7 +639,7 @@ function gmap_location_form_alter($form_id, &$form) {
     case $type .'_node_form':
       if(variable_get('gmap_node_'. $type, 0)) {
         $edit = array();
-        _gmap_location_map_form(&$form, $edit, 'node');
+        _gmap_location_map_form($form, $edit, 'node');
       }
       break;
   }
@@ -735,6 +737,8 @@ function _gmap_location_map_form(&$form, &$edit, $type) {
       '#size'=>30,
       '#maxlength'=>120,
       '#id'=>'gmap-address',
+      '#description'=>t('The address to be found on the map.  Enter an address and then hit "TAB" and the current location will be updated.  Please note that this address is not saved for the node, it is only used for finding a location.'),
+
      );
      $fields['address']='gmap_location_address';
   }
