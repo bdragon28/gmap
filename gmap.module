@@ -27,6 +27,8 @@ define ('GMAP_XMAPS',0); //xmaps not currently compatible with v2 of google maps
 define('GMAP_XMAPS_SCRIPT', variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
 define('GMAP_CLUSTER', variable_get('gmap_cluster',0));
 
+define('GMAP_API_V', '2.55a');
+
 /**
  * Implementation of hook_help.
  *
@@ -777,7 +779,7 @@ function _gmap_doheader(){
   theme_add_style(drupal_get_path('module','gmap'). '/gmap.css');
   drupal_add_js('misc/drupal.js');
   drupal_add_js(drupal_get_path('module','gmap'). '/gmap.js');
-  $js = '<script src="http://maps.google.com/maps?file=api&v=2.x&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>';
+  $js = '<script src="http://maps.google.com/maps?file=api&v='.GMAP_API_V.'&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>';
   drupal_set_html_head($js);
   if (GMAP_XMAPS) {
     drupal_add_js(variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
