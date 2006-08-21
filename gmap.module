@@ -101,6 +101,7 @@ function gmap_draw_map($gmap, $javascript='') {
     (!isset($gmap['width'])) ? $gmap['width']=GMAP_WIDTH: NULL;
     (!isset($gmap['height'])) ? $gmap['height']=GMAP_HEIGHT:NULL;
     (!isset($gmap['zoom'])) ? $gmap['zoom']=GMAP_ZOOM:NULL;
+    (!isset($gmap['autozoom'])) ? $gmap['autozoom']=false:NULL;
     (!isset($gmap['align'])) ? $gmap['align']='':NULL;
     (!isset($gmap['id'])) ? $gmap['id']='map':NULL;
     (!isset($gmap['control'])) ? $gmap['control']=GMAP_CONTROL:NULL;
@@ -145,6 +146,7 @@ function gmap_draw_map($gmap, $javascript='') {
               var gxmarkerjs='.$gxmarkerjs.';
               var gmapMarkerLocation="/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'";
               var markerlink='.variable_get('gmap_on_click',0).';
+              var bounds = new GLatLngBounds();
               addLoadEvent(gmap_init);  
               addLoadEvent(gmap_load_'.$gmap['id'].');
            
@@ -192,8 +194,13 @@ function gmap_draw_map($gmap, $javascript='') {
                  t_'.$map_name.'.myBaseURL=\''.$item['url'].'\';
                  t_'.$map_name.'.myLayers=\''.$item['layers'].'\';
                  t_'.$map_name.'.myFormat=\''.$item['format'].'\';
+                 t_'.$map_name.'.myMapname=\''.$gmap['id'].'\';
                  t_'.$map_name.'.getTileUrl=CustomGetTileUrl;
                  ';
+          if(isset($item['opacity'])){
+            $outtext.= "t_".$map_name.".myOpacity=".$item['opacity'].";\n                 \n";
+            $outtext.= "t_".$map_name.".getOpacity=customOpacity;\n                 \n";
+          }
           if(isset($item['overlaywith'])){
             switch (strtolower($item['overlaywith'])) {
               case 'map':
@@ -317,10 +324,10 @@ function gmap_draw_map($gmap, $javascript='') {
             $lastmarker=$item['markername'];
             $i=1;
           }
-          if (file_exists(variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].$i.'.png')) {
+          if (file_exists(variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].$i.'.png')) {
             $mymarker=$base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].$i.'.png';
           }
-          elseif (file_exists(variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png')) {
+          elseif (file_exists(variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].'.png')) {
             $mymarker=$base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].'.png';
           }
         }
@@ -361,8 +368,18 @@ function gmap_draw_map($gmap, $javascript='') {
         }
         else {
           $outtext .=$gmap['id'].'.addOverlay(createGMarker(new GLatLng('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."','$tooltip','$link'));\n";
+          if($gmap['autozoom']){
+            $outtext .='bounds.extend(new GLatLng('.$item['point'].'));'."\n";
+          }
         }
       }
+    }
+    if ($gmap['autozoom']){
+      $outtext .= 'var center_lat = (bounds.getNorthEast().lat() + bounds.getSouthWest().lat()) / 2.0;
+                   var center_lng = (bounds.getNorthEast().lng() + bounds.getSouthWest().lng()) / 2.0;
+                   var center = new GLatLng(center_lat,center_lng);
+                   var zoom = '.$gmap['id'].'.getBoundsZoomLevel(bounds);
+                   '.$gmap['id'].'.setCenter(center,zoom);';
     }
     if (isset($gmap['shape']) && !variable_get('gmap_xmaps',0)) {
       //if xmaps is not enabled then just show the lines using straight google maps.
@@ -463,7 +480,7 @@ function gmap_draw_map($gmap, $javascript='') {
       foreach ($gmap['feeds'] as $item) {
         $mymarker='';
         if (isset($item['markername'])){
-          if (file_exists(variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png')) {
+          if (file_exists(variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].'.png')) {
             $mymarker=$base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].'.png';
           }
         }
@@ -626,7 +643,7 @@ function gmap_parse_macro($instring,$ver=2) {
         $ttt = explode('+',$t[1]);
         for ($i =0; $i<count($ttt); $i++) {
           unset($tt);
-          list($tt['name'],$tt['url'],$tt['format'],$tt['layers'],$tt['minresolution'],$tt['maxresolution'],$tt['copyrights'],$tt['overlaywith'],$tt['merczoomlevel'])=explode('::',$ttt[$i]);
+          list($tt['name'],$tt['url'],$tt['format'],$tt['layers'],$tt['minresolution'],$tt['maxresolution'],$tt['copyrights'],$tt['overlaywith'],$tt['merczoomlevel'],$tt['opacity'])=explode('::',$ttt[$i]);
           $crr = explode('/',$tt['copyrights']);
           unset($tt['copyrights']);
           for ($k =0; $k<count($crr); $k++) {
@@ -779,7 +796,7 @@ function _gmap_doheader(){
   theme_add_style(drupal_get_path('module','gmap'). '/gmap.css');
   drupal_add_js('misc/drupal.js');
   drupal_add_js(drupal_get_path('module','gmap'). '/gmap.js');
-  $js = '<script src="http://maps.google.com/maps?file=api&v='.GMAP_API_V.'&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>';
+  $js = '<script src="http://maps.google.com/maps?file=api&amp;v='.GMAP_API_V.'&amp;key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>';
   drupal_set_html_head($js);
   if (GMAP_XMAPS) {
     drupal_add_js(variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
@@ -797,10 +814,12 @@ function _gmap_doheader(){
       drupal_add_js('misc/wms-gs.js');
     } elseif (file_exists('misc/wms236.js')) {
       drupal_add_js('misc/wms236.js');
+    } elseif (file_exists('misc/wms-gs-1_0_1.js')) {
+      drupal_add_js('misc/wms-gs-1_0_1.js');
     } elseif (file_exists('misc/wms-gs-1_0_0.js')) {
       drupal_add_js('misc/wms-gs-1_0_0.js');
     } else {
-      drupal_add_js('http://dist.codehaus.org/geoserver/gmaps-geoserver_scripts/wms-gs-1_0_0.js');
+      drupal_add_js('http://dist.codehaus.org/geoserver/gmaps-geoserver_scripts/wms-gs-1_0_1.js');
     }
   }
 
@@ -883,7 +902,7 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
 function gmap_filter_tips($delta, $format, $long = false) {
 
   if(user_access('create macro')) { // only display macro if user can create one
-    return t('Insert Google Map macro.').'<a href="'.url('gmapmacro').'" target="_blank" >'.t('Create a macro').'</a>';
+    return t('Insert Google Map macro.').'<a href="'.url('map/macro').'" target="_blank" >'.t('Create a macro').'</a>';
   }
   else {
     return t('Insert Google Map macro.');
@@ -903,7 +922,7 @@ function gmap_menu($may_cache) {
     $items[] = array(
       'path' => 'map/macro',
       'type' => MENU_NORMAL_ITEM,
-      'title' => t('build a macro'),
+      'title' => t('build a GMap macro'),
       'access' => user_access('create macro'),
       'callback' => 'gmap_macro_page',
     );
@@ -1066,7 +1085,10 @@ function gmap_macro_form() {
     '#theme' => 'gmap_macro',
   );
   $linecolors = array(GMAP_LINECOLOR1, GMAP_LINECOLOR2, GMAP_LINECOLOR3); 
-  $form['macroform']['mapdiv']=array('#type'=>'markup','#value'=>'<div id="map" style="width: '.GMAP_WIDTH.'; height: '.GMAP_HEIGHT.';"></div>');
+  $form['macroform']['mapdiv'] = array(
+    '#type'   => 'markup',
+    '#value'  => '<div id="map" style="width: '.GMAP_WIDTH.'; height: '.GMAP_HEIGHT.';" class="gmap-map"></div>'
+  );
   $form['macroform']['javascript'] = array(
     '#value' => drupal_call_js('gmap_set_line_colors', $linecolors),
   );
