@@ -143,6 +143,8 @@ The GMap Array is an associative array with the following definitions:
          should advertize layers in Transverse Mercator projection instead
          of WGS84 projection. See discussion of this topic here:
          http://johndeck.blogspot.com/#112679047816546118
+      'opacity' - (optional) Opacity level for this tile from 0.0 (transparent)
+         to 1.0 (opaque)
 
 The gmap marker is converted to the javascript to display the map using the
 function gmap_draw_map($gmap, $javascript=''), where $gmap is a map

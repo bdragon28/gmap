@@ -54,7 +54,7 @@ Instructions
 Macro
 -----
 
-A gmap macro can be created on the gmapmacro page and the text can then be
+A gmap macro can be created on the map/macro page and the text can then be
 copied and pasted into any node where the gmap filter is enabled.
 
 Default settings will be the initial settings and will be used for any
@@ -120,7 +120,7 @@ Demo
 ----
 
 For a few pages that show some of the items mentioned above see:
-http://www.webgeer.com/gmapmacro
+http://www.webgeer.com/map/macro
 http://www.webgeer.com/gmapdemo
 http://www.webgeer.com/map/users
 
