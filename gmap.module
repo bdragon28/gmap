@@ -1213,20 +1213,21 @@ function gmap_get_markers(){
  */
 function theme_views_view_gmap($view, $nodes) {
   $fields = _views_get_fields();
+  $markers = array();
   foreach ($nodes as $node) {
-    $node_data = node_load(array("nid"=>$node->nid));
+    $node_data = node_load(array('nid'=>$node->nid));
     $location = $node_data->location;
-    if (strlen($location['lat'])>0 && strlen($location['lon']>0)) {
-      $newmarker['label'] = '';
+    if (($location['lat']) && ($location['lon'])) {
+      $marker_label = '';
       foreach ($view->field as $field) {
-        $newmarker['label'] .= "<p>" . views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node) . "</p>";
+        $marker_label .= "<p>" . views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node) . "</p>";
       }
-      $newmarker['point']= $location['lat'] . ',' . $location['lon'];
-      $newmarker['markername']='drupal_view';
-      $thismap['markers'][]= $newmarker;
+      $markers[] = array('markername'=>'view',
+                         'label' => $marker_label,
+                         'point' =>$location['lat'] . ',' . $location['lon']);
     }
   }
+  $thismap = array('id' => 'view_gmap', 'markers' => $markers);
   $output .= gmap_draw_map($thismap);
   return $output;
 }
-
