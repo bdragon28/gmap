@@ -114,32 +114,51 @@ function gmap_geocodeaddress(thismap, address) {
 function createMarkerFromRSS(item,icon) {
   var title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
 
-//  var description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue;
+  var description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue;
   var link = item.getElementsByTagName("link")[0].childNodes[0].nodeValue;
-//  alert('Link: ' +link);
-  // namespaces are handled by spec in moz, not in ie  -- Looking for a better more universal parsing routine.
+
+  //SC Good practice is not to have to check for which browser - so just use specified NS in all cases
   if (navigator.userAgent.toLowerCase().indexOf("msie") < 0) {
-    // Is there a geo:lat defined?
-    if (item.getElementsByTagNameNS("http://www.w3.org/2003/01/geo/wgs84_pos#","lat").length>0) {
-      item.getElementsByTagNameNS("http://www.w3.org/2003/01/geo/wgs84_pos#","lat")[0].normalize();
-      // Is there a value for geo:lat
-      if (item.getElementsByTagNameNS("http://www.w3.org/2003/01/geo/wgs84_pos#","lat")[0].hasChildNodes()) {
-        // Then there probably is a geo:long too
-        var lat = item.getElementsByTagNameNS("http://www.w3.org/2003/01/geo/wgs84_pos#","lat")[0].childNodes[0].nodeValue;
-        var lng = item.getElementsByTagNameNS("http://www.w3.org/2003/01/geo/wgs84_pos#","long")[0].childNodes[0].nodeValue;
+    //SC   Non IE specific code (uses spec in MZ)
+    if (item.getElementsByTagName("lat").length>0) {
+      item.getElementsByTagName("lat")[0].normalize();
+      if (item.getElementsByTagName("lat")[0].hasChildNodes()) {
+        var lat = item.getElementsByTagName("lat")[0].childNodes[0].nodeValue;
+        var lng = item.getElementsByTagName("long")[0].childNodes[0].nodeValue;
+      }
+    } else {
+          if (item.getElementsByTagName("latitude").length>0) {
+        item.getElementsByTagName("latitude")[0].normalize();
+        if (item.getElementsByTagName("latitude")[0].hasChildNodes()) {
+          var lat = item.getElementsByTagName("latitude")[0].childNodes[0].nodeValue;
+          var lng = item.getElementsByTagName("longitude")[0].childNodes[0].nodeValue;
+        }
       }
     }
   } else {
-    var lat = item.getElementsByTagName("geo:lat")[0].childNodes[0].nodeValue;
-    if (lat == undefined) {
-      lat = item.getElementsByTagName("icbm:lat")[0].childNodes[0].nodeValue;
-    }
-    var lng = item.getElementsByTagName("geo:long")[0].childNodes[0].nodeValue;
-    if (lng == undefined) {
-      lng = item.getElementsByTagName("icbm:long")[0].childNodes[0].nodeValue;
+//SC  IE specific code - has to have specified NS in tagname wont work in MZ code
+//SC  When checking for presence or NULL - IE considers .length attribute false
+//SC   used active check like hasChildNodes
+    if (null != item.getElementsByTagName("geourl:latitude")) {
+//SC  The normalise function is not available (I think?) to IE so needs to be extracted
+      var lat = item.getElementsByTagName("geourl:latitude")[0].childNodes[0].nodeValue;
+      var lng = item.getElementsByTagName("geourl:longitude")[0].childNodes[0].nodeValue;
+    } else {
+      if (null != item.getElementsByTagName("icbm:latitude")) {
+        var lat = item.getElementsByTagName("icbm:latitude")[0].childNodes[0].nodeValue;
+        var lng = item.getElementsByTagName("icbm:longitude")[0].childNodes[0].nodeValue;
+      } else {
+        if (null != item.getElementsByTagName("geo:lat")) {
+          //SC Be aware that with responseText it is likely that corrupted tags will
+          // get through and you end up with badly formed numbers. As I suspect can happen here. 
+          // thats why I left the geo tag til last - as that is still up in the air.
+          var lat = item.getElementsByTagName("geo:lat")[0].childNodes[0].nodeValue;
+          var lng = item.getElementsByTagName("geo:long")[0].childNodes[0].nodeValue;     
+        }
+      }
     }
   }
-  //alert('Lat: '+lat);
+//SC  Finally we have it all to go ahead - we could concatenate HTML from description later.
   var point = new GLatLng(parseFloat(lat), parseFloat(lng));
   var html = "<a href=\"" + link + "\">" + title + "</a>";
   var marker=createGMarker(point, html, icon, title, link);
@@ -153,10 +172,14 @@ function parseGeoRSS(map, rssurl,icon) {
   request.open("GET", rssurl, true);
   request.onreadystatechange = function() {
     if (request.readyState == 4) {
-      var xmlDoc = request.responseXML;
-      var items = xmlDoc.documentElement.getElementsByTagName("item");
+//SC    var xmlDoc = request.responseXML;       IE does not respond to responseXML if not good
+//SC                                              Google suggest their own interface for this
+      var xmlDoc = GXml.parse(request.responseText);
+//SC    var items = xmlDoc.documentElement.getElementsByTagName("item");    IE considers the
+//SC                                                                        documentElement false
+      var items = xmlDoc.getElementsByTagName("item");    
       for (var i = 0; i < items.length; i++) {
-
+   
         var marker = createMarkerFromRSS(items[i], icon);
         map.addOverlay(marker);
       }
