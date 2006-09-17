@@ -166,7 +166,7 @@ function gmap_location_node_page($nid=null) {
     $thismap['markers']=array();
   }
   while ($locn=db_fetch_object($result)) {
-    $n=node_load($locn->oid);
+    $n=node_load(array('vid'=>$locn->oid));
     if ($n && node_access('view',$n)) {
       $thismap=gmap_location_node_map($n,$thismap,false);
     }
@@ -657,11 +657,11 @@ function gmap_location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   if(variable_get('gmap_node_'. $node->type, 0)) {
     $object->gmap_location_latitude = $node->gmap_location_latitude;
     $object->gmap_location_longitude = $node->gmap_location_longitude;
-    $object->oid = $node->nid;
+    $object->oid = $node->vid;
 
     switch ($op) {
       case 'load':
-        $res=db_query("SELECT * FROM {location} WHERE oid=%d AND type='node'",$node->nid);
+        $res=db_query("SELECT * FROM {location} WHERE oid=%d AND type='node'",$node->vid);
         if ($gmap_node=db_fetch_array($res)) {
           if ($gmap_node['latitude'] !=0) $node->gmap_location_latitude= $gmap_node['latitude'];
           if ($gmap_node['longitude']!=0) $node->gmap_location_longitude=$gmap_node['longitude'];
@@ -682,7 +682,7 @@ function gmap_location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         return;
 
       case 'delete':
-        db_query ("DELETE from {location} WHERE oid=%d AND type='node'", $node->nid);
+        db_query ("DELETE from {location} WHERE oid=%d AND type='node'", $node->vid);
         return;
 
     }
