@@ -87,7 +87,7 @@ function gmap_perm() {
  *
  */
 function gmap_draw_map($gmap, $javascript='') {
-  global $base_url;
+  global $base_url, $node;
     _gmap_doheader();
     
     if (file_exists('misc/gxmarker.2.js')) {
@@ -345,6 +345,8 @@ function gmap_draw_map($gmap, $javascript='') {
           $mytext = '<div class="gmap-popup" style="'.$divstyle.'">'.$mytext.'</div>';
         }
         elseif (strlen(trim($mytext))>0){
+          //special line to insert nodeid into text. Uncomment this for it to work.
+          $mytext=str_replace('##NODE##', $node->nid, $mytext);
           $mytext = '<div class="gmap-popup">'.$mytext.'</div>';
         }
         else {
@@ -1220,11 +1222,11 @@ function theme_views_view_gmap($view, $nodes) {
     if (($location['lat']) && ($location['lon'])) {
       $marker_label = '';
       foreach ($view->field as $field) {
-        $marker_label .= "<p>" . views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node) . "</p>";
+        $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node) .'</div>';
       }
-      $markers[] = array('markername'=>'view',
-                         'label' => $marker_label,
-                         'point' =>$location['lat'] . ',' . $location['lon']);
+      $markers[] = array('markername' => variable_get('gmap_node_marker_'.$node_data->type, ''),
+                         'label' => str_replace("'","\'",$marker_label),
+                         'point' => $location['lat'] . ',' . $location['lon']);
     }
   }
   $thismap = array('id' => 'view_gmap', 'markers' => $markers);

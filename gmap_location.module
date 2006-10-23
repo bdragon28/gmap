@@ -27,7 +27,7 @@ function gmap_location_help($section) {
  */
 
 function gmap_location_perm() {
-  return array('show user map', 'user locations', 'show node map');
+  return array('set user location', 'show user map', 'user locations', 'show node map');
 }
 
 /**
@@ -566,7 +566,7 @@ function theme_gmap_location_user_html($account) {
 }
 
 function gmap_location_user($op, &$edit, &$user, $category = NULL) {
-  if (module_exist('gmap') && variable_get('gmap_user', 0)) {
+  if (module_exist('gmap') && variable_get('gmap_user', 0) && user_access('set user location')) {
     $object->gmap_location_latitude = $edit['gmap_location_latitude'];
     $object->gmap_location_longitude = $edit['gmap_location_longitude'];
     $object->oid = $user->uid;
