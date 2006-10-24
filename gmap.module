@@ -345,8 +345,8 @@ function gmap_draw_map($gmap, $javascript='') {
           $mytext = '<div class="gmap-popup" style="'.$divstyle.'">'.$mytext.'</div>';
         }
         elseif (strlen(trim($mytext))>0){
-          //special line to insert nodeid into text. Uncomment this for it to work.
-          $mytext=str_replace('##NODE##', $node->nid, $mytext);
+          //special line to insert nodeid into text.
+          //$mytext=str_replace('##NODE##', $node->nid, $mytext);
           $mytext = '<div class="gmap-popup">'.$mytext.'</div>';
         }
         else {
@@ -807,9 +807,10 @@ function _gmap_doheader(){
     if (file_exists('misc/Clusterer2.js')) {
       drupal_add_js('misc/Clusterer2.js');
     }
-    else {
-      drupal_add_js('http://www.acme.com/javascript/Clusterer2.js');
-    }
+    
+ //   else {
+ //     drupal_add_js('http://www.acme.com/javascript/Clusterer2.js');
+ //   }
   }
   if (GMAP_WMS){
     if (file_exists('misc/wms-gs.js')) {
@@ -820,9 +821,10 @@ function _gmap_doheader(){
       drupal_add_js('misc/wms-gs-1_0_1.js');
     } elseif (file_exists('misc/wms-gs-1_0_0.js')) {
       drupal_add_js('misc/wms-gs-1_0_0.js');
-    } else {
-      drupal_add_js('http://dist.codehaus.org/geoserver/gmaps-geoserver_scripts/wms-gs-1_0_1.js');
     }
+  //  else {
+  //    drupal_add_js('http://dist.codehaus.org/geoserver/gmaps-geoserver_scripts/wms-gs-1_0_1.js');
+  //  }
   }
 
   $gmap_initialized = TRUE;
