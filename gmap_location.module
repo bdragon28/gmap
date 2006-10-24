@@ -364,6 +364,9 @@ function gmap_location_settings() {
   return $form;
 }
 
+/*
+ * draw block of location for current node.
+*/
 function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
 
   // The $op parameter determines what piece of information is being requested.
