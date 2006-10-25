@@ -1224,7 +1224,7 @@ function theme_views_view_gmap($view, $nodes) {
     if (($location['lat']) && ($location['lon'])) {
       $marker_label = '';
       foreach ($view->field as $field) {
-        $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node) .'</div>';
+        $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node, $view) .'</div>';
       }
       $markers[] = array('markername' => variable_get('gmap_node_marker_'.$node_data->type, ''),
                          'label' => str_replace("'","\'",$marker_label),
