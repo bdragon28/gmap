@@ -1226,10 +1226,8 @@ function theme_views_view_gmap($view, $nodes) {
       foreach ($view->field as $field) {
         $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node, $view) .'</div>';
       }
-      $marker_label = str_replace("\n", " ", $marker_label);
-      $marker_label = str_replace("'", "\'", $marker_label);
       $markers[] = array('markername' => variable_get('gmap_node_marker_'.$node_data->type, ''),
-                         'label' => $marker_label,
+                         'label' => strtr($marker_label,"'\n\r",'" '),
                          'point' => $location['lat'] . ',' . $location['lon']);
     }
   }
