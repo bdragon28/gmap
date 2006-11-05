@@ -80,7 +80,8 @@ The GMap Array is an associative array with the following definitions:
   id - the id of the map every map on a page must have a unique id
   width - width of the map should be either 'px' or '%'
   height - height of the map
-  center - a string of the 'latitude,longitude' of the centre of the map
+  latitude - a string of the latitude of the centre of the map
+  longitude - a string of the longitude of the centre of the map
   zoom - the zoom factor of the google map
   align - the alignment of the map 'right', 'left' or 'center'
   control - the control shown on the map 'Large', 'Small', or 'None'
@@ -91,7 +92,8 @@ The GMap Array is an associative array with the following definitions:
   drag - 'yes' or 'no' map is draggable.  Default is 'yes'
   markers - an array of marker arrays.  Each marker array is an associative
     array with the following elements:
-      'point' - the 'latitude,longitude' of the marker
+      'latitude' - the latitude of the marker
+      'longitude' - the longitude of the marker
       'markername' - the marker icon to use. For example if it is set
         to 'number', then the icons in the marker directory named
         'number1.png', 'number2.png' etc.  will be used. If these don't
@@ -158,40 +160,41 @@ admin/settings/gmap page will be used for any value that is not provided.
 An example of the gmap_draw_map function being used.
 
 $myshapes=array(array('color' => '#00dd00',
+                      'type'=>'line',
                       'opacity' => '0.5',
-                      'points' => array( '49.19011831503412,-123.20737838745117',
-                                        '49.18506953036687,-123.16274642944336'),),
+                      'points' => array( array('latitude'=>'49.19011831503412','longitude'=>'-123.20737838745117'),
+                                        array('latitude'=>'49.18506953036687','longitude'=>'-123.16274642944336'))),
                 array('color' => '#00dd00',
                       'opacity' => '0.5',
-                      'points' => array('49.20526157803394,-123.19965362548828'
-                                       '49.20077516864678,-123.16102981567383',)));
+                      'type'=>'line',
+                      'points' => array(array('latitude'=>'49.20526157803394','longitude'=>'-123.19965362548828'),
+                                       array('latitude'=>'49.20077516864678','longitude'=>'-123.16102981567383'))));
 
 $mymarkers=array(array('markername'=>'blue',
                        'label' => 'Terminal bus stop',
-                       'point' =>'49.19236205396474,-123.1790542602539'),
+                       'latitude' =>'49.19236205396474',
+                       'longitude'=>'-123.1790542602539'),
                  array('markername'=>'green',
                        'label' => 'Service buildings bus stop',
-                       'point' =>'49.19224986943509,-123.1538200378418'),
+                       'latitude' =>'49.19224986943509',
+                       'longitude'=>'-123.1538200378418'),
                  array('markername'=>'green',
                        'label' => 'Transer to Vancouver bus',
-                       'point' =>'49.191801128772326,-123.14231872558594'));
+                       'latitude' =>'49.191801128772326',
+                       'longitude'=>'-123.14231872558594'));
 
 
 $mymap=array('id' => 'mymap',
-             'center' => '49.19258642226091, -123.17647933959961',
-              'zoom' => 13,
-              'width' => '100%',
-              'height' => '400px',
-              'type' => 'Satellite',
-              'shapes' => $shapes,
-              'markers' => $mymarkers);
+             'latitude' => '49.19258642226091',
+             'longitude'=>' -123.17647933959961',
+             'zoom' => 13,
+             'width' => '100%',
+             'height' => '400px',
+             'type' => 'Satellite',
+             'shapes' => $shapes,
+             'markers' => $mymarkers);
               
 gmap_draw_map($mymap);
 
-
-TO DO
-=====
-- change gmap macro so that it is easier to manipulate latitude and longitude
-  (this probably means storing them separately.)
 
 
