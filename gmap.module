@@ -138,7 +138,7 @@ function gmap_draw_map($gmap, $javascript='') {
         $style .= ' margin-left: auto; margin-right: auto;';
     }
 
-    $outtext .= "\n<!--\n\n".print_r($gmap, 1)."\n\n -->\n";
+//    $outtext .= "\n<!--\n\n".print_r($gmap, 1)."\n\n -->\n";
     $outtext.='<div id="'.$gmap['id'].'" style="'.$style.'" class="gmap-map"></div>
               <script type="text/javascript">
               //<![CDATA[
