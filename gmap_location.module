@@ -98,13 +98,15 @@ function gmap_location_user_page() {
     }
     if (user_access('user locations')) {
       $newmarker['label'] = theme('gmap_location_user_html',$account);
-      $newmarker['point']= $u->latitude.','.$u->longitude;
+      $newmarker['latitude'] = $u->latitude;
+      $newmarker['longitude'] = $u->longitude;
       $newmarker['markername']=$marker;
       $newmarker['tooltip']=check_plain($account->name);
-      $locationbyuser[$u->oid] = $u->latitude.','.$u->longitude;
+      $locationbyuser[$u->oid] = array('latitude' => $u->latitude, 'longitude' => $u->longitude);
     }
     else {
-      $newmarker['point']= $u->latitude.', '.$u->longitude;
+      $newmarker['latitude']= $u->latitude;
+      $newmarker['longitude']= $u->longitude;
       $newmarker['markername']=$marker;
     }
     $thismap['markers'][]=$newmarker;
@@ -205,7 +207,8 @@ function gmap_location_node_map($n,$thismap,$single=false){
     if (!($newmarker['text'] = theme(strtr($n->type,'-','_').'_gmapnodelabel',$n))) {
       $newmarker['text'] = theme('gmapnodelabel',$n);
     }
-    $newmarker['point']= $latitude.','.$longitude;
+    $newmarker['latitude'] = $latitude;
+    $newmarker['longitude'] = $longitude;
     $newmarker['markername']=variable_get('gmap_node_marker_'.$n->type, '');
     $newmarker['tooltip']=$n->title;
     $newmarker['link']=url('node/'.$n->nid);
@@ -216,7 +219,8 @@ function gmap_location_node_map($n,$thismap,$single=false){
     }
     $thismap['markers'][]=$newmarker;
     if ($single){
-      $thismap['center']=$latitude.','.$longitude;
+      $thismap['latitude'] = $latitude;
+      $thismap['longitude'] = $longitude;
     }
 
   }
@@ -231,13 +235,15 @@ function gmap_location_node_map($n,$thismap,$single=false){
               $newmarker=array();
               $newmarker['label'] = theme('user_picture', $user);
               $newmarker['label'] .= theme('username', $user);
-              $newmarker['point']= $latitude.','.$longitude;
+              $newmarker['latitude'] = $latitude;
+              $newmarker['longitude'] = $longitude;
               $newmarker['markername']=variable_get('gmap_user_map_marker', 'drupal');
               $thismap['markers'][]=$newmarker;
             }
           }
           else {
-            $newmarker['point']= $u->latitude.', '.$u->longitude;
+            $newmarker['latitude'] = $u->latitude;
+            $newmarker['longitude'] = $u->longitude;
             $thismap['markers'][]=$newmarker;
           }
         }
@@ -441,7 +447,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
         $ntypes=node_get_types();
         foreach ($ntypes as $key => $value) {
           if (variable_get('location_'. $key, 0)) {
-            variable_set('gmap_location_author_block_'.$key,$edit['gmap_location_author_block_'.$key]);
+            variable_set('gmap_location_block_'.$key,$edit['gmap_location_block_'.$key]);
           }
         }
       }
@@ -528,11 +534,13 @@ function gmap_location_map_add_node($basemap, $node, $label='') {
   if (empty($basemap['markers'])) {
     $thismap['markers']=array();
   }
-  $newmarker['point']= $location['latitude'].','.$location['longitude'];
+  $newmarker['latitude'] = $location['latitude'];
+  $newmarker['longitude'] = $location['longitude'];
   $newmarker['markername']=variable_get('gmap_node_marker_'.$node->type, '');
   $newmarker['label']=$label;
-  $basemap['markers'][]=$newmarker;
-  $basemap['center']= $location['latitude'].','.$location['longitude'];
+  $basemap['markers'][] =$newmarker;
+  $basemap['latitude'] = $location['latitude'];
+  $basemap['longitude'] = $location['longitude'];
   return $basemap;
 }
 
@@ -727,7 +735,7 @@ function _gmap_location_map_form(&$form, &$edit, $type) {
     '#default_value'=>$longitude,
     '#size'=>30,
     '#maxlength'=>120,
-    '#description'=>t('The latitude and longitude will be entered here when you click on a location in the interactive map below. You can also fill in the values manually.'),
+    '#description'=>t('The latitude and longitude will be entered here when you click on a location in the interactive map above. You can also fill in the values manually.'),
     '#attributes'=>array('onchange'=>'gmap_textchange();'),
   );
   $fields=array('longitude'=>'gmap_location_longitude',
