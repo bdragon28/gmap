@@ -315,6 +315,14 @@ function gmap_draw_map($gmap, $javascript='') {
     if (isset($gmap['markers'])) {
       if (GMAP_CLUSTER) {
         $outtext .="\n var clusterer = new Clusterer(".$gmap['id'].");\n";
+        $markerfile = $base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.variable_get('gmap_cluster_marker', 'cluster').'.png';
+        if (file_exists($markerfile)) {
+          $outtext .=" clusterIcon = createIcon('$markerfile') \n";
+          $outtext .=" clusterer.SetIcon(clusterIcon);\n";
+        }
+        $outtext .=" clusterer.SetMaxVisibleMarkers(".variable_get('gmap_cluster_max_markers', 150).");\n";
+        $outtext .=" clusterer.SetMinMarkersPerCluster(".variable_get('gmap_cluster_min_per_cluster', 5).");\n";
+        $outtext .=" clusterer.SetMaxLinesPerInfoBox(".variable_get('gmap_cluster_max_lines', 10).");\n\n";
         $clusterset=true;
       }
       $lastmarker='';
@@ -986,12 +994,7 @@ function gmap_settings() {
     '#maxlength' => 50,
   );
   */
-  $form['initialization']['gmap_cluster']=array(
-    '#type'=>'checkbox', 
-    '#title'=>t('Enable clusterer.js'),
-    '#default_value'=>GMAP_CLUSTER,
-    '#description'=>t('Enables Jef Poskanzer\'s excellent <a href="http://www.acme.com/javascript/#Clusterer">clusterer.js</a> script. (useful for a large number of markers on a single map).  This must be installed in the gmap directory of the drupal install.'),
-  );
+
   $form['initialization']['gmap_wms']=array(
     '#type'=>'checkbox',
     '#title'=>t('Enable wms features'),
@@ -1075,6 +1078,46 @@ function gmap_settings() {
     '#default_value'=>GMAP_LINECOLOR3,
     '#size'=>25,
     '#maxlength'=>7 ,
+  );
+  $markers=gmap_get_markers();
+
+  $form['clusterer']=array(
+    '#type' => 'fieldset',
+    '#title' => t('Clusterer settings'),
+  );
+  $form['clusterer']['gmap_cluster']=array(
+    '#type'=>'checkbox',
+    '#title'=>t('Enable clusterer.js'),
+    '#default_value'=>GMAP_CLUSTER,
+    '#description'=>t('Enables Jef Poskanzer\'s excellent <a href="http://www.acme.com/javascript/#Clusterer">clusterer.js</a> script. (useful for a large number of markers on a single map).  This must be installed in the gmap directory of the drupal install.'),
+  );
+  $form['clusterer']['gmap_cluster_marker'] = array(
+    '#type'=>'select',
+    '#title'=>t('Marker for clusters'),
+    '#default_value'=>variable_get('gmap_cluster_marker', 'cluster'),
+    '#options'=>$markers,
+  );
+  $form['clusterer']['gmap_cluster_max_markers'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Maximum number of markers"),
+    '#default_value' => variable_get('gmap_cluster_max_markers', 150),
+    '#size' => 3,
+    '#maxlength' => 3,
+    '#title' => t("Clustering is enabled when more than the specified number of markers are visible at the same time."),
+  );
+  $form['clusterer']['gmap_cluster_min_per_cluster'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Minimal number of markers per cluster"),
+    '#default_value' => variable_get('gmap_cluster_min_per_cluster', 5),
+    '#size' => 2,
+    '#maxlength' => 2,
+  );
+  $form['clusterer']['gmap_cluster_max_lines'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Maximum number of lines per info box"),
+    '#default_value' => variable_get('gmap_cluster_max_lines', 10),
+    '#size' => 2,
+    '#maxlength' => 2,
   );
 
   $form['location']=array(
