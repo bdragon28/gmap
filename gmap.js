@@ -41,9 +41,8 @@ function gmap_init() {
 
 }
 
-function createGMarker(point, htmltext, marker, tooltip, towebsite) {
-  if (marker.length >0) {
-    var re = /markers\/([a-zA-Z0-9]+)\//;
+function createIcon(marker) {
+  var re = /markers\/([a-zA-Z0-9]+)\//;
     var m = re.exec(marker);
     var bicon='standard' ;
     if (m) {
@@ -53,6 +52,13 @@ function createGMarker(point, htmltext, marker, tooltip, towebsite) {
     }
     var markerIcon = new GIcon(baseIcon[bicon]);
     markerIcon.image = marker;
+    return markerIcon;
+}
+
+function createGMarker(point, htmltext, marker, tooltip, towebsite) {
+  if (marker.length >0) {
+
+    var markerIcon=createIcon(marker);
     var returnMarker = new GMarker(point, {icon: markerIcon, title: tooltip});
 
   }
