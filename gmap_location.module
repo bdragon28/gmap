@@ -100,6 +100,7 @@ function gmap_location_user_page() {
       $newmarker['label'] = theme('gmap_location_user_html',$account);
       $newmarker['latitude'] = $u->latitude;
       $newmarker['longitude'] = $u->longitude;
+      $newmarker['link']=url('user/'.$account->uid);
       $newmarker['markername']=$marker;
       $newmarker['tooltip']=check_plain($account->name);
       $locationbyuser[$u->oid] = array('latitude' => $u->latitude, 'longitude' => $u->longitude);
