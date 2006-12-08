@@ -1277,7 +1277,7 @@ function theme_views_view_gmap($view, $nodes) {
   $fields = _views_get_fields();
   $markers = array();
   foreach ($nodes as $node) {
-    $node_data = node_load(array('nid'=>$node->nid));
+    $node_data = node_load($node->nid);
     $location = $node_data->location;
     if (($location['lat']) && ($location['lon'])) {
       $marker_label = '';
