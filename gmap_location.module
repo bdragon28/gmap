@@ -87,7 +87,7 @@ function gmap_location_user_page() {
   $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
 
   while ($u=db_fetch_object($result)) {
-    $account = user_load(array('uid' => $u->oid));
+    $account = user_load(array('uid' => $u->eid));
     $dupes = array_intersect($account->roles, $roles_override);
     if (empty($dupes)) {
       $marker = $default_marker;
@@ -103,7 +103,7 @@ function gmap_location_user_page() {
       $newmarker['link']=url('user/'.$account->uid);
       $newmarker['markername']=$marker;
       $newmarker['tooltip']=check_plain($account->name);
-      $locationbyuser[$u->oid] = array('latitude' => $u->latitude, 'longitude' => $u->longitude);
+      $locationbyuser[$u->eid] = array('latitude' => $u->latitude, 'longitude' => $u->longitude);
     }
     else {
       $newmarker['latitude']= $u->latitude;
@@ -163,13 +163,13 @@ function gmap_location_node_page($nid=null) {
 
   $output .='<p>'.variable_get('gmap_node_map_header', t('This map illustrates the extent of nodes of this website.'))."</p>\n";
 
-  $result=db_query("SELECT oid, longitude, latitude FROM {location} WHERE (longitude!=0 OR latitude !=0) AND type='node'");
+  $result=db_query("SELECT eid, longitude, latitude FROM {location} WHERE (longitude!=0 OR latitude !=0) AND type='node'");
   $thismap = gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
   if (empty($thismap['markers'])) {
     $thismap['markers']=array();
   }
   while ($locn=db_fetch_object($result)) {
-    $n=node_load(array('vid'=>$locn->oid));
+    $n=node_load(array('vid'=>$locn->eid));
     if ($n && node_access('view',$n)) {
       $thismap=gmap_location_node_map($n,$thismap,false);
     }
@@ -496,7 +496,7 @@ function _gmap_location_getlatlon($node) {
 
 function gmap_location_block_view($nid) {
   $block=array();
-  $node = node_load(array('nid' => $nid));
+  $node = node_load($nid);
   if (_gmap_location_getlatlon($node)) {
     $block['subject'] = t('Location');
     if (strlen(variable_get('gmap_location_block_macro_'.$node->type, '')) > 0) {
@@ -581,7 +581,7 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
   if (module_exist('gmap') && variable_get('gmap_user', 0) && user_access('set user location')) {
     $object->gmap_location_latitude = $edit['gmap_location_latitude'];
     $object->gmap_location_longitude = $edit['gmap_location_longitude'];
-    $object->oid = $user->uid;
+    $object->eid = $user->uid;
 
     switch ($op) {
       case 'categories':
@@ -590,7 +590,7 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
         _gmap_location_validate_form($object);
         return;
       case 'load':
-        $res=db_query("SELECT * FROM {location} WHERE oid=%d AND type='user'",$user->uid);
+        $res=db_query("SELECT * FROM {location} WHERE eid=%d AND type='user'",$user->uid);
         if ($gmap_user=db_fetch_array($res)) {
           if ($gmap_user['latitude'] !=0) $user->gmap_location_latitude=  $gmap_user['latitude'];
           if ($gmap_user['longitude']!=0) $user->gmap_location_longitude= $gmap_user['longitude'];
@@ -606,7 +606,7 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
         return;
 
       case 'delete':
-        db_query ("DELETE from {location} WHERE oid=%d AND type='user'", $user->uid);
+        db_query ("DELETE from {location} WHERE eid=%d AND type='user'", $user->uid);
         return;
 
       case 'form':
@@ -669,11 +669,11 @@ function gmap_location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   if(variable_get('gmap_node_'. $node->type, 0)) {
     $object->gmap_location_latitude = $node->gmap_location_latitude;
     $object->gmap_location_longitude = $node->gmap_location_longitude;
-    $object->oid = $node->vid;
+    $object->eid = $node->vid;
 
     switch ($op) {
       case 'load':
-        $res=db_query("SELECT * FROM {location} WHERE oid=%d AND type='node'",$node->vid);
+        $res=db_query("SELECT * FROM {location} WHERE eid=%d AND type='node'",$node->vid);
         if ($gmap_node=db_fetch_array($res)) {
           if ($gmap_node['latitude'] !=0) $node->gmap_location_latitude= $gmap_node['latitude'];
           if ($gmap_node['longitude']!=0) $node->gmap_location_longitude=$gmap_node['longitude'];
@@ -694,7 +694,7 @@ function gmap_location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         return;
 
       case 'delete':
-        db_query ("DELETE from {location} WHERE oid=%d AND type='node'", $node->vid);
+        db_query ("DELETE from {location} WHERE eid=%d AND type='node'", $node->vid);
         return;
 
     }
@@ -775,14 +775,14 @@ function _gmap_location_validate_form(&$object) {
 function _gmap_location_store_location(&$object, $type, $update = false) {
   if (isset($object->gmap_location_latitude) && isset($object->gmap_location_longitude)) {
     if ($update) {
-      db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE oid='%d' AND type='%s'",  
-      $object->gmap_location_latitude,$object->gmap_location_longitude, 1,$object->oid, $type);
+      db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE eid='%d' AND type='%s'",
+      $object->gmap_location_latitude,$object->gmap_location_longitude, 1,$object->eid, $type);
 
     }
     else {
       // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
-      db_query("INSERT INTO {location} (oid, type, latitude, longitude, source) VALUES (%d, '%s', '%f', '%f', '%d')", 
-      $object->oid, $type, $object->gmap_location_latitude,$object->gmap_location_longitude, 1); 
+      db_query("INSERT INTO {location} (eid, type, latitude, longitude, source) VALUES (%d, '%s', '%f', '%f', '%d')",
+      $object->eid, $type, $object->gmap_location_latitude,$object->gmap_location_longitude, 1);
           }
     unset($object->gmap_location_latitude);
     unset($object->gmap_location_longitude);
