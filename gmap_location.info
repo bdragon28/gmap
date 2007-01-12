@@ -1,0 +1,6 @@
+; $Id$
+name = GMap Location
+description = Display location.module information on Google Maps
+version = "$Name$"
+dependencies = gmap location
+

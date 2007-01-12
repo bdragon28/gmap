@@ -1,0 +1,4 @@
+; $Id$
+name = GMap
+description = Filter to allow insertion of a google map into a node
+version = "$Name$"
