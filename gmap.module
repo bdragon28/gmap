@@ -26,6 +26,7 @@ define('GMAP_LINECOLOR3', variable_get('gmap_default_line3_color', '#0000ff'));
 define ('GMAP_XMAPS',0); //xmaps not currently compatible with v2 of google maps api
 define('GMAP_XMAPS_SCRIPT', variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
 define('GMAP_CLUSTER', variable_get('gmap_cluster',0));
+define('GMAP_WMS', variable_get('gmap_wms',0));
 
 define('GMAP_API_V', '2.55a');
 
@@ -60,7 +61,8 @@ function gmap_perm() {
  *  id - the id of the map every map on a page must have a unique id
  *  width - width of the map
  *  height - height of the map
- *  center - a string of the latitude, longitude of the centre of the map
+ *  latitude - a string of the latitude f the centre of the map
+ *  longitude - a string of the longitude of the centre of the map (the previous string center still works)
  *  zoom - the zoom factor of the google map
  *  align - the alignment of the map 'right', 'left' or 'center'
  *  control - the control shown on the map 'Large', 'Small', or 'None'
@@ -87,7 +89,7 @@ function gmap_perm() {
  *
  */
 function gmap_draw_map($gmap, $javascript='') {
-  global $base_url;
+  global $base_url, $node;
     _gmap_doheader();
     
     if (file_exists('misc/gxmarker.2.js')) {
@@ -101,6 +103,7 @@ function gmap_draw_map($gmap, $javascript='') {
     (!isset($gmap['width'])) ? $gmap['width']=GMAP_WIDTH: NULL;
     (!isset($gmap['height'])) ? $gmap['height']=GMAP_HEIGHT:NULL;
     (!isset($gmap['zoom'])) ? $gmap['zoom']=GMAP_ZOOM:NULL;
+    (!isset($gmap['autozoom'])) ? $gmap['autozoom']=false:NULL;
     (!isset($gmap['align'])) ? $gmap['align']='':NULL;
     (!isset($gmap['id'])) ? $gmap['id']='map':NULL;
     (!isset($gmap['control'])) ? $gmap['control']=GMAP_CONTROL:NULL;
@@ -110,14 +113,16 @@ function gmap_draw_map($gmap, $javascript='') {
 //    (!isset($gmap['ocontrol'])) ? $gmap['ocontrol']='off':NULL;
     (!isset($gmap['drag'])) ? $gmap['drag']='yes':NULL;
 
-    if (!isset($gmap['center'])&& isset($gmap['latlong'])){
+    if (!isset($gmap['latitude']) && !isset($gmap['center'])&& isset($gmap['latlong'])){
       //backwards compatible with macros created by previous version of this program
-      $gmap['center']=$gmap['latlong'];
+      list($gmap['latitude'],$gmap['longitude']) =explode(',',$gmap['latlong']);
     }
-    elseif (!isset($gmap['center'])){
-      $gmap['center']=GMAP_LONGLAT;
+    elseif (!isset($gmap['latitude']) && isset($gmap['center'])){
+      list($gmap['latitude'],$gmap['longitude']) =explode(',',$gmap['center']);
     }
-
+    elseif (!isset($gmap['latitude'])) {
+      list($gmap['latitude'],$gmap['longitude']) =explode(',',GMAP_LONGLAT);
+    }
     $style='width: '.gmap_todim($gmap['width']).'; height: '.gmap_todim($gmap['height']).';';
 
 
@@ -133,7 +138,7 @@ function gmap_draw_map($gmap, $javascript='') {
         $style .= ' margin-left: auto; margin-right: auto;';
     }
 
-//    $outtext .= "\n<!--\n\n".print_r($gmap)."\n\n -->\n";
+//    $outtext .= "\n<!--\n\n".print_r($gmap, 1)."\n\n -->\n";
     $outtext.='<div id="'.$gmap['id'].'" style="'.$style.'" class="gmap-map"></div>
               <script type="text/javascript">
               //<![CDATA[
@@ -145,6 +150,7 @@ function gmap_draw_map($gmap, $javascript='') {
               var gxmarkerjs='.$gxmarkerjs.';
               var gmapMarkerLocation="/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'";
               var markerlink='.variable_get('gmap_on_click',0).';
+              var bounds = new GLatLngBounds();
               addLoadEvent(gmap_init);  
               addLoadEvent(gmap_load_'.$gmap['id'].');
            
@@ -192,8 +198,13 @@ function gmap_draw_map($gmap, $javascript='') {
                  t_'.$map_name.'.myBaseURL=\''.$item['url'].'\';
                  t_'.$map_name.'.myLayers=\''.$item['layers'].'\';
                  t_'.$map_name.'.myFormat=\''.$item['format'].'\';
+                 t_'.$map_name.'.myMapname=\''.$gmap['id'].'\';
                  t_'.$map_name.'.getTileUrl=CustomGetTileUrl;
                  ';
+          if(isset($item['opacity'])){
+            $outtext.= "t_".$map_name.".myOpacity=".$item['opacity'].";\n                 \n";
+            $outtext.= "t_".$map_name.".getOpacity=customOpacity;\n                 \n";
+          }
           if(isset($item['overlaywith'])){
             switch (strtolower($item['overlaywith'])) {
               case 'map':
@@ -234,7 +245,7 @@ function gmap_draw_map($gmap, $javascript='') {
                  ';
     }
 
-    $outtext.= $gmap['id'].'.setCenter(new GLatLng('.$gmap['center'].'), '.$gmap['zoom'].');
+    $outtext.= $gmap['id'].'.setCenter(new GLatLng('.$gmap['latitude'].','.$gmap['longitude'].'), '.$gmap['zoom'].');
                  ';
 
     switch (strtolower($gmap['control'])) {
@@ -289,7 +300,8 @@ function gmap_draw_map($gmap, $javascript='') {
             $line = fgets($trackFH, 4096);
             $line_exploded = explode(",", $line);
             if(count($line_exploded) == 7) {
-              $tt['points'][]= trim($line_exploded[0]).','.trim($line_exploded[1]);
+              $tt['points'][] = array('latitude' => trim($line_exploded[0]),
+                                      'longitude' => trim($line_exploded[1]));
             }
           }
           fclose($trackFH);
@@ -303,6 +315,14 @@ function gmap_draw_map($gmap, $javascript='') {
     if (isset($gmap['markers'])) {
       if (GMAP_CLUSTER) {
         $outtext .="\n var clusterer = new Clusterer(".$gmap['id'].");\n";
+        $markerfile = $base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.variable_get('gmap_cluster_marker', 'cluster').'.png';
+        if (file_exists($markerfile)) {
+          $outtext .=" clusterIcon = createIcon('$markerfile') \n";
+          $outtext .=" clusterer.SetIcon(clusterIcon);\n";
+        }
+        $outtext .=" clusterer.SetMaxVisibleMarkers(".variable_get('gmap_cluster_max_markers', 150).");\n";
+        $outtext .=" clusterer.SetMinMarkersPerCluster(".variable_get('gmap_cluster_min_per_cluster', 5).");\n";
+        $outtext .=" clusterer.SetMaxLinesPerInfoBox(".variable_get('gmap_cluster_max_lines', 10).");\n\n";
         $clusterset=true;
       }
       $lastmarker='';
@@ -317,10 +337,10 @@ function gmap_draw_map($gmap, $javascript='') {
             $lastmarker=$item['markername'];
             $i=1;
           }
-          if (file_exists(variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].$i.'.png')) {
+          if (file_exists(variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].$i.'.png')) {
             $mymarker=$base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].$i.'.png';
           }
-          elseif (file_exists(variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png')) {
+          elseif (file_exists(variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].'.png')) {
             $mymarker=$base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].'.png';
           }
         }
@@ -338,6 +358,8 @@ function gmap_draw_map($gmap, $javascript='') {
           $mytext = '<div class="gmap-popup" style="'.$divstyle.'">'.$mytext.'</div>';
         }
         elseif (strlen(trim($mytext))>0){
+          //special line to insert nodeid into text.
+          //$mytext=str_replace('##NODE##', $node->nid, $mytext);
           $mytext = '<div class="gmap-popup">'.$mytext.'</div>';
         }
         else {
@@ -356,13 +378,23 @@ function gmap_draw_map($gmap, $javascript='') {
           $link='';
         }
         if (GMAP_CLUSTER) {
-          $outtext .='clusterer.AddMarker(createGMarker(new GLatLng('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."','$tooltip','$link'));\n";
+          $outtext .='clusterer.AddMarker(createGMarker(new GLatLng('.$item['latitude'].','.$item['longitude'].'),\''.$mytext.'\',\''.$mymarker."','$tooltip','$link'),'".l($tooltip,$base_url.$link)."');\n";
           $clusterset=true;
         }
         else {
-          $outtext .=$gmap['id'].'.addOverlay(createGMarker(new GLatLng('.$item['point'].'),\''.$mytext.'\',\''.$mymarker."','$tooltip','$link'));\n";
+          $outtext .=$gmap['id'].'.addOverlay(createGMarker(new GLatLng('.$item['latitude'].','.$item['longitude'].'),\''.$mytext.'\',\''.$mymarker."','$tooltip','$link'));\n";
+          if($gmap['autozoom']){
+            $outtext .='bounds.extend(new GLatLng('.$item['latitude'].','.$item['longitude'].'));'."\n";
+          }
         }
       }
+    }
+    if ($gmap['autozoom']){
+      $outtext .= 'var center_lat = (bounds.getNorthEast().lat() + bounds.getSouthWest().lat()) / 2.0;
+                   var center_lng = (bounds.getNorthEast().lng() + bounds.getSouthWest().lng()) / 2.0;
+                   var center = new GLatLng(center_lat,center_lng);
+                   var zoom = '.$gmap['id'].'.getBoundsZoomLevel(bounds);
+                   '.$gmap['id'].'.setCenter(center,zoom);';
     }
     if (isset($gmap['shape']) && !variable_get('gmap_xmaps',0)) {
       //if xmaps is not enabled then just show the lines using straight google maps.
@@ -378,13 +410,14 @@ function gmap_draw_map($gmap, $javascript='') {
               }
             }
           }
-          $linetxt ='new GLatLng('.implode('), new GLatLng(',$value['points']).')';
-//          foreach ($value['points'] as $lvalue) {
-//            if (strlen($linetxt)>0) {
-//              $linetxt .= ', ';
-//            }
-//            $linetxt .="new GPoint(".$lvalue.")";
-//          }
+//          $linetxt ='new GLatLng('.implode('), new GLatLng(',$value['latitude'].','.$value['longitude']).')';
+          $linetxt='';
+          foreach ($value['points'] as $lvalue) {
+            if (strlen($linetxt)>0) {
+              $linetxt .= ', ';
+            }
+            $linetxt .="new GLatLng(".$lvalue['latitude'].','.$lvalue['longitude'].")";
+          }
           $outtext .="\n".$gmap['id'].".addOverlay(new GPolyline([$linetxt] $style));";
         }
       }
@@ -427,7 +460,7 @@ function gmap_draw_map($gmap, $javascript='') {
             $outtext .= "var points = []; \n";
 
             foreach ($value['points'] as $lvalue) {
-              $outtext .="points.push(new GPoint(".$lvalue."));\n";
+              $outtext .="points.push(new GPoint(".$lvalue['latitude'].','.$lvalue['longitude']."));\n";
             }
             $outtext .= $gmap['id'].".addOverlay(new XPolyline(points, lineStyle));\n";
             break;
@@ -463,7 +496,7 @@ function gmap_draw_map($gmap, $javascript='') {
       foreach ($gmap['feeds'] as $item) {
         $mymarker='';
         if (isset($item['markername'])){
-          if (file_exists(variable_get('gmap_markerfiles','modules/gmap/markers').'/'.$item['markername'].'.png')) {
+          if (file_exists(variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].'.png')) {
             $mymarker=$base_url.'/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'/'.$item['markername'].'.png';
           }
         }
@@ -563,7 +596,7 @@ function gmap_parse_macro($instring,$ver=2) {
     $t=explode('=', $statements[$j],2);
     switch (trim($t[0])) {
       case 'center':
-        $gmap['center']=gmap_dopoint(trim($t[1]),$ver);
+        $gmap=array_merge($gmap,gmap_dopoint(trim($t[1]),$ver));
         break;
       case 'zoom':
         if ($ver==1) {
@@ -587,11 +620,11 @@ function gmap_parse_macro($instring,$ver=2) {
         for ($i =0; $i<count($ttt); $i++) {
           unset($tt);
           if (strpos($ttt[$i],':')) {
-            list($tt['point'],$tt['label']) = explode(':',$ttt[$i],2);
-            $tt['point']=gmap_dopoint($tt['point'],$ver);
+            list($point,$tt['label']) = explode(':',$ttt[$i],2);
+            $tt=array_merge($tt,gmap_dopoint($point,$ver));
           }
           else {
-            $tt['point']=gmap_dopoint($ttt[$i],$ver);
+            $tt=array_merge($tt,gmap_dopoint($ttt[$i],$ver));
           }
           if (isset($markername)){
             $tt['markername']=$markername;
@@ -626,7 +659,7 @@ function gmap_parse_macro($instring,$ver=2) {
         $ttt = explode('+',$t[1]);
         for ($i =0; $i<count($ttt); $i++) {
           unset($tt);
-          list($tt['name'],$tt['url'],$tt['format'],$tt['layers'],$tt['minresolution'],$tt['maxresolution'],$tt['copyrights'],$tt['overlaywith'],$tt['merczoomlevel'])=explode('::',$ttt[$i]);
+          list($tt['name'],$tt['url'],$tt['format'],$tt['layers'],$tt['minresolution'],$tt['maxresolution'],$tt['copyrights'],$tt['overlaywith'],$tt['merczoomlevel'],$tt['opacity'])=explode('::',$ttt[$i]);
           $crr = explode('/',$tt['copyrights']);
           unset($tt['copyrights']);
           for ($k =0; $k<count($crr); $k++) {
@@ -654,11 +687,10 @@ function gmap_parse_macro($instring,$ver=2) {
           list($tt['color'],$tt['width'],$tt['opacity'],$tt['pattern'],$tt['text'])=explode('/',$configs);
         }
         $tt['points'] = explode('+',$t[1]);
-        if ($ver==1) {
-          foreach ($tt['points'] as $key=>$value) {
-            $tt['points'][$key]=gmap_dopoint($value,$ver);
-          }
+        foreach ($tt['points'] as $key=>$value) {
+          $tt['points'][$key]=gmap_dopoint($value,$ver);
         }
+
         $tt['type'] = 'line';
         $gmap['shape'][] = $tt;
         break;
@@ -736,9 +768,9 @@ function gmap_set_location($map,&$form,$fields) {
     $form[$fields['address']]['#attributes']= array('onchange'=>'gmap_geocodeaddress('.$map['id'].', this.value);');
   }
 
-  if ($lonform['#default_value']!=0 || $latform['#default_value']!=0) {
-    $myjava .= '{id}.panTo(new GLatLng('.$latform['#default_value'].', '.$lonform['#default_value'].'));'."\n".
-             '{id}.addOverlay(thispoint=new GMarker(new GLatLng('.$latform['#default_value'].', '.$lonform['#default_value'].')));'."\n";
+  if ($form[$fields['latitude']]['#default_value']!=0 || $form[$fields['longitude']]['#default_value']!=0) {
+    $myjava .= '{id}.panTo(new GLatLng('.$form[$fields['latitude']]['#default_value'].', '.$form[$fields['longitude']]['#default_value'].'));'."\n".
+             '{id}.addOverlay(thispoint=new GMarker(new GLatLng('.$form[$fields['latitude']]['#default_value'].', '.$form[$fields['longitude']]['#default_value'].')));'."\n";
   }
 
   $myjava .=  '   GEvent.addListener({id}, "click", function(overlay, point) {
@@ -776,32 +808,38 @@ function _gmap_doheader(){
     return;
   }
 
-  theme_add_style(drupal_get_path('module','gmap'). '/gmap.css');
+  $gmap_path = drupal_get_path('module','gmap');
+
+  theme_add_style($gmap_path. '/gmap.css');
   drupal_add_js('misc/drupal.js');
-  drupal_add_js(drupal_get_path('module','gmap'). '/gmap.js');
-  $js = '<script src="http://maps.google.com/maps?file=api&v='.GMAP_API_V.'&key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>';
+  drupal_add_js($gmap_path. '/gmap.js');
+  $js = '<script src="http://maps.google.com/maps?file=api&amp;v='.GMAP_API_V.'&amp;key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>';
   drupal_set_html_head($js);
   if (GMAP_XMAPS) {
-    drupal_add_js(variable_get('gmap_xmaps_script','misc/xmaps.1c.js'));
+    drupal_add_js(variable_get('gmap_xmaps_script',$gmap_path.'/xmaps.1c.js'));
   }
   if (GMAP_CLUSTER){
-    if (file_exists('misc/Clusterer2.js')) {
-      drupal_add_js('misc/Clusterer2.js');
+    if (file_exists($gmap_path.'/Clusterer2.js')) {
+      drupal_add_js($gmap_path.'/Clusterer2.js');
     }
-    else {
-      drupal_add_js('http://www.acme.com/javascript/Clusterer2.js');
-    }
+    
+ //   else {
+ //     drupal_add_js('http://www.acme.com/javascript/Clusterer2.js');
+ //   }
   }
   if (GMAP_WMS){
-    if (file_exists('misc/wms-gs.js')) {
-      drupal_add_js('misc/wms-gs.js');
-    } elseif (file_exists('misc/wms236.js')) {
-      drupal_add_js('misc/wms236.js');
-    } elseif (file_exists('misc/wms-gs-1_0_0.js')) {
-      drupal_add_js('misc/wms-gs-1_0_0.js');
-    } else {
-      drupal_add_js('http://dist.codehaus.org/geoserver/gmaps-geoserver_scripts/wms-gs-1_0_0.js');
+    if (file_exists($gmap_path.'/wms-gs.js')) {
+      drupal_add_js($gmap_path.'/wms-gs.js');
+    } elseif (file_exists($gmap_path.'/wms236.js')) {
+      drupal_add_js($gmap_path.'/wms236.js');
+    } elseif (file_exists($gmap_path.'/wms-gs-1_0_1.js')) {
+      drupal_add_js($gmap_path.'/wms-gs-1_0_0.js');
+    } elseif (file_exists($gmap_path.'/wms-gs-1_0_0.js')) {
+      drupal_add_js($gmap_path.'/wms-gs-1_0_0.js');
     }
+  //  else {
+  //    drupal_add_js('http://dist.codehaus.org/geoserver/gmaps-geoserver_scripts/wms-gs-1_0_1.js');
+  //  }
   }
 
   $gmap_initialized = TRUE;
@@ -844,10 +882,11 @@ function gmap_todim($instring) {
 function gmap_dopoint($point,$ver) {
   if ($ver==1) {
     $lonlat=explode(',',$point,2);
-    return $lonlat[1].','.$lonlat[0];
+    return array('latitude'=>$lonlat[1],'longitude'=>$lonlat[0]);
   }
   else {
-    return $point;
+    $lonlat=explode(',',$point,2);
+    return array('latitude'=>$lonlat[0],'longitude'=>$lonlat[1]);
   }
 }
 
@@ -883,7 +922,7 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
 function gmap_filter_tips($delta, $format, $long = false) {
 
   if(user_access('create macro')) { // only display macro if user can create one
-    return t('Insert Google Map macro.').'<a href="'.url('gmapmacro').'" target="_blank" >'.t('Create a macro').'</a>';
+    return t('Insert Google Map macro.').'<a href="'.url('map/macro').'" target="_blank" >'.t('Create a macro').'</a>';
   }
   else {
     return t('Insert Google Map macro.');
@@ -903,7 +942,7 @@ function gmap_menu($may_cache) {
     $items[] = array(
       'path' => 'map/macro',
       'type' => MENU_NORMAL_ITEM,
-      'title' => t('build a macro'),
+      'title' => t('build a GMap macro'),
       'access' => user_access('create macro'),
       'callback' => 'gmap_macro_page',
     );
@@ -955,12 +994,14 @@ function gmap_settings() {
     '#maxlength' => 50,
   );
   */
-  $form['initialization']['gmap_cluster']=array(
-    '#type'=>'checkbox', 
-    '#title'=>t('Enable clusterer.js'),
-    '#default_value'=>GMAP_CLUSTER,
-    '#description'=>t('Enables Jef Poskanzer\'s excellent <a href="http://www.acme.com/javascript/#Clusterer">clusterer.js</a> script. (useful for a large number of markers on a single map)'),
+
+  $form['initialization']['gmap_wms']=array(
+    '#type'=>'checkbox',
+    '#title'=>t('Enable wms features'),
+    '#default_value'=>GMAP_WMS,
+    '#description'=>t('Enables the wms features.  This allows you to use overlays that are defined using wms.  The wms-gs.js (or other acceptable version) must be installed in the gmap directory.'),
   );
+
   $form['initialization']['gmap_on_click']=array(
     '#type'=>'radios',
                                                  '#title'=>t('On Click Marker'),
@@ -1038,6 +1079,46 @@ function gmap_settings() {
     '#size'=>25,
     '#maxlength'=>7 ,
   );
+  $markers=gmap_get_markers();
+
+  $form['clusterer']=array(
+    '#type' => 'fieldset',
+    '#title' => t('Clusterer settings'),
+  );
+  $form['clusterer']['gmap_cluster']=array(
+    '#type'=>'checkbox',
+    '#title'=>t('Enable clusterer.js'),
+    '#default_value'=>GMAP_CLUSTER,
+    '#description'=>t('Enables Jef Poskanzer\'s excellent <a href="http://www.acme.com/javascript/#Clusterer">clusterer.js</a> script. (useful for a large number of markers on a single map).  This must be installed in the gmap directory of the drupal install.'),
+  );
+  $form['clusterer']['gmap_cluster_marker'] = array(
+    '#type'=>'select',
+    '#title'=>t('Marker for clusters'),
+    '#default_value'=>variable_get('gmap_cluster_marker', 'cluster'),
+    '#options'=>$markers,
+  );
+  $form['clusterer']['gmap_cluster_max_markers'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Maximum number of markers"),
+    '#default_value' => variable_get('gmap_cluster_max_markers', 150),
+    '#size' => 3,
+    '#maxlength' => 3,
+    '#title' => t("Clustering is enabled when more than the specified number of markers are visible at the same time."),
+  );
+  $form['clusterer']['gmap_cluster_min_per_cluster'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Minimal number of markers per cluster"),
+    '#default_value' => variable_get('gmap_cluster_min_per_cluster', 5),
+    '#size' => 2,
+    '#maxlength' => 2,
+  );
+  $form['clusterer']['gmap_cluster_max_lines'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Maximum number of lines per info box"),
+    '#default_value' => variable_get('gmap_cluster_max_lines', 10),
+    '#size' => 2,
+    '#maxlength' => 2,
+  );
 
   $form['location']=array(
     '#type' => 'fieldset',
@@ -1066,7 +1147,10 @@ function gmap_macro_form() {
     '#theme' => 'gmap_macro',
   );
   $linecolors = array(GMAP_LINECOLOR1, GMAP_LINECOLOR2, GMAP_LINECOLOR3); 
-  $form['macroform']['mapdiv']=array('#type'=>'markup','#value'=>'<div id="map" style="width: '.GMAP_WIDTH.'; height: '.GMAP_HEIGHT.';"></div>');
+  $form['macroform']['mapdiv'] = array(
+    '#type'   => 'markup',
+    '#value'  => '<div id="map" style="width: '.GMAP_WIDTH.'; height: '.GMAP_HEIGHT.';" class="gmap-map"></div>'
+  );
   $form['macroform']['javascript'] = array(
     '#value' => drupal_call_js('gmap_set_line_colors', $linecolors),
   );
@@ -1191,20 +1275,22 @@ function gmap_get_markers(){
  */
 function theme_views_view_gmap($view, $nodes) {
   $fields = _views_get_fields();
+  $markers = array();
   foreach ($nodes as $node) {
-    $node_data = node_load(array("nid"=>$node->nid));
+    $node_data = node_load($node->nid);
     $location = $node_data->location;
-    if (strlen($location['lat'])>0 && strlen($location['lon']>0)) {
-      $newmarker['label'] = '';
+    if (($location['lat']) && ($location['lon'])) {
+      $marker_label = '';
       foreach ($view->field as $field) {
-        $newmarker['label'] .= "<p>" . views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node) . "</p>";
+        $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node, $view) .'</div>';
       }
-      $newmarker['point']= $location['lat'] . ',' . $location['lon'];
-      $newmarker['markername']='drupal_view';
-      $thismap['markers'][]= $newmarker;
+      $markers[] = array('markername' => variable_get('gmap_node_marker_'.$node_data->type, ''),
+                         'label' => strtr($marker_label,"'\n\r",'" '),
+                         'latitude' => $location['lat'],
+                         'longitude' => $location['lon']);
     }
   }
+  $thismap = array('id' => 'view_gmap', 'markers' => $markers);
   $output .= gmap_draw_map($thismap);
   return $output;
 }
-

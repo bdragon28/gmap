@@ -42,11 +42,12 @@ Installation
    this will be on a 'html filtered' format, ensure that the weighting is
    such that the HTML filter comes before the gmap filter.
 
-7) (optional) If the user functionality will be used and location.module is
-   not installed, the location  table must be added to the database (as
-   defined in location.mysql) and it must be turned on in the gmap settings
-   page. (This is just a temporary approach until the location module has
-   the ability to add users' lat/long.)
+7) (optional) To use clusterer.js (useful if you have more than about 100 markers on a page)
+   get the javascript file from http://www.acme.com/javascript/#Clusterer and copy into
+   your gmap directory
+   
+8) (optional) To use wms features get the script http://dist.codehaus.org/geoserver/gmaps-geoserver_scripts/wms-gs-1_0_0.js
+   and install it in your gmap directory.
 
 Instructions
 ------------
@@ -54,7 +55,7 @@ Instructions
 Macro
 -----
 
-A gmap macro can be created on the gmapmacro page and the text can then be
+A gmap macro can be created on the map/macro page and the text can then be
 copied and pasted into any node where the gmap filter is enabled.
 
 Default settings will be the initial settings and will be used for any
@@ -120,7 +121,7 @@ Demo
 ----
 
 For a few pages that show some of the items mentioned above see:
-http://www.webgeer.com/gmapmacro
+http://www.webgeer.com/map/macro
 http://www.webgeer.com/gmapdemo
 http://www.webgeer.com/map/users
 
