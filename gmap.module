@@ -1,5 +1,6 @@
 <?php
 /* $Id$ */
+// vim:set ft=php:
 
 /**
  * @file
@@ -151,10 +152,7 @@ return '';
     elseif (!isset($gmap['latitude']) && isset($gmap['center'])){
       list($gmap['latitude'],$gmap['longitude']) =explode(',',$gmap['center']);
     }
-// This is not needed anymore due to the new defaults code.
-//    elseif (!isset($gmap['latitude'])) {
-//      list($gmap['latitude'],$gmap['longitude']) =explode(',',GMAP_LONGLAT);
-//    }
+
     $style='width: '.gmap_todim($gmap['width']).'; height: '.gmap_todim($gmap['height']).';';
 
 
@@ -1078,8 +1076,6 @@ function gmap_admin_settings() {
     '#description' => t('If checked, disables the GKeyboardHandler normally attached to a map.'),
   );
 
-
-
   $form['gmap_default']['line1_color'] = array(
     '#type' => 'textfield',
     '#title' => t('Default Line 1 Color'),
@@ -1208,7 +1204,7 @@ function process_gmap_macro($element) {
   $element['#type'] = 'textarea';
   $element['#id'] = 'gmap-'.$element['#map'].'-macrotext';
   $element['#attributes']['class'] .= ' gmap-control';
-  $element['#theme'] = 'textarea';
+  $element['#theme'] = 'gmap_macro';
   return $element;
 }
 
@@ -1219,8 +1215,6 @@ function process_gmap_overlay_edit($element) {
   $element['#options'] = drupal_map_assoc(array('Points', 'Line1', 'Line2', 'Line3'));
   $element['#default_value'] = 'Points';
   $element['#theme'] = 'gmap_overlay_edit';
-
-//  drupal_add_js(drupal_get_path('module','gmap') .'/js/overlay_edit.js');
   return $element;
 }
 
@@ -1237,10 +1231,13 @@ function theme_gmap_overlay_edit($element) {
   return theme('select',$element);
 }
 
+function theme_gmap_macro($element) {
+  drupal_add_js(drupal_get_path('module','gmap') .'/js/macro.js');
+  return theme('textarea',$element);
+}
+
 function theme_gmap_address($element) {
   drupal_add_js(drupal_get_path('module','gmap') .'/js/address.js');
-// @@@ Belongs on theme_gmap_macrotext
-drupal_add_js(drupal_get_path('module','gmap') .'/js/macro.js');
   return theme('textfield',$element);
 }
 
