@@ -1179,6 +1179,7 @@ function gmap_elements() {
     'gmap_macro' => array('#input' => TRUE, '#process' => array('process_gmap_macro' => array())),
     'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit' => array())),
     'gmap_address' => array('#input' => TRUE, '#process' => array('process_gmap_address' => array())),
+    'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align' => array())),
   );
 }
 
@@ -1218,6 +1219,15 @@ function process_gmap_overlay_edit($element) {
   return $element;
 }
 
+function process_gmap_align($element) {
+  $element['#type'] = 'select';
+  $element['#id'] = 'gmap-'.$element['#map'].'-align';
+  $element['#attributes']['class'] .= ' gmap-control';
+  $element['#options'] = drupal_map_assoc(array('None', 'Right', 'Left', 'Center'));
+  $element['#theme'] = 'gmap_align';
+  return $element;
+}
+
 function process_gmap_address($element) {
   $element['#type'] = 'textfield';
   $element['#id'] = 'gmap-'.$element['#map'].'-address';
@@ -1239,6 +1249,11 @@ function theme_gmap_macro($element) {
 function theme_gmap_address($element) {
   drupal_add_js(drupal_get_path('module','gmap') .'/js/address.js');
   return theme('textfield',$element);
+}
+
+function theme_gmap_align($element) {
+  drupal_add_js(drupal_get_path('module','gmap') .'/js/align.js');
+  return theme('select',$element);
 }
 
 /**

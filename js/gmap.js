@@ -294,20 +294,6 @@ Drupal.gmap.prototype.handler.mapid = function(elem) {
   });
 }
 
-////////////////////////////////////////
-//           Align widget             //
-////////////////////////////////////////
-Drupal.gmap.prototype.handler.alignment = function(elem) {
-  var obj = this;
-  // Respond to incoming alignment changes.
-  var binding = obj.bind("alignchange",function(){elem.value = obj.vars.align});
-  // Send out outgoing alignment changes.
-  $(elem).change(function() {
-    obj.vars.align = elem.value;
-    obj.change("alignchange",binding);
-  });
-}
-
 Drupal.gmapAutoAttach = function() {
 
   // Init Google map facilities
