@@ -11,3 +11,16 @@ v\:* {
    margin: 0;
    border: solid black 1px;
 }
+
+.gmap-left {
+  float: left;
+}
+
+.gmap-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gmap-right {
+  float: right;
+}
