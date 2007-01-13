@@ -1312,11 +1312,6 @@ function gmap_macro_form() {
     ),
   );
 
-// Todo: Change this to a setting.
-//drupal_add_js('gmap_set_line_colors("'.implode('","',$linecolors).'")','inline');
-
-//drupal_to_js(array('gmap'=>$settings),'setting');
-
   $defaults = gmap_defaults();
 
   $form['macroform']['mapid'] = array(
@@ -1350,13 +1345,6 @@ function gmap_macro_form() {
     '#title' => t('Address'),
     '#default_value' => '',
   );
-/*  $form['macroform']['address'] = array(
-    '#type' => 'textfield',
-    '#id' => 'gmap-map-address',
-    '#title' => t('Address'),
-    '#default_value' => '',
-    '#attributes' => array('class' => 'gmap-control'),
-  ); */
   $form['macroform']['latlong'] = array(
     '#type' => 'textfield',
     '#id' => 'gmap-map-latlong',
@@ -1380,8 +1368,14 @@ function gmap_macro_form() {
     '#default_value' => $defaults['height'],
     '#size' => 25,
     '#attributes' => array('class' => 'gmap-control'),
-  ); 
+  );
   $form['macroform']['alignment'] = array(
+    '#type' => 'gmap_align',
+    '#map' => 'map',
+    '#title' => t('Alignment'),
+  );
+
+/*  $form['macroform']['alignment'] = array(
     '#type' => 'select', 
     '#id' => 'gmap-map-alignment',
     '#title' => t('Alignment'), 
@@ -1389,7 +1383,7 @@ function gmap_macro_form() {
 //    '#default_value' => GMAP_ALIGNMENT,
     '#required' => FALSE,
     '#attributes' => array('class' => 'gmap-control'),
-  );  
+  ); */  
   $form['macroform']['overlayedit'] = array(
     '#type' => 'gmap_overlay_edit',
     '#map' => 'map',
