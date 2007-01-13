@@ -1176,7 +1176,7 @@ function gmap_elements() {
       )),
       '#process' => array('expand_gmap' => array()),
     ),
-    'gmap_macro' => array('#input' => TRUE, '#process' => array('process_gmap_macro' => array())),
+    'gmap_macrotext' => array('#input' => TRUE, '#cols' => 60, '#rows' => 5, '#process' => array('process_gmap_macrotext' => array())),
     'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit' => array())),
     'gmap_address' => array('#input' => TRUE, '#process' => array('process_gmap_address' => array())),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align' => array())),
@@ -1201,11 +1201,11 @@ function expand_gmap($element) {
 /**
  * Set up the macro element.
  */
-function process_gmap_macro($element) {
+function process_gmap_macrotext($element) {
   $element['#type'] = 'textarea';
   $element['#id'] = 'gmap-'.$element['#map'].'-macrotext';
   $element['#attributes']['class'] .= ' gmap-control';
-  $element['#theme'] = 'gmap_macro';
+  $element['#theme'] = 'gmap_macrotext';
   return $element;
 }
 
@@ -1241,7 +1241,7 @@ function theme_gmap_overlay_edit($element) {
   return theme('select',$element);
 }
 
-function theme_gmap_macro($element) {
+function theme_gmap_macrotext($element) {
   drupal_add_js(drupal_get_path('module','gmap') .'/js/macro.js');
   return theme('textarea',$element);
 }
