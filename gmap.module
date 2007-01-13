@@ -54,7 +54,7 @@ function _gmap_doheader(){
   $gmap_path = drupal_get_path('module','gmap');
 
   drupal_add_css($gmap_path .'/gmap.css');
-  drupal_add_js($gmap_path. '/gmap.js');
+  drupal_add_js($gmap_path. '/js/gmap.js');
   drupal_set_html_head('<script src="http://maps.google.com/maps?file=api&amp;v='.GMAP_API_V.'&amp;key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>');
   drupal_set_html_head($js);
   $gmap_initialized = TRUE;
@@ -1157,7 +1157,7 @@ function gmap_admin_settings() {
 }
 
 function gmap_macro_page() {
-//  drupal_add_js(drupal_get_path('module','gmap'). '/gmapmacro.js');
+//  drupal_add_js(drupal_get_path('module','gmap'). '/js/macro.js');
   _gmap_doheader();
   return drupal_get_form('gmap_macro_form');
 }
@@ -1220,7 +1220,7 @@ function process_gmap_overlay_edit($element) {
   $element['#default_value'] = 'Points';
   $element['#theme'] = 'gmap_overlay_edit';
 
-//  drupal_add_js(drupal_get_path('module','gmap') .'/gmapoverlayedit.js');
+//  drupal_add_js(drupal_get_path('module','gmap') .'/js/overlay_edit.js');
   return $element;
 }
 
@@ -1233,14 +1233,14 @@ function process_gmap_address($element) {
 }
 
 function theme_gmap_overlay_edit($element) {
-  drupal_add_js(drupal_get_path('module','gmap') .'/gmapoverlayedit.js');
+  drupal_add_js(drupal_get_path('module','gmap') .'/js/overlay_edit.js');
   return theme('select',$element);
 }
 
 function theme_gmap_address($element) {
-  drupal_add_js(drupal_get_path('module','gmap') .'/gmapaddress.js');
+  drupal_add_js(drupal_get_path('module','gmap') .'/js/address.js');
 // @@@ Belongs on theme_gmap_macrotext
-drupal_add_js(drupal_get_path('module','gmap') .'/gmapmacro.js');
+drupal_add_js(drupal_get_path('module','gmap') .'/js/macro.js');
   return theme('textfield',$element);
 }
 
@@ -1266,8 +1266,9 @@ function theme_gmap($element) {
   // Google is picky about this one.
   $map['zoom'] = (int)$map['zoom'];
 
-  drupal_add_js(drupal_get_path('module','gmap') .'/gmap.js');
-  drupal_add_js(drupal_get_path('module','gmap') .'/gmap_marker.js');
+  drupal_add_js(drupal_get_path('module','gmap') .'/js/gmap.js');
+  //@@@
+  drupal_add_js(drupal_get_path('module','gmap') .'/js/gmap_marker.js');
 //  drupal_add_js(drupal_get_path('module','gmap') .'/georss.js');
 
   // Inline settings extend.
