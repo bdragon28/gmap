@@ -44,8 +44,8 @@ Drupal.gmap.prototype.handler.address = function(elem) {
     if(elem.value.length > 0) {
       obj.geocoder().getLatLng(elem.value,function(point) {
         if(point) {
-          obj.vars.lat = point.lat();
-          obj.vars.lon = point.lng();
+          obj.vars.latitude = point.lat();
+          obj.vars.longitude = point.lng();
           obj.change("move",binding);
         }
         else {
