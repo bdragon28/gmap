@@ -40,6 +40,10 @@ function gmap_defaults() {
     'line1_color' => '#00cc00',
     'line2_color' => '#ff0000',
     'line3_color' => '#0000ff',
+    'behavior' => array(
+      'nodrag' => FALSE,
+      'nokeyboard' => TRUE,
+    ),
   ));
 }
 
