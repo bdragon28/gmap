@@ -26,5 +26,5 @@ Drupal.gmap.prototype.macroparts.push(function() {
     output += ' |align=' + obj.vars.align;
   }
   return output;
-}
+});
     
