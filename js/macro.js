@@ -38,7 +38,6 @@ Drupal.gmap.prototype.macro = function() {
   o+=' |control=' + this.vars.controltype;
   // @@@ Use maptype instead, accept old and new.
   o+=' |type='    + this.vars.maptype;
-  o+=' |align='   + this.vars.align;
 
   for (var i=0; i<this.macroparts.length; i++) {
     o+= this.macroparts[i].call(this);
