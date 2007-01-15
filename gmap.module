@@ -1418,7 +1418,7 @@ function gmap_macro_form() {
     '#attributes' => array('class' => 'gmap-control'),
   );*/
   $form['macroform']['textarea'] = array(
-    '#type' => 'gmap_macro',
+    '#type' => 'gmap_macrotext',
     '#map' => 'map',
     '#default_value' => '',
     '#title' => t('Macro text'),
