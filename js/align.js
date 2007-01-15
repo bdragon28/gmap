@@ -8,7 +8,7 @@
 ////////////////////////////////////////
 //           Align widget             //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.alignment = function(elem) {
+Drupal.gmap.prototype.handler.align = function(elem) {
   var obj = this;
   // Respond to incoming alignment changes.
   var binding = obj.bind("alignchange",function(){elem.value = obj.vars.align});
