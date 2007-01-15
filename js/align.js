@@ -23,7 +23,7 @@ Drupal.gmap.prototype.macroparts.push(function() {
   var obj = this;
   var output = '';
   if (obj.vars.align && obj.vars.align != 'None') {
-    output .= ' |align=' + obj.vars.align;
+    output += ' |align=' + obj.vars.align;
   }
   return output;
 }
