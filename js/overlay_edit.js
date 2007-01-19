@@ -6,13 +6,17 @@
 Drupal.gmap.prototype.handler.overlayedit = function(elem) {
   var obj = this;
 
+  // @@@ temporary init junk!!!
   obj.lines = [];
   obj.lines[0] = {};
-  obj.lines[0].points = []; //@@@
+  obj.lines[0].points = [];
+  obj.lines[0].color = obj.vars.line1_color;
   obj.lines[1] = {};
-  obj.lines[1].points = []; //@@@
+  obj.lines[1].points = [];
+  obj.lines[1].color = obj.vars.line2_color;
   obj.lines[2] = {};
-  obj.lines[2].points = []; //@@@
+  obj.lines[2].points = [];
+  obj.lines[2].color = obj.vars.line3_color;
 
   var binding = obj.bind('overlay_edit_mode',function() {
     // @@@
@@ -70,7 +74,8 @@ Drupal.gmap.prototype.handler.overlayedit = function(elem) {
               if (obj.lines[l].overlay) {
                 obj.map.removeOverlay(obj.lines[l].overlay);
               }
-              obj.map.addOverlay(obj.lines[l].overlay = new GPolyline(obj.lines[l].points, '#000000', 5));
+              obj.map.addOverlay(obj.lines[l].overlay = new GPolyline(obj.lines[l].points, obj.lines[l].color, 5));
+              obj.change('lines',-1);
               break;
           }
         }
@@ -92,7 +97,7 @@ Drupal.gmap.prototype.macroparts.push(function() {
     if (this.lines[q].points) {
       if (this.lines[q].points.length > 0) {
         for(var i=0;i<this.lines[q].points.length;i++) {
-          temp[q] = '' + this.lines[q].points[i].lat() + ',' + this.lines[q].points[i].lng();
+          temp[i] = '' + this.lines[q].points[i].lat() + ',' + this.lines[q].points[i].lng();
         }
         output += ' |line' + (q+1) + '=' + temp.join(' + ');
       }
