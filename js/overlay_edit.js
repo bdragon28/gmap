@@ -59,8 +59,9 @@ Drupal.gmap.prototype.handler.overlayedit = function(elem) {
               obj.lines[0].points.push(point);
               if (obj.lines[0].overlay) {
                 obj.map.removeOverlay(obj.lines[0].overlay);
-                obj.map.addOverlay(obj.lines[0].overlay = new GPolyline(obj.lines[0].points, '#000000', 5));
               }
+              obj.map.addOverlay(obj.lines[0].overlay = new GPolyline(obj.lines[0].points, '#000000', 5));
+
               break;
 /*
 
