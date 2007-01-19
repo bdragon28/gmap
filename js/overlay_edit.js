@@ -83,10 +83,20 @@ Drupal.gmap.prototype.handler.overlayedit = function(elem) {
 }
 
 Drupal.gmap.prototype.macroparts.push(function() {
+  var temp = [];
+  var output = '';
   if (this.vars.points) {
     if (this.vars.points.length > 0) {
-      return ' |markers=' + this.vars.points.join(' + ');
+      output += ' |markers=' + this.vars.points.join(' + ');
     }
   }
-  return '';
+  if (this.lines[0].points) {
+    if (this.lines[0].points.length > 0) {
+      for(var i=0;i<this.lines[0].points.length;i++) {
+        temp[i] = '' + this.lines[0].points[i].lat() + ',' + this.lines[0].points[i].lng();
+      }
+      output += ' |line1=' + this.lines[0].points.join(' + ');
+    }
+  }
+  return output;
 });
