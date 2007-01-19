@@ -6,6 +6,9 @@
 Drupal.gmap.prototype.handler.overlayedit = function(elem) {
   var obj = this;
 
+  obj.lines = [];
+  obj.lines[0].points = {}; //@@@
+
   var binding = obj.bind('overlay_edit_mode',function() {
     // @@@
   });
@@ -51,6 +54,25 @@ Drupal.gmap.prototype.handler.overlayedit = function(elem) {
               obj.vars.points.push('' + point.lat() + ',' + point.lng());
               obj.change('point',-1);
               break;
+            case 'Line1':
+              obj.lines[0].points.push(point);
+              if (obj.lines[0].overlay) {
+                obj.map.removeOverlay(obj.lines[0].overlay);
+                obj.map.addOverlay(obj.lines[0].overlay = new GPolyline(obj.lines[0].points, '#000000', 5));
+              }
+              break;
+/*
+
+          map.drupal.line1points.push(point);
+          if (map.drupal.line1overlay) map.removeOverlay(map.drupal.line1overlay);
+          map.drupal.line1overlay=new GPolyline(map.drupal.line1points, map.drupal.linecolors[0], 5);
+          map.addOverlay(map.drupal.line1overlay);
+          if (map.drupal.line1string.length > 0) map.drupal.line1string += ' + ';
+          map.drupal.line1string += point.lat() + ',' + point.lng();
+          map.drupal.gmapline1 = map.drupal.line1string;
+          break;
+          */
+
           }
         }
       });

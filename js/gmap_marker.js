@@ -32,7 +32,6 @@ Drupal.gmap.prototype.marker.makeMarker = function(markerdef) {
  */
 Drupal.gmap.prototype.marker.add = function(marker) {
   var obj = this;
-alert(this.map);
   obj.map.addOverlay(marker);
 }
 
