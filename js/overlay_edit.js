@@ -7,7 +7,8 @@ Drupal.gmap.prototype.handler.overlayedit = function(elem) {
   var obj = this;
 
   obj.lines = [];
-  obj.lines[0].points = {}; //@@@
+  obj.lines[0] = {};
+  obj.lines[0].points = []; //@@@
 
   var binding = obj.bind('overlay_edit_mode',function() {
     // @@@
