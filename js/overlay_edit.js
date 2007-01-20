@@ -78,7 +78,7 @@ Drupal.gmap.prototype.handler.overlayedit = function(elem) {
               if (obj.vars.lines[l].overlay) {
                 obj.map.removeOverlay(obj.vars.lines[l].overlay);
               }
-              obj.map.addOverlay(obj.vars.lines[l].overlay = new GPolyline(obj.vars.lines[l].points, obj.vars.lines[l].color, 5));
+              obj.map.addOverlay(obj.vars.lines[l].overlay = new GPolyline(obj.vars.lines[l].points, obj.vars.line_colors[l], 5));
               obj.change('lines',-1);
               break;
           }

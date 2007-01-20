@@ -56,7 +56,7 @@ Drupal.gmap.prototype.handler.gmap.push(function(elem) {
             for (var j=0; j<obj.vars.lines[i].length; j++) {
               temp.push(new GLatLng(obj.vars.lines[i][j].latitude,obj.vars.lines[i][j].longitude));
             }
-            obj.map.addOverlay(new GPolyline(temp,obj.lines[i].color, 5));
+            obj.map.addOverlay(new GPolyline(temp,obj.line_colors[i], 5));
           }
         }
       }

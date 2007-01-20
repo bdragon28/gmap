@@ -37,17 +37,7 @@ function gmap_defaults() {
     'align' => 'None',
     'latlong' => '40,0',
     'maptype' => 'Map',
-    'lines' => array(
-      0 => array(
-        'color' => '#00cc00',
-      ),
-      1 => array(
-        'color' => '#ff0000',
-      ),
-      2 => array(
-        'color' => '#0000ff',
-      ),
-    ),
+    'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
     'behavior' => array(
       'nodrag' => FALSE,
       'nokeyboard' => TRUE,
@@ -623,7 +613,7 @@ function gmap_parse_macro($instring,$ver=2) {
 
     // Put all lines in the line array.
     if(strpos($k,'line')===0) {
-      $m['lines'][intval(substr($k,4))-1] = $v;
+      $m['lines'][intval(substr($k,4))-1]['points'] = $v;
       $m['delme'][] = $k;
     }
   }
