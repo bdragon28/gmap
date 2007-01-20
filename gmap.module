@@ -613,12 +613,13 @@ function gmap_parse_macro($instring,$ver=2) {
 
     // Put all lines in the line array.
     if(strpos($k,'line')===0) {
-      $m['lines'][intval(substr($k,4))-1]['points'] = $v;
+      $m['lines'][intval(substr($k,4))-1]['points'] = _gmap_str2points($v);
       $m['delme'][] = $k;
     }
   }
+  // Clean up unneeded elements.
   foreach($m['delme'] as $k => $v) {
-    unset($m[$k]);
+    unset($m[$v]);
   }
   unset($m['delme']);
 
@@ -787,6 +788,23 @@ function gmap_parse_macro($instring,$ver=2) {
   return $m;
 }
 
+/**
+ * Parse a set of points in string format
+ */
+function _gmap_str2points($str) {
+  // Explode along + axis
+  $arr = explode(' + ',$str);
+  // Explode along , axis
+  $points = array();
+  foreach($arr as $pt) {
+    list($lat,$lon) = explode(',',$pt);
+    $points[] = array(
+      'latitude' => trim($lat),
+      'longitude' => trim($lon),
+    );
+  }
+  return $points;
+}
 
 /**
  *
