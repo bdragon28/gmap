@@ -1079,37 +1079,27 @@ function gmap_admin_settings() {
     '#default_value' => $defaults['behavior']['nokeyboard'],
     '#description' => t('If checked, disables the GKeyboardHandler normally attached to a map.'),
   );
-  $form['gmap_default']['lines'] = array(
+  $form['gmap_default']['line_colors'] = array(
     '#tree' => TRUE,
   );
-
-  $form['gmap_default']['lines'][0] = array(
-    '#tree' => TRUE,
-  );
-  $form['gmap_default']['lines'][0]['color'] = array(
+  $form['gmap_default']['line_colors'][0] = array(
     '#type' => 'textfield',
     '#title' => t('Default Line 1 Color'),
-    '#default_value' => $defaults['lines'][0]['color'],
+    '#default_value' => $defaults['line_colors'][0],
     '#size' => 12,
     '#maxlength' => 7,
   );
-  $form['gmap_default']['lines'][1] = array(
-    '#tree' => TRUE,
-  );
-  $form['gmap_default']['lines'][1]['color'] = array(
+  $form['gmap_default']['line_colors'][1] = array(
     '#type' => 'textfield',
     '#title' => t('Default Line 2 Color'),
-    '#default_value' => $defaults['lines'][1]['color'],
+    '#default_value' => $defaults['line_colors'][1],
     '#size' => 12,
     '#maxlength' => 7,
   );
-  $form['gmap_default']['lines'][2] = array(
-    '#tree' => TRUE,
-  );
-  $form['gmap_default']['lines'][2]['color'] = array(
+  $form['gmap_default']['line_colors'][2] = array(
     '#type' => 'textfield',
     '#title' => t('Default Line 3 Color'),
-    '#default_value' => $defaults['lines'][2]['color'],
+    '#default_value' => $defaults['line_colors'][2],
     '#size' => 12,
     '#maxlength' => 7,
   );
