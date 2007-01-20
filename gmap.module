@@ -612,8 +612,8 @@ function gmap_parse_macro($instring,$ver=2) {
   while (list($k,$v) = each($m)) {
 
     // Put all lines in the line array.
-    if(strpos($k,'line')===0) {
-      $m['lines'][intval(substr($k,4))-1]['points'] = _gmap_str2points($v);
+    if((strpos($k,'line')===0) && $k!='lines') {
+      $m['lines'][intval(substr($k,4))-1] = _gmap_str2points($v);
       $m['delme'][] = $k;
     }
   }
