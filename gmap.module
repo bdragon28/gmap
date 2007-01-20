@@ -1113,7 +1113,8 @@ function gmap_admin_settings() {
     '#default_value' => $defaults['lines'][1]['color'],
     '#size' => 7,
     '#maxlength' => 7,
-  );  $form['gmap_default']['lines'][1] = array(
+  );
+  $form['gmap_default']['lines'][2] = array(
     '#tree' => TRUE,
   );
   $form['gmap_default']['lines'][2]['color'] = array(
