@@ -1097,7 +1097,7 @@ function gmap_admin_settings() {
   $form['gmap_default']['lines'][0] = array(
     '#tree' => TRUE,
   );
-  $form['gmap_default']['lines'][0]['color'] array(
+  $form['gmap_default']['lines'][0]['color'] = array(
     '#type' => 'textfield',
     '#title' => t('Default Line 1 Color'),
     '#default_value' => $defaults['lines'][0]['color'],
@@ -1107,7 +1107,7 @@ function gmap_admin_settings() {
   $form['gmap_default']['lines'][1] = array(
     '#tree' => TRUE,
   );
-  $form['gmap_default']['lines'][1]['color'] array(
+  $form['gmap_default']['lines'][1]['color'] = array(
     '#type' => 'textfield',
     '#title' => t('Default Line 2 Color'),
     '#default_value' => $defaults['lines'][1]['color'],
@@ -1116,7 +1116,7 @@ function gmap_admin_settings() {
   );  $form['gmap_default']['lines'][1] = array(
     '#tree' => TRUE,
   );
-  $form['gmap_default']['lines'][2]['color'] array(
+  $form['gmap_default']['lines'][2]['color'] = array(
     '#type' => 'textfield',
     '#title' => t('Default Line 3 Color'),
     '#default_value' => $defaults['lines'][2]['color'],
