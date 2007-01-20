@@ -72,7 +72,7 @@ Drupal.gmap.prototype.handler.overlayedit = function(elem) {
               if(elem.value=='Line2') l=1;
               if(elem.value=='Line3') l=2; // @@@ Obvious hack.
               if (!obj.vars.lines[l].points) {
-                obj.vars.lines[l].points = [];
+                obj.vars.lines[l].points = new Array();
               }
               obj.vars.lines[l].points.push(point);
               if (obj.vars.lines[l].overlay) {
