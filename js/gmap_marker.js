@@ -49,6 +49,17 @@ Drupal.gmap.prototype.handler.gmap.push(function(elem) {
       for (var i=0; i<obj.vars.markers.length; i++) {
         obj.marker.add.call(obj,(obj.marker.makeMarker(obj.vars.markers[i])));
       }
+      if (obj.vars.lines && obj.vars.lines.length>0) {
+        for (var i=0; i<obj.vars.lines.length; i++) {
+          var temp = [];
+          if (obj.vars.lines[i] && obj.vars.lines[i].length>1) {
+            for (var j=0; j<obj.vars.lines[i].length; j++) {
+              temp.push(new GLatLng(obj.vars.lines[i][j].latitude,obj.vars.lines[i][j].longitude));
+            }
+            obj.map.addOverlay(new GPolyline(temp,obj.lines[i].color, 5));
+          }
+        }
+      }
     });
   }
 });  

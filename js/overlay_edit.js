@@ -7,7 +7,7 @@ Drupal.gmap.prototype.handler.overlayedit = function(elem) {
   var obj = this;
 
   // @@@ temporary init junk!!!
-  obj.lines = [];
+/*  obj.lines = [];
   obj.lines[0] = {};
   obj.lines[0].points = [];
   obj.lines[0].color = obj.vars.line1_color;
@@ -17,6 +17,7 @@ Drupal.gmap.prototype.handler.overlayedit = function(elem) {
   obj.lines[2] = {};
   obj.lines[2].points = [];
   obj.lines[2].color = obj.vars.line3_color;
+*/
 
   var binding = obj.bind('overlay_edit_mode',function() {
     // @@@
@@ -70,11 +71,11 @@ Drupal.gmap.prototype.handler.overlayedit = function(elem) {
               if(elem.value=='Line1') l=0;
               if(elem.value=='Line2') l=1;
               if(elem.value=='Line3') l=2; // @@@ Obvious hack.
-              obj.lines[l].points.push(point);
-              if (obj.lines[l].overlay) {
-                obj.map.removeOverlay(obj.lines[l].overlay);
+              obj.vars.lines[l].points.push(point);
+              if (obj.vars.lines[l].overlay) {
+                obj.map.removeOverlay(obj.vars.lines[l].overlay);
               }
-              obj.map.addOverlay(obj.lines[l].overlay = new GPolyline(obj.lines[l].points, obj.lines[l].color, 5));
+              obj.map.addOverlay(obj.vars.lines[l].overlay = new GPolyline(obj.vars.lines[l].points, obj.vars.lines[l].color, 5));
               obj.change('lines',-1);
               break;
           }
@@ -94,10 +95,11 @@ Drupal.gmap.prototype.macroparts.push(function() {
   }
   for (var q=0; q<3 ; q++) {
     temp = [];
-    if (this.lines[q].points) {
-      if (this.lines[q].points.length > 0) {
-        for(var i=0;i<this.lines[q].points.length;i++) {
-          temp[i] = '' + this.lines[q].points[i].lat() + ',' + this.lines[q].points[i].lng();
+    if (this.vars.lines[q].points) {
+      // Lines have at least 2 points.
+      if (this.vars.lines[q].points.length > 1) {
+        for(var i=0;i<this.vars.lines[q].points.length;i++) {
+          temp[i] = '' + this.vars.lines[q].points[i].lat() + ',' + this.vars.lines[q].points[i].lng();
         }
         output += ' |line' + (q+1) + '=' + temp.join(' + ');
       }

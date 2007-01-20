@@ -37,6 +37,17 @@ function gmap_defaults() {
     'align' => 'None',
     'latlong' => '40,0',
     'maptype' => 'Map',
+    'lines' => array(
+      0 => array(
+        'color' => '#00cc00',
+      ),
+      1 => array(
+        'color' => '#ff0000',
+      ),
+      2 => array(
+        'color' => '#0000ff',
+      ),
+    ),
     'line1_color' => '#00cc00',
     'line2_color' => '#ff0000',
     'line3_color' => '#0000ff',
@@ -1079,28 +1090,40 @@ function gmap_admin_settings() {
     '#default_value' => $defaults['behavior']['nokeyboard'],
     '#description' => t('If checked, disables the GKeyboardHandler normally attached to a map.'),
   );
+  $form['gmap_default']['lines'] = array(
+    '#tree' => TRUE,
+  );
 
-  $form['gmap_default']['line1_color'] = array(
+  $form['gmap_default']['lines'][0] = array(
+    '#tree' => TRUE,
+  );
+  $form['gmap_default']['lines'][0]['color'] array(
     '#type' => 'textfield',
     '#title' => t('Default Line 1 Color'),
-    '#default_value' => $defaults['line1_color'],
-    '#size' => 25,
+    '#default_value' => $defaults['lines'][0]['color'],
+    '#size' => 7,
     '#maxlength' => 7,
   );
-  $form['gmap_default']['line2_color'] = array(
+  $form['gmap_default']['lines'][1] = array(
+    '#tree' => TRUE,
+  );
+  $form['gmap_default']['lines'][1]['color'] array(
     '#type' => 'textfield',
     '#title' => t('Default Line 2 Color'),
-    '#default_value' => $defaults['line2_color'],
-    '#size' => 25,
-    '#maxlength' => 7 ,
+    '#default_value' => $defaults['lines'][1]['color'],
+    '#size' => 7,
+    '#maxlength' => 7,
+  );  $form['gmap_default']['lines'][1] = array(
+    '#tree' => TRUE,
   );
-  $form['gmap_default']['line3_color'] = array(
+  $form['gmap_default']['lines'][2]['color'] array(
     '#type' => 'textfield',
     '#title' => t('Default Line 3 Color'),
-    '#default_value' => $defaults['line3_color'],
-    '#size' => 25,
-    '#maxlength' => 7 ,
+    '#default_value' => $defaults['lines'][2]['color'],
+    '#size' => 7,
+    '#maxlength' => 7,
   );
+
   $markers = gmap_get_markers();
 
   $form['clusterer'] = array(
@@ -1266,9 +1289,6 @@ function theme_gmap_align($element) {
 function theme_gmap($element) {
   _gmap_doheader();
 
-  $js = '<script src="http://maps.google.com/maps?file=api&amp;v='.GMAP_API_V.'&amp;key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>';
-  drupal_set_html_head($js);
-
   $map = array_merge(gmap_defaults(),$element['#settings']);
   $element['#attributes']['class'] = trim(implode(' ',array($element['#attributes']['class'],'gmap','gmap-map')));
   if (!isset($element['#id'])) {
@@ -1378,16 +1398,6 @@ function gmap_macro_form() {
     '#map' => 'map',
     '#title' => t('Alignment'),
   );
-
-/*  $form['macroform']['alignment'] = array(
-    '#type' => 'select', 
-    '#id' => 'gmap-map-alignment',
-    '#title' => t('Alignment'), 
-    '#options' => drupal_map_assoc(array('None', 'Right', 'Left', 'Center')), 
-//    '#default_value' => GMAP_ALIGNMENT,
-    '#required' => FALSE,
-    '#attributes' => array('class' => 'gmap-control'),
-  ); */  
   $form['macroform']['overlayedit'] = array(
     '#type' => 'gmap_overlay_edit',
     '#map' => 'map',
