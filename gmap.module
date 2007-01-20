@@ -40,15 +40,12 @@ function gmap_defaults() {
     'lines' => array(
       0 => array(
         'color' => '#00cc00',
-        'points' => array(),
       ),
       1 => array(
         'color' => '#ff0000',
-        'points' => array(),
       ),
       2 => array(
         'color' => '#0000ff',
-        'points' => array(),
       ),
     ),
     'behavior' => array(
@@ -617,11 +614,24 @@ function gmap_parse_macro($instring,$ver=2) {
     }
   }
 
+  $m['lines'] = array();
+  $m['delme'] = array(); // List of keys to delete.
+
   // Look for keys needing handling
   reset($m);
   while (list($k,$v) = each($m)) {
 
+    // Put all lines in the line array.
+    if(strpos($k,'line')===0) {
+      $m['lines'][intval(substr($k,4))-1] = $v;
+      $m['delme'][] = $k;
+    }
   }
+  foreach($m['delme'] as $k => $v) {
+    unset($m[$k]);
+  }
+  unset($m['delme']);
+
 
   // Merge points and markers
   $m['markers-temp'] = array_merge($m['points'],$m['markers']);
