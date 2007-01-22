@@ -209,9 +209,37 @@ Drupal.gmap.prototype.handler.zoom = function(elem) {
 }
 
 ////////////////////////////////////////
-//          Latlong widget            //
+//          Latitude widget           //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.latlong = function(elem) {
+Drupal.gmap.prototype.handler.latitude = function(elem) {
+  var obj = this;
+  // Respond to incoming movements.
+  var binding = obj.bind("move",function(){elem.value = ''+obj.vars.latitude});
+  // Send out outgoing movements.
+  $(elem).change(function() {
+    obj.vars.latitude = this.value;
+    obj.change("move",binding);
+  });
+}
+
+////////////////////////////////////////
+//         Longitude widget           //
+////////////////////////////////////////
+Drupal.gmap.prototype.handler.longitude = function(elem) {
+  var obj = this;
+  // Respond to incoming movements.
+  var binding = obj.bind("move",function(){elem.value = ''+obj.vars.longitude});
+  // Send out outgoing movements.
+  $(elem).change(function() {
+    obj.vars.longitude = this.value;
+    obj.change("move",binding);
+  });
+}
+
+////////////////////////////////////////
+//          Latlon widget             //
+////////////////////////////////////////
+Drupal.gmap.prototype.handler.latlon = function(elem) {
   var obj = this;
   // Respond to incoming movements.
   var binding = obj.bind("move",function(){elem.value = ''+obj.vars.latitude+','+obj.vars.longitude});

@@ -721,47 +721,46 @@ echo "BOO!";
     $longitude = $form['#node']->gmap_location_longitude;
   }
 
-  $form['coordinates']=array(
+  $form['coordinates'] = array(
     '#type' => 'fieldset',
     '#title' => t('Coordinates'),
     '#weight' => 5,
     '#collapsible' => $type!='user', 
     '#collapsed' => false,
   );
-  $form['coordinates']['gmap_node']=array(
+  $form['coordinates']['gmap_node'] = array(
     '#type'  => 'gmap',
+    '#map' => $type,
   );
-  $form['coordinates']['gmap_location_latitude']=array(
-    '#type'=>'textfield',
-    '#id'=>'gmap-latitude',
-    '#title'=>t('Latitude'),
-    '#default_value'=>$latitude,
-    '#size'=>30,
-    '#maxlength'=>120,
-    '#attributes'=>array('onchange'=>'gmap_textchange();'),
+  $form['coordinates']['gmap_location_latitude'] = array(
+    '#type' => 'gmap_latitude',
+    '#map' => $type,
+    '#title' => t('Latitude'),
+    '#default_value' => $latitude,
+    '#size' => 30,
+    '#maxlength' => 120,
   );
-  $form['coordinates']['gmap_location_longitude']=array(
-    '#type'=>'textfield',
-    '#title'=>t('Longitude'),
-    '#default_value'=>$longitude,
-    '#size'=>30,
-    '#maxlength'=>120,
-    '#description'=>t('The latitude and longitude will be entered here when you click on a location in the interactive map above. You can also fill in the values manually.'),
-    '#attributes'=>array('onchange'=>'gmap_textchange();'),
+  $form['coordinates']['gmap_location_longitude'] = array(
+    '#type' => 'gmap_longitude',
+    '#title' => t('Longitude'),
+    '#default_value' => $longitude,
+    '#size' => 30,
+    '#maxlength' => 120,
+    '#description' => t('The latitude and longitude will be entered here when you click on a location in the interactive map above. You can also fill in the values manually.'),
   );
-  $fields=array('longitude'=>'gmap_location_longitude',
-                             'latitude'=>'gmap_location_latitude',);
-  if (variable_get('gmap_geocode', 1)) {
-     $form['coordinates']['gmap_location_address']=array(
-      '#type'=>'textfield',
-      '#title'=>t('Address'),
-      '#default_value'=>'',
-      '#size'=>30,
-      '#maxlength'=>120,
-      '#id'=>'gmap-address',
-      '#description'=>t('The address to be found on the map.  Enter an address and then hit "TAB" and the current location will be updated.  Please note that this address is not saved for the node, it is only used for finding a location.'),
 
-     );
+  $fields=array('longitude'=>'gmap_location_longitude',
+    'latitude'=>'gmap_location_latitude',
+  );
+
+  if (variable_get('gmap_geocode', 1)) {
+    $form['coordinates']['gmap_location_address'] = array(
+      '#type' => 'gmap_address',
+      '#map' => $type,
+      '#title' => t('Address'),
+      '#description' => t('The address to be found on the map.  Enter an address and then hit "TAB" and the current location will be updated.  Please note that this address is not saved for the node, it is only used for finding a location.'),
+    );
+    
      $fields['address']='gmap_location_address';
   }
   $form['coordinates']['gmap_node']['#value']= gmap_set_location(

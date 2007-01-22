@@ -1199,6 +1199,9 @@ function gmap_elements() {
     'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit' => array())),
     'gmap_address' => array('#input' => TRUE, '#process' => array('process_gmap_address' => array())),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align' => array())),
+    'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_latitude' => array())),
+    'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_longitude' => array())),
+    'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_latlon' => array())),
   );
 }
 
@@ -1225,6 +1228,30 @@ function process_gmap_macrotext($element) {
   $element['#id'] = 'gmap-'.$element['#map'].'-macrotext';
   $element['#attributes']['class'] .= ' gmap-control';
   $element['#theme'] = 'gmap_macrotext';
+  return $element;
+}
+
+function process_gmap_latitude($element) {
+  $element['#type'] = 'textarea';
+  $element['#id'] = 'gmap-'.$element['#map'].'-latitude';
+  $element['attributes']['class'] .= ' gmap-control';
+  $element['#theme'] = 'gmap_coord';
+  return $element;
+}
+
+function process_gmap_longitude($element) {
+  $element['#type'] = 'textarea';
+  $element['#id'] = 'gmap-'.$element['#map'].'-longitude';
+  $element['attributes']['class'] .= ' gmap-control';
+  $element['#theme'] = 'gmap_coord';
+  return $element;
+}
+
+function process_gmap_latlon($element) {
+  $element['#type'] = 'textarea';
+  $element['#id'] = 'gmap-'.$element['#map'].'-latlon';
+  $element['attributes']['class'] .= ' gmap-control';
+  $element['#theme'] = 'gmap_coord';
   return $element;
 }
 
@@ -1258,6 +1285,11 @@ function process_gmap_address($element) {
 function theme_gmap_overlay_edit($element) {
   drupal_add_js(drupal_get_path('module','gmap') .'/js/overlay_edit.js');
   return theme('select',$element);
+}
+
+function theme_gmap_coord($element) {
+  //drupal_add_js
+  return theme('textfield',$element);
 }
 
 function theme_gmap_macrotext($element) {
