@@ -338,7 +338,7 @@ Drupal.gmapAutoAttach = function() {
       }
 
       for ( control in map.handler ) {
-        $('#gmap-'+mapid+'-'+control).each(function() {
+        $('.gmap-'+mapid+'-'+control).each(function() {
           // Handle arrays of functions
           if (typeof map.handler[control]!='function') {
             for (var i=0; i<map.handler[control].length; i++) {

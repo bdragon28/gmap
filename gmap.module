@@ -1228,41 +1228,43 @@ function expand_gmap($element) {
  * Set up the macro element.
  */
 function process_gmap_macrotext($element) {
+  static $c = 0;
+  $c++;
   $element['#type'] = 'textarea';
-  $element['#id'] = 'gmap-'.$element['#map'].'-macrotext';
-  $element['#attributes']['class'] .= ' gmap-control';
+//  $element['#id'] = 'gmap-'.$element['#map'].'-macrotext';
+  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-macrotext';
   $element['#theme'] = 'gmap_macrotext';
   return $element;
 }
 
 function process_gmap_latitude($element) {
   $element['#type'] = 'textfield';
-  $element['#id'] = 'gmap-'.$element['#map'].'-latitude';
-  $element['#attributes']['class'] .= ' gmap-control';
+//  $element['#id'] = 'gmap-'.$element['#map'].'-latitude';
+  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-latitude';
   $element['#theme'] = 'gmap_coord';
   return $element;
 }
 
 function process_gmap_longitude($element) {
   $element['#type'] = 'textfield';
-  $element['#id'] = 'gmap-'.$element['#map'].'-longitude';
-  $element['#attributes']['class'] .= ' gmap-control';
+//  $element['#id'] = 'gmap-'.$element['#map'].'-longitude';
+  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-longitude';
   $element['#theme'] = 'gmap_coord';
   return $element;
 }
 
 function process_gmap_latlon($element) {
   $element['#type'] = 'textfield';
-  $element['#id'] = 'gmap-'.$element['#map'].'-latlon';
-  $element['#attributes']['class'] .= ' gmap-control';
+//  $element['#id'] = 'gmap-'.$element['#map'].'-latlon';
+  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-latlon';
   $element['#theme'] = 'gmap_coord';
   return $element;
 }
 
 function process_gmap_overlay_edit($element) {
   $element['#type'] = 'select';
-  $element['#id'] = 'gmap-'.$element['#map'].'-overlayedit';
-  $element['#attributes']['class'] .= ' gmap-control';
+//  $element['#id'] = 'gmap-'.$element['#map'].'-overlayedit';
+  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-overlayedit';
   $element['#options'] = drupal_map_assoc(array('Points', 'Line1', 'Line2', 'Line3'));
   $element['#default_value'] = 'Points';
   $element['#theme'] = 'gmap_overlay_edit';
@@ -1271,8 +1273,8 @@ function process_gmap_overlay_edit($element) {
 
 function process_gmap_align($element) {
   $element['#type'] = 'select';
-  $element['#id'] = 'gmap-'.$element['#map'].'-align';
-  $element['#attributes']['class'] .= ' gmap-control';
+//  $element['#id'] = 'gmap-'.$element['#map'].'-align';
+  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-align';
   $element['#options'] = drupal_map_assoc(array('None', 'Right', 'Left', 'Center'));
   $element['#theme'] = 'gmap_align';
   return $element;
@@ -1280,8 +1282,8 @@ function process_gmap_align($element) {
 
 function process_gmap_address($element) {
   $element['#type'] = 'textfield';
-  $element['#id'] = 'gmap-'.$element['#map'].'-address';
-  $element['#attributes']['class'] .= ' gmap-control';
+//  $element['#id'] = 'gmap-'.$element['#map'].'-address';
+  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-address';
   $element['#theme'] = 'gmap_address';
   return $element;
 }
