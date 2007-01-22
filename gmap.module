@@ -1184,9 +1184,9 @@ function gmap_elements() {
   return array(
     'gmap' => array(
       '#input' => FALSE, // This isn't a *form* input!!
-      '#id' => 'map',
+//      '#id' => 'map',
       '#settings' => array_merge(gmap_defaults(),array(
-        'id' => 'map', // @@@ I hate this.
+//        'id' => 'map', // @@@ I hate this.
         'points' => array(),
         'pointsOverlays' => array(),
         'line1' => array('overlay' => null, 'points' => null, 'line' => ""),
@@ -1209,18 +1209,18 @@ function gmap_elements() {
  * Gmap element process hook
  */
 function expand_gmap($element) {
+  $mapid = 'map';
+  if ($element['#map']) {
+    $mapid = $element['#map'];
+  }
   $element['#settings'] = array_merge(gmap_defaults(),array(
-    'id' => 'map', // @@@ I hate this.
+    'id' => $mapid,
     'points' => array(),
     'pointsOverlays' => array(),
     'line1' => array('overlay' => null, 'points' => null, 'line' => ""),
     'line2' => array('overlay' => null, 'points' => null, 'line' => ""),
     'line3' => array('overlay' => null, 'points' => null, 'line' => ""),
   ),$element['#settings']);
-  if ($element['#map']) {
-    // Use #map if it is defined.
-    $element['#settings']['id'] = $element['#map'];
-  }
   return $element;
 }
 
