@@ -729,7 +729,7 @@ echo "BOO!";
     '#collapsed' => false,
   );
   $form['coordinates']['gmap_node'] = array(
-    '#type'  => 'gmap',
+    '#type' => 'gmap',
     '#map' => $type,
   );
   $form['coordinates']['gmap_location_latitude'] = array(
@@ -742,6 +742,7 @@ echo "BOO!";
   );
   $form['coordinates']['gmap_location_longitude'] = array(
     '#type' => 'gmap_longitude',
+    '#map' => $type,
     '#title' => t('Longitude'),
     '#default_value' => $longitude,
     '#size' => 30,
@@ -763,9 +764,9 @@ echo "BOO!";
     
      $fields['address']='gmap_location_address';
   }
-  $form['coordinates']['gmap_node']['#value']= gmap_set_location(
+/*  $form['coordinates']['gmap_node']['#value']= gmap_set_location(
        variable_get('gmap_'.$type.'_map', '[gmap|id='.$type.'map|center=0,30|control=Large|type=Hybrid|zoom=16|width=100%|height=400px]'),
-       $form['coordinates'],$fields);
+       $form['coordinates'],$fields); */
 }
 
 function _gmap_location_validate_form(&$object) {
