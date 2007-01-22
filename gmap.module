@@ -1234,7 +1234,7 @@ function process_gmap_macrotext($element) {
 function process_gmap_latitude($element) {
   $element['#type'] = 'textfield';
   $element['#id'] = 'gmap-'.$element['#map'].'-latitude';
-  $element['attributes']['class'] .= ' gmap-control';
+  $element['#attributes']['class'] .= ' gmap-control';
   $element['#theme'] = 'gmap_coord';
   return $element;
 }
@@ -1242,7 +1242,7 @@ function process_gmap_latitude($element) {
 function process_gmap_longitude($element) {
   $element['#type'] = 'textfield';
   $element['#id'] = 'gmap-'.$element['#map'].'-longitude';
-  $element['attributes']['class'] .= ' gmap-control';
+  $element['#attributes']['class'] .= ' gmap-control';
   $element['#theme'] = 'gmap_coord';
   return $element;
 }
@@ -1250,7 +1250,7 @@ function process_gmap_longitude($element) {
 function process_gmap_latlon($element) {
   $element['#type'] = 'textfield';
   $element['#id'] = 'gmap-'.$element['#map'].'-latlon';
-  $element['attributes']['class'] .= ' gmap-control';
+  $element['#attributes']['class'] .= ' gmap-control';
   $element['#theme'] = 'gmap_coord';
   return $element;
 }
