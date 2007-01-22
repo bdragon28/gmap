@@ -634,6 +634,13 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
           $form['coordinates']['gmap_node'] = array(
             '#type' => 'gmap',
             '#map' => 'user',
+            '#settings' => array(
+              'latitude' => $edit['gmap_location_latitude'],
+              'longitude' => $edit['gmap_location_longitude'],
+              'behavior' => array(
+                'geocode_leave_marker' => TRUE,
+              ),
+            ),
           );
         
           $form['coordinates']['gmap_location_latitude'] = array(
