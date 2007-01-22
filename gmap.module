@@ -1503,3 +1503,28 @@ function theme_views_view_gmap($view, $nodes) {
   $output .= gmap_draw_map($thismap);
   return $output;
 }
+
+/**
+ * Utility function to allow high-precision decimals to work with the SQL layer.
+ * Use as an unquoted %s parameter.
+ */
+function gmap_decimal($num) {
+  // Paraphrased from postgresql documentation:
+  //
+  // Numbers in SQL can be in one of these forms:
+  //   digits
+  //   digits.[digits][e[+-]digits]
+  //   [digits].digits[e[+-]digits]
+  //   digitse[+-]digits
+  // where "digits" is one or more decimal digits.
+
+  // Trim extra whitespace
+  $num = trim($num);
+  // Check if we're in an acceptable form.
+  if (preg_match('/^[+\-]?((\d+)|(\d+\.\d*)|(\d*\.\d+))(e[+\-]?\d+)?$/',$num)===1) {
+    // Good, we can pass that right along.
+    return $num;
+  }
+  // Otherwise, cast to float, possibly losing precision.
+  return (float) $num;
+}
