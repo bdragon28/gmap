@@ -1197,7 +1197,7 @@ function gmap_elements() {
     ),
     'gmap_macrotext' => array('#input' => TRUE, '#cols' => 60, '#rows' => 5, '#process' => array('process_gmap_macrotext' => array())),
     'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit' => array())),
-    'gmap_address' => array('#input' => TRUE, '#process' => array('process_gmap_address' => array())),
+    'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address' => array())),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align' => array())),
     'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_latitude' => array())),
     'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_longitude' => array())),

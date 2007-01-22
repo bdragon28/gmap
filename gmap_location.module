@@ -623,16 +623,18 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
       // Insert or update based on the existance of $user->gmap_location_set.
       if ($user->gmap_location_set) {
         db_query("UPDATE {location} SET latitude = %s , longitude = %s , source = 1 WHERE eid = %d AND type = 'user'",
-          gmap_decimal($user->gmap_location_latitude),
-          gmap_decimal($user->gmap_location_longitude),
+          gmap_decimal($edit['gmap_location_latitude']),
+          gmap_decimal($edit['gmap_location_longitude']),
           $user->uid);
       }
       else {
         db_query("INSERT INTO {location} (eid, type, latitude, longitude, source) VALUES (%d, 'user', %s, %s, 1)",
           $user->uid,
-          gmap_decimal($user->gmap_location_latitude),
-          gmap_decimal($user->gmap_location_longitude));
+          gmap_decimal($edit['gmap_location_latitude']),
+          gmap_decimal($edit['gmap_location_longitude']));
       }
+      unset($edit['gmap_location_latitude']);
+      unset($edit['gmap_location_longitude']);
       return;
 
     case 'delete':
