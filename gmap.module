@@ -1217,6 +1217,10 @@ function expand_gmap($element) {
     'line2' => array('overlay' => null, 'points' => null, 'line' => ""),
     'line3' => array('overlay' => null, 'points' => null, 'line' => ""),
   ),$element['#settings']);
+  if ($element['#map']) {
+    // Use #map if it is defined.
+    $element['#settings']['id'] = $element['#map'];
+  }
   return $element;
 }
 
