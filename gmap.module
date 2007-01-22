@@ -1320,14 +1320,14 @@ function theme_gmap($element) {
   _gmap_doheader();
 
   $map = array_merge(gmap_defaults(),$element['#settings']);
-  $element['#attributes']['class'] = trim(implode(' ',array($element['#attributes']['class'],'gmap','gmap-map')));
+  $element['#attributes']['class'] = trim(implode(' ',array($element['#attributes']['class'],'gmap','gmap-map','gmap-'.$map['id'].'-gmap')));
   if (!isset($element['#id'])) {
     $element['#id'] = $map['id'];
   }
   if (!isset($map['id'])) {
     $map['id'] = $element['#id'];
   }
-  $o = '<div id="gmap-'.$element['#id'].'-gmap" style="width: '.$map['width'].'; height: '.$map['height'].';" class="'.$element['#attributes']['class'].'"></div>';
+  $o = '<div id="'.$element['#id'].'" style="width: '.$map['width'].'; height: '.$map['height'].';" class="'.$element['#attributes']['class'].'"></div>';
 
   // Google is picky about this one.
   $map['zoom'] = (int)$map['zoom'];
