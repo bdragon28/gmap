@@ -852,20 +852,19 @@ function _gmap_location_validate_form(&$object) {
 }
 
 function _gmap_location_store_location($object, $type, $update = false) {
-  if(is_array($object)
-    if (isset($object->gmap_location_latitude) && isset($object->gmap_location_longitude)) {
-      if ($update) {
-        db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE eid='%d' AND type='%s'",
-          $object->gmap_location_latitude,$object->gmap_location_longitude, 1,$object->eid, $type);
+  if (isset($object->gmap_location_latitude) && isset($object->gmap_location_longitude)) {
+    if ($update) {
+      db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE eid='%d' AND type='%s'",
+        $object->gmap_location_latitude,$object->gmap_location_longitude, 1,$object->eid, $type);
 
-      }
-      else {
-        // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
-        db_query("INSERT INTO {location} (eid, type, latitude, longitude, source) VALUES (%d, '%s', '%f', '%f', '%d')",
-          $object->eid, $type, $object->gmap_location_latitude,$object->gmap_location_longitude, 1);
-      }
-      unset($object->gmap_location_latitude);
-      unset($object->gmap_location_longitude);
-      unset($object->gmap_location_set);
     }
+    else {
+      // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
+      db_query("INSERT INTO {location} (eid, type, latitude, longitude, source) VALUES (%d, '%s', '%f', '%f', '%d')",
+        $object->eid, $type, $object->gmap_location_latitude,$object->gmap_location_longitude, 1);
+    }
+    unset($object->gmap_location_latitude);
+    unset($object->gmap_location_longitude);
+    unset($object->gmap_location_set);
+  }
 }
