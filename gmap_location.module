@@ -1,5 +1,6 @@
 <?php
 /* $Id$ */
+// vim:set ft=php:
 
 /**
  * @file
@@ -37,6 +38,15 @@ function gmap_location_menu($may_cache) {
       'title' => t('Node locations'),
       'access' => user_access('show node map'),
       'callback' => 'gmap_location_node_page'
+    );
+    $items[] = array(
+      'path' => 'admin/settings/gmap_location',
+      'type' => MENU_NORMAL_ITEM,
+      'title' => t('GMap Location'),
+      'access' => user_access('administer site configuration'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('gmap_location_admin_settings'),
+      'description' => t('Configure GMap Location settings.'),
     );
   }
 
@@ -362,7 +372,7 @@ function gmap_location_admin_settings() {
       );
     }
   }
-  return $form;
+  return system_settings_form($form);
 }
 
 /**
@@ -579,7 +589,13 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
 
     switch ($op) {
       case 'categories':
-        return array(array('name'=>'gmap_user', 'title'=> variable_get('gmap_user_profile_category', t('location map')),'weight'=>5));
+        return array(
+          array(
+            'name' => 'gmap_user',
+            'title'=> variable_get('gmap_user_profile_category', t('location map')),
+            'weight' => 5
+          ),
+        );
       case 'validate':
         _gmap_location_validate_form($object);
         return;
