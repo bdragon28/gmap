@@ -59,7 +59,7 @@ Drupal.gmap.prototype.handler.gmap.push(function(elem) {
             for (var j=0; j<obj.vars.lines[i].length; j++) {
               temp.push(new GLatLng(obj.vars.lines[i][j].latitude,obj.vars.lines[i][j].longitude));
             }
-            obj.map.addOverlay(var poly = new GPolyline(temp,obj.vars.line_colors[i], 5));
+            obj.map.addOverlay(new GPolyline(temp,obj.vars.line_colors[i], 5));
 //            if (obj.vars.behavior.autozoom) {
 //              for(var k=0;k<poly.getVertexCount();k++) {
 //                obj.bounds.extend(
