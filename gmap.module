@@ -1225,7 +1225,7 @@ function process_gmap_control($element,$edit,$fieldtype,$control,$theme='') {
 
 function process_gmap_overlay_edit($element) {
   $element['#type'] = 'select';
-  gmap_widget_setup($element, 'overlayedit')
+  gmap_widget_setup($element, 'overlayedit');
 //  $element['#id'] = 'gmap-'.$element['#map'].'-overlayedit';
 //  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-overlayedit';
   $element['#options'] = drupal_map_assoc(array('Points', 'Line1', 'Line2', 'Line3'));
@@ -1236,7 +1236,7 @@ function process_gmap_overlay_edit($element) {
 
 function process_gmap_align($element) {
   $element['#type'] = 'select';
-  gmap_widget_setup($element, 'align')
+  gmap_widget_setup($element, 'align');
 //  $element['#id'] = 'gmap-'.$element['#map'].'-align';
 //  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-align';
   $element['#options'] = drupal_map_assoc(array('None', 'Right', 'Left', 'Center'));
@@ -1246,7 +1246,7 @@ function process_gmap_align($element) {
 
 function process_gmap_address($element) {
   $element['#type'] = 'textfield';
-  gmap_widget_setup($element, 'address')
+  gmap_widget_setup($element, 'address');
 //  $element['#id'] = 'gmap-'.$element['#map'].'-address';
 //  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-address';
   $element['#theme'] = 'gmap_address';
