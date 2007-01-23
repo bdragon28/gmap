@@ -1306,7 +1306,7 @@ function theme_gmap($element) {
 //  drupal_add_js(drupal_get_path('module','gmap') .'/georss.js');
 
   // Inline settings extend.
-  $o .= '<script type="text/javascript">Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#id'] => $map)))." });</script>\n"; 
+  $o .= '<script type="text/javascript">Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#map'] => $map)))." });</script>\n"; 
   return $o;
 }
 
