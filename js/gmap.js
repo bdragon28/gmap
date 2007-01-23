@@ -327,6 +327,9 @@ Drupal.gmapAutoAttach = function() {
       map.vars = Drupal.settings.gmap[mapid];
 
       // Convert latlon to latitude and longitude if needed.
+      if (map.vars.latlong) {
+        map.vars.latlon = map.vars.latlong;
+      }
       if (map.vars.latlon && (!map.vars.latitude || !map.vars.longitude)) {
         var t = map.vars.latlon.split(',');
         map.vars.latitude = t[0];
