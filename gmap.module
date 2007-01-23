@@ -1317,7 +1317,7 @@ function theme_gmap_align($element) {
  * Gmap element theme hook
  */
 function theme_gmap($element) {
-  static shownmaps = array();
+  static $shownmaps = array();
   _gmap_doheader();
 
   $map = array_merge(gmap_defaults(),$element['#settings']);
