@@ -326,25 +326,31 @@ Drupal.gmapAutoAttach = function() {
       var map = new Drupal.gmap();
       map.vars = Drupal.settings.gmap[mapid];
 
-      // If the vars are missing but latlong exists, use that.
-      if (map.vars.latlong && (!map.vars.latitude || !map.vars.longitude)) {
-        var t = map.vars.latlong.split(',');
+      // Convert latlon to latitude and longitude if needed.
+      if (map.vars.latlon && (!map.vars.latitude || !map.vars.longitude)) {
+        var t = map.vars.latlon.split(',');
         map.vars.latitude = t[0];
         map.vars.longitude = t[1];
       }
 
       for ( control in map.handler ) {
-        $('.gmap-'+mapid+'-'+control).each(function() {
-          // Handle arrays of functions
-          if (typeof map.handler[control]!='function') {
-            for (var i=0; i<map.handler[control].length; i++) {
-              map.handler[control][i].call(map,this);
+        var s = 0;
+        do {
+          var o = $('#gmap-'+mapid+'-'+control+s);
+          o.each(function() {
+            // Handle arrays of functions
+            if (typeof map.handler[control]!='function') {
+              for (var i=0; i<map.handler[control].length; i++) {
+                map.handler[control][i].call(map,this);
+              }
             }
-          }
-          else {
-            map.handler[control].call(map,this);
-          }
-        });
+            else {
+              map.handler[control].call(map,this);
+            }
+          });
+          s++;
+        }
+        while (o.length>0);
       }
       map.change("init",-1);
 

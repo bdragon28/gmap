@@ -1204,6 +1204,7 @@ function expand_gmap($element) {
     'pointsOverlays' => array(),
     'lines' => array(),
   ),$element['#settings']);
+  gmap_widget_setup($element, 'overlayedit')
   return $element;
 }
 
@@ -1212,7 +1213,7 @@ function expand_gmap($element) {
  */
 function process_gmap_control($element,$edit,$fieldtype,$control,$theme='') {
   $element['#type'] = $fieldtype;
-  gmap_widget_classes($element, $control);
+  gmap_widget_setup($element, $control);
   if (!empty($theme)) {
     $element['#theme'] = $theme;
   }
@@ -1224,8 +1225,9 @@ function process_gmap_control($element,$edit,$fieldtype,$control,$theme='') {
 
 function process_gmap_overlay_edit($element) {
   $element['#type'] = 'select';
+  gmap_widget_setup($element, 'overlayedit')
 //  $element['#id'] = 'gmap-'.$element['#map'].'-overlayedit';
-  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-overlayedit';
+//  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-overlayedit';
   $element['#options'] = drupal_map_assoc(array('Points', 'Line1', 'Line2', 'Line3'));
   $element['#default_value'] = 'Points';
   $element['#theme'] = 'gmap_overlay_edit';
@@ -1234,8 +1236,9 @@ function process_gmap_overlay_edit($element) {
 
 function process_gmap_align($element) {
   $element['#type'] = 'select';
+  gmap_widget_setup($element, 'align')
 //  $element['#id'] = 'gmap-'.$element['#map'].'-align';
-  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-align';
+//  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-align';
   $element['#options'] = drupal_map_assoc(array('None', 'Right', 'Left', 'Center'));
   $element['#theme'] = 'gmap_align';
   return $element;
@@ -1243,8 +1246,9 @@ function process_gmap_align($element) {
 
 function process_gmap_address($element) {
   $element['#type'] = 'textfield';
+  gmap_widget_setup($element, 'address')
 //  $element['#id'] = 'gmap-'.$element['#map'].'-address';
-  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-address';
+//  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-address';
   $element['#theme'] = 'gmap_address';
   return $element;
 }
@@ -1278,7 +1282,6 @@ function theme_gmap_align($element) {
  * Gmap element theme hook
  */
 function theme_gmap($element) {
-  static $shownmaps = array();
   _gmap_doheader();
 
   $map = array_merge(gmap_defaults(),$element['#settings']);
@@ -1300,27 +1303,29 @@ function theme_gmap($element) {
 //  drupal_add_js(drupal_get_path('module','gmap') .'/georss.js');
 
   // Inline settings extend.
-  // Make sure we haven't already extended the map in question. @@@
-  if (!isset($shownmaps[$map['id']])) {
-    $o .= '<script type="text/javascript">Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#id'] => $map)))." });</script>\n"; 
-    //  $o .= drupal_add_js(array('gmap' => array($element['#id'] => $map)),'setting','inline');
-  }
-  $shownmaps[$map['id']] = TRUE;
+  $o .= '<script type="text/javascript">Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#id'] => $map)))." });</script>\n"; 
   return $o;
 }
 
 /**
- * Set up widget CSS classes
+ * Set up widget
  */
-function gmap_widget_classes(&$element, $type) {
+function gmap_widget_setup(&$element, $type) {
+  static $serial = array();
+  if (!isset($serial[$element['#map'])) {
+    $serial[$element['#map']] = array();
+  }
+  if (!isset($serial[$element['#map'][$type])) {
+    $serial[$element['#map']][$type] = 0;
+  }
   $element['#attributes']['class'] = trim(implode(' ',array(
     $element['#attributes']['class'],
     'gmap-control',
     'gmap-'.$type,
-    'gmap-'.$element['#map'].'-'.$type,
   )));
+  $element['#id'] = 'gmap-'.$element['#map'].'-'.$type.$serial[$element['#map']][$type];
+  $serial[$element['#map']][$type]++;
 }
-
 
 function gmap_macro_form() {
   $form['macroform'] = array(
