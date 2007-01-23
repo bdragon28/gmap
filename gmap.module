@@ -1212,7 +1212,7 @@ function expand_gmap($element) {
  */
 function process_gmap_control($element,$edit,$fieldtype,$control,$theme='') {
   $element['#type'] = $fieldtype;
-  gmap_widget_classes($element, $control;
+  gmap_widget_classes($element, $control);
   if (!empty($theme)) {
     $element['#theme'] = $theme;
   }
