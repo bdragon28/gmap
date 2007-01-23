@@ -98,7 +98,7 @@ Drupal.gmap.prototype.macroparts.push(function() {
   }
   for (var q=0; q<3 ; q++) {
     temp = [];
-    if (this.vars.lines[q].points) {
+    if (this.vars.lines && this.vars.lines[q] && this.vars.lines[q].points) {
       // Lines have at least 2 points.
       if (this.vars.lines[q].points.length > 1) {
         for(var i=0;i<this.vars.lines[q].points.length;i++) {

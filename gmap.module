@@ -1218,6 +1218,7 @@ function expand_gmap($element) {
     'id' => $mapid,
     'points' => array(),
     'pointsOverlays' => array(),
+    'lines' => array(),
     'line1' => array('overlay' => null, 'points' => null, 'line' => ""),
     'line2' => array('overlay' => null, 'points' => null, 'line' => ""),
     'line3' => array('overlay' => null, 'points' => null, 'line' => ""),
@@ -1316,6 +1317,7 @@ function theme_gmap_align($element) {
  * Gmap element theme hook
  */
 function theme_gmap($element) {
+  static shownmaps = array();
   _gmap_doheader();
 
   $map = array_merge(gmap_defaults(),$element['#settings']);
@@ -1337,8 +1339,12 @@ function theme_gmap($element) {
 //  drupal_add_js(drupal_get_path('module','gmap') .'/georss.js');
 
   // Inline settings extend.
-  $o .= '<script type="text/javascript">Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#id'] => $map)))." });</script>\n"; 
-//  $o .= drupal_add_js(array('gmap' => array($element['#id'] => $map)),'setting','inline');
+  // Make sure we haven't already extended the map in question. @@@
+  if (!isset($shownmaps[$map['id']])) {
+    $o .= '<script type="text/javascript">Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#id'] => $map)))." });</script>\n"; 
+    //  $o .= drupal_add_js(array('gmap' => array($element['#id'] => $map)),'setting','inline');
+  }
+  $shownmaps[$map['id']] = TRUE;
   return $o;
 }
 
