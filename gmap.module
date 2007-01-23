@@ -1189,6 +1189,7 @@ function gmap_elements() {
 //        'id' => 'map', // @@@ I hate this.
         'points' => array(),
         'pointsOverlays' => array(),
+        'lines' => array(),
         'line1' => array('overlay' => null, 'points' => null, 'line' => ""),
         'line2' => array('overlay' => null, 'points' => null, 'line' => ""),
         'line3' => array('overlay' => null, 'points' => null, 'line' => ""),
@@ -1228,8 +1229,6 @@ function expand_gmap($element) {
  * Set up the macro element.
  */
 function process_gmap_macrotext($element) {
-  static $c = 0;
-  $c++;
   $element['#type'] = 'textarea';
 //  $element['#id'] = 'gmap-'.$element['#map'].'-macrotext';
   $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-macrotext';
@@ -1343,6 +1342,19 @@ function theme_gmap($element) {
   return $o;
 }
 
+/**
+ * Set up widget CSS classes
+ */
+function gmap_widget_classes(&$element, $type) {
+  $element['#attributes']['class'] = trim(implode(' ',array(
+    $element['#attributes']['class'],
+    'gmap',
+    'gmap-'.$type,
+    'gmap-'.$element['#map'].'-'.$type,
+  )));
+}
+
+
 function gmap_macro_form() {
   $form['macroform'] = array(
     '#type' => 'fieldset',
@@ -1393,12 +1405,11 @@ function gmap_macro_form() {
     '#default_value' => '',
   );
   $form['macroform']['latlong'] = array(
-    '#type' => 'textfield',
-    '#id' => 'gmap-map-latlong',
+    '#type' => 'gmap_latlon',
+    '#map' => 'map',
     '#title' => t('The Latitude and Longitude of the centre of the map'),
     '#default_value' => $defaults['latlong'],
     '#size' => 50,
-    '#attributes' => array('class' => 'gmap-control'),
   );
   $form['macroform']['width'] = array(
     '#type' => 'textfield',
