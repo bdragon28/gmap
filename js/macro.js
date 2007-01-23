@@ -39,14 +39,16 @@ Drupal.gmap.prototype.macro = function() {
   // @@@ Use maptype instead, accept old and new.
   o+=' |type='    + this.vars.maptype;
 
-  for (var i=0; i<this.macroparts.length; i++) {
-    o+= this.macroparts[i].call(this);
+  if (this.macroparts) {
+    for (var i=0; i<this.macroparts.length; i++) {
+      o+= this.macroparts[i].call(this);
+    }
   }
 
   // @@@ Wouldn't it be simpler to have an arbitrary # of lines?
-  if (this.vars.line1.length >0) o += ' |line1=' + this.vars.line1;
-  if (this.vars.line2.length >0) o += ' |line2=' + this.vars.line2;
-  if (this.vars.line3.length >0) o += ' |line3=' + this.vars.line3;
+  if (this.vars.line1 && this.vars.line1.length >0) o += ' |line1=' + this.vars.line1;
+  if (this.vars.line2 && this.vars.line2.length >0) o += ' |line2=' + this.vars.line2;
+  if (this.vars.line3 && this.vars.line3.length >0) o += ' |line3=' + this.vars.line3;
 
   o+= ']';
   return o;
