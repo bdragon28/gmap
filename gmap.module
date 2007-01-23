@@ -1210,14 +1210,14 @@ function expand_gmap($element) {
 /**
  * Generic gmap control processor
  */
-function process_gmap_control($element,$edit,$args) {
-  $element['#type'] = $args[0];
-  gmap_widget_classes($element, $args[1]);
-  if (!empty($args[2])) {
-    $element['#theme'] = $args[2];
+function process_gmap_control($element,$edit,$fieldtype,$control,$theme='') {
+  $element['#type'] = $fieldtype;
+  gmap_widget_classes($element, $control;
+  if (!empty($theme)) {
+    $element['#theme'] = $theme;
   }
   else {
-    $element['#theme'] = 'gmap_'.$args[1];
+    $element['#theme'] = 'gmap_'.$control;
   }
   return $element;
 }
