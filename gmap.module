@@ -1210,14 +1210,14 @@ function expand_gmap($element) {
 /**
  * Generic gmap control processor
  */
-function process_gmap_control($element,$origtype,$control,$theme='') {
-  $element['#type'] = $origtype;
-  gmap_widget_classes($element, $control);
-  if (!empty($theme)) {
-    $element['#theme'] = $theme;
+function process_gmap_control($element,$edit,$args) {
+  $element['#type'] = $args[0];
+  gmap_widget_classes($element, $args[1]);
+  if (!empty($args[2])) {
+    $element['#theme'] = $args[2];
   }
   else {
-    $element['#theme'] = 'gmap_'.$control;
+    $element['#theme'] = 'gmap_'.$args[1];
   }
   return $element;
 }
@@ -1409,7 +1409,7 @@ function gmap_macro_form() {
     '#options' => drupal_map_assoc(range(0, 17)),
     '#attributes' => array('class' => 'gmap-control gmap-map-zoom'),
   );
-  $form['macroform']['textarea'] = array(
+  $form['macroform']['macro'] = array(
     '#type' => 'gmap_macrotext',
     '#map' => 'map',
     '#default_value' => '',
