@@ -1204,7 +1204,7 @@ function expand_gmap($element) {
     'pointsOverlays' => array(),
     'lines' => array(),
   ),$element['#settings']);
-  gmap_widget_setup($element, 'overlayedit')
+  gmap_widget_setup($element, 'overlayedit');
   return $element;
 }
 
