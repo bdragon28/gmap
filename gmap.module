@@ -1312,10 +1312,10 @@ function theme_gmap($element) {
  */
 function gmap_widget_setup(&$element, $type) {
   static $serial = array();
-  if (!isset($serial[$element['#map'])) {
+  if (!isset($serial[$element['#map']])) {
     $serial[$element['#map']] = array();
   }
-  if (!isset($serial[$element['#map'][$type])) {
+  if (!isset($serial[$element['#map']][$type])) {
     $serial[$element['#map']][$type] = 0;
   }
   $element['#attributes']['class'] = trim(implode(' ',array(
