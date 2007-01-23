@@ -41,6 +41,7 @@ function gmap_defaults() {
     'behavior' => array(
       'nodrag' => FALSE,
       'nokeyboard' => TRUE,
+      'autozoom' => FALSE,
     ),
   ));
 }
@@ -254,15 +255,8 @@ return '';
                  '.$gmap['id'].'.addMapType(m_'.$map_name.');
                  ';
       }
-      $outtext.= '
-                 '.$gmap['id'].'.addMapType(G_NORMAL_MAP);
-                 '.$gmap['id'].'.addMapType(G_SATELLITE_MAP);
-                 '.$gmap['id'].'.addMapType(G_HYBRID_MAP);
-                 ';
+  
     }
-
-    $outtext.= $gmap['id'].'.setCenter(new GLatLng('.$gmap['latitude'].','.$gmap['longitude'].'), '.$gmap['zoom'].');
-                 ';
 
     if (strtolower($gmap['tcontrol'])=='on' || strtolower($gmap['tcontrol'])=='yes') {
       $outtext .= $gmap['id'].'.addControl(mytypecontrol=new GMapTypeControl());
@@ -278,13 +272,6 @@ return '';
         $outtext .= $gmap['id'].'.addControl(myovcontrol=new GOverviewMapControl(new GSize('.$osize[0].','.$osize[1].')));
                 ';
       }
-    }
-
-    if (isset($gmap['drag']) && strtolower($gmap['drag'])=='no') {
-      $outtext .= $gmap['id'].".disableDragging(); \n";
-    }
-    else {
-      $outtext .= "keyboardhandler=new GKeyboardHandler(".$gmap['id'].");\n";
     }
 
     if (isset($gmap['tracks'])) {
@@ -1184,25 +1171,22 @@ function gmap_elements() {
   return array(
     'gmap' => array(
       '#input' => FALSE, // This isn't a *form* input!!
-//      '#id' => 'map',
       '#settings' => array_merge(gmap_defaults(),array(
-//        'id' => 'map', // @@@ I hate this.
         'points' => array(),
         'pointsOverlays' => array(),
         'lines' => array(),
-        'line1' => array('overlay' => null, 'points' => null, 'line' => ""),
-        'line2' => array('overlay' => null, 'points' => null, 'line' => ""),
-        'line3' => array('overlay' => null, 'points' => null, 'line' => ""),
       )),
       '#process' => array('expand_gmap' => array()),
     ),
-    'gmap_macrotext' => array('#input' => TRUE, '#cols' => 60, '#rows' => 5, '#process' => array('process_gmap_macrotext' => array())),
+    'gmap_macrotext' => array('#input' => TRUE, '#cols' => 60, '#rows' => 5, '#process' => array(
+      'process_gmap_control' => array('textarea','macrotext')
+    )),
     'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit' => array())),
     'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address' => array())),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align' => array())),
-    'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_latitude' => array())),
-    'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_longitude' => array())),
-    'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_latlon' => array())),
+    'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield','latitude','gmap_coord'))),
+    'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield','longitude','gmap_coord'))),
+    'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield','latlon','gmap_coord'))),
   );
 }
 
@@ -1219,45 +1203,22 @@ function expand_gmap($element) {
     'points' => array(),
     'pointsOverlays' => array(),
     'lines' => array(),
-    'line1' => array('overlay' => null, 'points' => null, 'line' => ""),
-    'line2' => array('overlay' => null, 'points' => null, 'line' => ""),
-    'line3' => array('overlay' => null, 'points' => null, 'line' => ""),
   ),$element['#settings']);
   return $element;
 }
 
 /**
- * Set up the macro element.
+ * Generic gmap control processor
  */
-function process_gmap_macrotext($element) {
-  $element['#type'] = 'textarea';
-//  $element['#id'] = 'gmap-'.$element['#map'].'-macrotext';
-  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-macrotext';
-  $element['#theme'] = 'gmap_macrotext';
-  return $element;
-}
-
-function process_gmap_latitude($element) {
-  $element['#type'] = 'textfield';
-//  $element['#id'] = 'gmap-'.$element['#map'].'-latitude';
-  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-latitude';
-  $element['#theme'] = 'gmap_coord';
-  return $element;
-}
-
-function process_gmap_longitude($element) {
-  $element['#type'] = 'textfield';
-//  $element['#id'] = 'gmap-'.$element['#map'].'-longitude';
-  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-longitude';
-  $element['#theme'] = 'gmap_coord';
-  return $element;
-}
-
-function process_gmap_latlon($element) {
-  $element['#type'] = 'textfield';
-//  $element['#id'] = 'gmap-'.$element['#map'].'-latlon';
-  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-latlon';
-  $element['#theme'] = 'gmap_coord';
+function process_gmap_control($element,$origtype,$control,$theme='') {
+  $element['#type'] = $origtype;
+  gmap_widget_classes($element, $control);
+  if (!empty($theme)) {
+    $element['#theme'] = $theme;
+  }
+  else {
+    $element['#theme'] = 'gmap_'.$control;
+  }
   return $element;
 }
 
@@ -1354,7 +1315,7 @@ function theme_gmap($element) {
 function gmap_widget_classes(&$element, $type) {
   $element['#attributes']['class'] = trim(implode(' ',array(
     $element['#attributes']['class'],
-    'gmap',
+    'gmap-control',
     'gmap-'.$type,
     'gmap-'.$element['#map'].'-'.$type,
   )));
@@ -1397,12 +1358,11 @@ function gmap_macro_form() {
   );
   $form['macroform']['controltype'] = array(
     '#type' => 'select', 
-    '#id' => 'gmap-map-controltype',
     '#title' => t('Controls'), 
     '#options' => drupal_map_assoc(array('None', 'Small', 'Large')), 
     '#required' => FALSE,
     '#default_value' => $defaults['controltype'],
-    '#attributes' => array('class' => 'gmap-control'),
+    '#attributes' => array('class' => 'gmap-control gmap-map-controltype'),
   );
   $form['macroform']['address'] = array(
     '#type' => 'gmap_address',
@@ -1419,19 +1379,17 @@ function gmap_macro_form() {
   );
   $form['macroform']['width'] = array(
     '#type' => 'textfield',
-    '#id' => 'gmap-map-width',
     '#title' => t('Map width'),
     '#default_value' => $defaults['width'],
     '#size' => 25,
-    '#attributes' => array('class' => 'gmap-control'),
+    '#attributes' => array('class' => 'gmap-control gmap-map-width'),
   ); 
   $form['macroform']['height'] = array(
     '#type' => 'textfield',
-    '#id' => 'gmap-map-height',
     '#title' => t('Map height'),
     '#default_value' => $defaults['height'],
     '#size' => 25,
-    '#attributes' => array('class' => 'gmap-control'),
+    '#attributes' => array('class' => 'gmap-control gmap-map-height'),
   );
   $form['macroform']['alignment'] = array(
     '#type' => 'gmap_align',
@@ -1446,11 +1404,10 @@ function gmap_macro_form() {
 
   $form['macroform']['zoom'] = array(
     '#type' => 'select', 
-    '#id' => 'gmap-map-zoom',
     '#title' => t('The current magnification of the map'),
     '#default_value' => $defaults['zoom'],
     '#options' => drupal_map_assoc(range(0, 17)),
-    '#attributes' => array('class' => 'gmap-control'),
+    '#attributes' => array('class' => 'gmap-control gmap-map-zoom'),
   );
   $form['macroform']['textarea'] = array(
     '#type' => 'gmap_macrotext',

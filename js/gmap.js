@@ -92,12 +92,8 @@ Drupal.gmap.prototype.markers = function(marker) {
     m.iconAnchor = new GPoint(8, 8);
     m.infoWindowAnchor = new GPoint(8, 8);
     theMarkers['flat'] = m;
-
-    return theMarkers[marker];
   }
-  else {
-    return theMarkers[marker];
-  }
+  return theMarkers[marker];
 }
 
 ////////////////////////////////////////
