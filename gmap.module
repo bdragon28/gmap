@@ -1198,13 +1198,16 @@ function expand_gmap($element) {
   if ($element['#map']) {
     $mapid = $element['#map'];
   }
+  else {
+    $element['#map'] = $mapid;
+  }
   $element['#settings'] = array_merge(gmap_defaults(),array(
     'id' => $mapid,
     'points' => array(),
     'pointsOverlays' => array(),
     'lines' => array(),
   ),$element['#settings']);
-  gmap_widget_setup($element, 'overlayedit');
+  gmap_widget_setup($element, 'gmap');
   return $element;
 }
 
@@ -1286,12 +1289,12 @@ function theme_gmap($element) {
 
   $map = array_merge(gmap_defaults(),$element['#settings']);
   $element['#attributes']['class'] = trim(implode(' ',array($element['#attributes']['class'],'gmap','gmap-map','gmap-'.$map['id'].'-gmap')));
-  if (!isset($element['#id'])) {
+/*  if (!isset($element['#id'])) {
     $element['#id'] = $map['id'];
   }
   if (!isset($map['id'])) {
     $map['id'] = $element['#id'];
-  }
+  }*/
   $o = '<div id="'.$element['#id'].'" style="width: '.$map['width'].'; height: '.$map['height'].';" class="'.$element['#attributes']['class'].'"></div>';
 
   // Google is picky about this one.
