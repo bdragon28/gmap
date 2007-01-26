@@ -2,9 +2,20 @@
  * Gmap Overlay Editor
  */
 
+/* $Id$ */
+
 /************* Overlay edit widget ******************/
 Drupal.gmap.prototype.handler.overlayedit = function(elem) {
   var obj = this;
+
+  //obj.append('<b>Loading...</b>');
+  //$(obj).html('<b>Loading...</b>');
+  
+  $(elem).append('<b>Loading...</b>');
+  //$(obj).append('<b>Loading...</b>');
+
+
+
 
   // @@@ temporary init junk!!!
 /*  obj.lines = [];

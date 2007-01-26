@@ -136,7 +136,6 @@ function gmap_location_user_page() {
 
   $output .= theme('gmap',$element);
 
-  //  $output .= '<p>'.gmap_draw_map($thismap);
   if ($user->uid>0) {
     $output .= '<p>'.t('To add/change your location to the user map, ').l(t('edit your location'),'user/'.$user->uid.'/edit/gmap_user');
   }
@@ -176,10 +175,6 @@ function gmap_location_node_page($nid=null) {
       $thismap=gmap_location_node_map($n,$thismap,false);
     }
   }
-
-  //  $output .= '<p>'.gmap_draw_map($thismap);
-
-  var_dump($thismap);
 
   $output .= '<p>'.theme('gmap',array('#settings'=>$thismap)).'</p>';
 
@@ -266,7 +261,7 @@ function gmap_location_node_map($n,$thismap,$single=false){
  */
 function gmap_location_admin_settings() {
 
-  $markers=gmap_get_markers();
+  $markers=gmap_marker_titles();
 
   $form['geocoding'] = array(
     '#type' => 'fieldset',
@@ -727,7 +722,7 @@ function gmap_location_form_alter($form_id, &$form) {
       '#type' => 'select',
       '#title' => t('Marker for this nodetype'),
       '#default_value' => variable_get('gmap_node_marker_'.$type, variable_get('gmap_user_map_marker', 'drupal')),
-      '#options' => gmap_get_markers(),
+      '#options' => gmap_marker_titles(),
     );
   }
   else {

@@ -109,9 +109,9 @@ function gmap_perm() {
  */
 function gmap_draw_map($gmap, $javascript='') {
 
-var_dump(xdebug_get_function_stack());
+//var_dump(xdebug_get_function_stack());
 
-echo "DRAW_MAP CALLED";
+echo "DRAW_MAP CALLED -- This api does not function at the moment!";
 
 return '';
 
@@ -967,6 +967,13 @@ function gmap_menu($may_cache) {
       'callback' => 'drupal_get_form',
       'callback arguments' => 'gmap_macro_form',
     );
+    $items[] = array(
+      'path' => 'map/query',
+      'type' => MENU_CALLBACK,
+      'access' => TRUE, //@@@
+      'callback' => 'gmap_json_query',
+    );
+
   }
 /*  if (!$may_cache && (strlen(variable_get('googlemap_api_key', '')) > 0)) {
     if (variable_get('gmap_method', 'Static')=='Static') {
@@ -975,6 +982,29 @@ function gmap_menu($may_cache) {
   }*/
   return $items;
 }
+
+/**
+ * JSON request interface.
+ */
+function gmap_json_query() {
+
+  // Marker sequence
+  if(arg(2)=='markerseq') {
+    $markerdir = drupal_get_path('module', 'gmap').'/markers';
+    $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
+    echo drupal_to_js($marker_images);
+    exit();
+
+  }
+  if(arg(2)=='marker') {
+    $name = arg(3);
+
+
+  }
+}
+
+
+
 
 function gmap_admin_settings() {
   //note the same google api key variable name as in the googlemap module is used
@@ -1109,7 +1139,7 @@ function gmap_admin_settings() {
     '#maxlength' => 7,
   );
 
-  $markers = gmap_get_markers();
+  $markers = gmap_marker_titles();
 
   $form['clusterer'] = array(
     '#type' => 'fieldset',
@@ -1227,12 +1257,7 @@ function process_gmap_control($element,$edit,$fieldtype,$control,$theme='') {
 }
 
 function process_gmap_overlay_edit($element) {
-  $element['#type'] = 'select';
   gmap_widget_setup($element, 'overlayedit');
-//  $element['#id'] = 'gmap-'.$element['#map'].'-overlayedit';
-//  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-overlayedit';
-  $element['#options'] = drupal_map_assoc(array('Points', 'Line1', 'Line2', 'Line3'));
-  $element['#default_value'] = 'Points';
   $element['#theme'] = 'gmap_overlay_edit';
   return $element;
 }
@@ -1240,8 +1265,6 @@ function process_gmap_overlay_edit($element) {
 function process_gmap_align($element) {
   $element['#type'] = 'select';
   gmap_widget_setup($element, 'align');
-//  $element['#id'] = 'gmap-'.$element['#map'].'-align';
-//  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-align';
   $element['#options'] = drupal_map_assoc(array('None', 'Right', 'Left', 'Center'));
   $element['#theme'] = 'gmap_align';
   return $element;
@@ -1250,14 +1273,13 @@ function process_gmap_align($element) {
 function process_gmap_address($element) {
   $element['#type'] = 'textfield';
   gmap_widget_setup($element, 'address');
-//  $element['#id'] = 'gmap-'.$element['#map'].'-address';
-//  $element['#attributes']['class'] .= ' gmap-control gmap-'.$element['#map'].'-address';
   $element['#theme'] = 'gmap_address';
   return $element;
 }
 
 function theme_gmap_overlay_edit($element) {
   drupal_add_js(drupal_get_path('module','gmap') .'/js/overlay_edit.js');
+  return '<div id="'.$element['#id'].'" class="'.$element['#attributes']['class'].'"></div>';
   return theme('select',$element);
 }
 
@@ -1289,12 +1311,6 @@ function theme_gmap($element) {
 
   $map = array_merge(gmap_defaults(),$element['#settings']);
   $element['#attributes']['class'] = trim(implode(' ',array($element['#attributes']['class'],'gmap','gmap-map','gmap-'.$map['id'].'-gmap')));
-/*  if (!isset($element['#id'])) {
-    $element['#id'] = $map['id'];
-  }
-  if (!isset($map['id'])) {
-    $map['id'] = $element['#id'];
-  }*/
   $o = '<div id="'.$element['#id'].'" style="width: '.$map['width'].'; height: '.$map['height'].';" class="'.$element['#attributes']['class'].'"></div>';
 
   // Google is picky about this one.
@@ -1348,6 +1364,10 @@ function gmap_macro_form() {
 
   $defaults = gmap_defaults();
 
+  $form['macroform']['overlayedit'] = array(
+    '#type' => 'gmap_overlay_edit',
+    '#map' => 'map',
+  );
   $form['macroform']['mapid'] = array(
     '#type' => 'textfield',
     '#id' => 'gmap-map-mapid',
@@ -1404,11 +1424,6 @@ function gmap_macro_form() {
     '#map' => 'map',
     '#title' => t('Alignment'),
   );
-  $form['macroform']['overlayedit'] = array(
-    '#type' => 'gmap_overlay_edit',
-    '#map' => 'map',
-    '#title' => t('What happens when you click on the map'),
-  );
 
   $form['macroform']['zoom'] = array(
     '#type' => 'select', 
@@ -1445,21 +1460,60 @@ function gmap_views_style_plugins() {
  */
 function gmap_get_markers($reset=FALSE){
   static $markers;
-  if (!is_array($markers) || $reset){
+
+  if (is_array($markers) && !$reset) {
+    return $markers;
+  }
+
+  $markers = unserialize(cache_get('gmap_markerdata'));
+
+  if ($reset || !is_array($markers)) {
     $markers = array();
     $markerdir = variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap').'/markers');
+
+    // Get the ini files.
+    $inis = file_scan_directory($markerdir, '.*\.ini$');
+
+    $markerset = array();
+
+    foreach ($inis as $file) {
+      $ini = parse_ini_file($file->filename,TRUE);
+      $path = substr($file->filename,strlen($markerdir),-strlen($file->basename));
+      foreach($ini as $k => $v) {
+        $ini[$k]['path'] = $path;
+      } 
+      $markerset = array_merge($markerset, parse_ini_file($file->filename,TRUE));
+    }
+
+
+
     // Retrieve and sort a list of available markers
     $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
     foreach ($marker_images as $marker) {
-      preg_match('/markers\/([a-z]*\/*[a-zA-Z_-]+)\d*\.png/',$marker->filename,$matches);
+      preg_match('/markers\/([a-z]*\/*[a-zA-Z_-]+)(\d*)\.png/',$marker->filename,$matches);
       if ($matches) {
-        $markers[$matches[1]] = $matches[1];
+        $markers[$matches[1]] = array(
+          'name' => $matches[1],
+          'multiple' => (!empty($matches[2])),
+        );
       }
     }
     asort($markers);
+    cache_set('gmap_markerdata','cache',serialize($markers));
   }
   return $markers;
 }
+
+function gmap_marker_titles() {
+  $titles = array();
+  foreach(gmap_get_markers() as $k=>$v) {
+    $titles[$k] = $v['name'];
+  }
+  return $titles;
+}
+
+  
+
 
 /**
  * Display the nodes of a view in a Google Map
