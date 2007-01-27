@@ -1279,7 +1279,7 @@ function process_gmap_address($element) {
 
 function theme_gmap_overlay_edit($element) {
   drupal_add_js(drupal_get_path('module','gmap') .'/js/overlay_edit.js');
-  return '<div id="'.$element['#id'].'" class="'.$element['#attributes']['class'].'"></div>';
+  return '<div id="'.$element['#id'].'" class="'.$element['#attributes']['class'].'">'.url('map/query/markerseq').'</div>';
   return theme('select',$element);
 }
 

@@ -7,12 +7,35 @@
 /************* Overlay edit widget ******************/
 Drupal.gmap.prototype.handler.overlayedit = function(elem) {
   var obj = this;
+  
+  // Yeah, get rid of this. :P
+  var myurl = $(elem).text();
+  
+  $(elem).empty();
 
   //obj.append('<b>Loading...</b>');
   //$(obj).html('<b>Loading...</b>');
   
   $(elem).append('<b>Loading...</b>');
   //$(obj).append('<b>Loading...</b>');
+  
+  // @@@ Don't commit it like this.
+  $.ajax({
+    type: "GET",
+    url: myurl,
+    dataType: "json",
+    success: function(msg) {
+      //alert(msg["sites/default/modules/gmap/markers/big/blue.png"].filename);
+      for (file in msg) {
+        var x = msg[file];
+        $(elem).append('<img src="' + x.filename + '" />');
+      }
+    }
+  });
+  
+
+      
+     // $(this).append('
 
 
 
