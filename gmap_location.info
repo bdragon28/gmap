@@ -2,5 +2,5 @@
 name = GMap Location
 description = Display location.module information on Google Maps
 version = "$Name$"
+package = Location
 dependencies = gmap location
-
