@@ -997,6 +997,8 @@ function gmap_json_query() {
   if(arg(2)=='markerseq') {
     $markerdir = drupal_get_path('module', 'gmap').'/markers';
     $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
+    foreach($marker_images as $k => $v) {
+      $marker_images[$k]['filename'] = base_path().$marker_images[$k]['filename'];
     echo drupal_to_js($marker_images);
     exit();
 
@@ -1492,11 +1494,14 @@ function gmap_get_markers($reset=FALSE){
     return $markers;
   }
 
-  $markers = unserialize(cache_get('gmap_markerdata'));
+  $markers = cache_get('gmap_markerdata');
+  if ($markers) {
+    $markers = unserialize($markers);
+  }
 
   if ($reset || !is_array($markers)) {
     $markers = array();
-    $markerdir = variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap').'/markers');
+    $markerdir = variable_get('gmap_markerfiles', drupal_get_path('module', 'gmap').'/markers');
 
     // Get the ini files.
     $inis = file_scan_directory($markerdir, '.*\.ini$');
