@@ -1538,6 +1538,10 @@ function gmap_get_markers($reset=FALSE){
       preg_match('/markers\/([a-z]*\/*[a-zA-Z_-]+)(\d*)\.png/',$marker->filename,$matches);
       if ($matches) {
         $stats = getimagesize($marker->filename);
+        // @@@ Have global fallback in this case...
+        if(!is_array($markerset[$marker->basename])) {
+          $markerset[$marker->basename] = array();
+        }
         $markerset[$marker->basename] = array_merge($markerset[$marker->basename],array(
           'w' => $stats[0],
           'h' => $stats[1],
