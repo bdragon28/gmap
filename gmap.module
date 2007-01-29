@@ -1497,7 +1497,7 @@ function gmap_get_markers($reset=FALSE){
 
   $markers = cache_get('gmap_markerdata');
   if ($markers) {
-    $markers = unserialize($markers);
+    $markers = unserialize($markers->data);
   }
 
   if ($reset || !is_array($markers)) {
