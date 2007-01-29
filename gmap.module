@@ -614,6 +614,8 @@ function gmap_parse_macro($instring,$ver=2) {
 
 
   // Merge points and markers
+  if(!is_array($m['points'])) $m['points'] = array();
+  if(!is_array($m['markers'])) $m['markers'] = array();
   $m['markers-temp'] = array_merge($m['points'],$m['markers']);
   unset($m['points']);
   unset($m['markers']);
