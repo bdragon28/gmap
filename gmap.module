@@ -998,7 +998,7 @@ function gmap_json_query() {
     $markerdir = drupal_get_path('module', 'gmap').'/markers';
     $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
     foreach($marker_images as $k => $v) {
-      $marker_images[$k]['filename'] = base_path().$marker_images[$k]['filename'];
+      $marker_images[$k]->filename = base_path().$marker_images[$k]->filename;
     }
     echo drupal_to_js($marker_images);
     exit();
