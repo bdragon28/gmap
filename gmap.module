@@ -1407,7 +1407,7 @@ function gmap_macro_form() {
   );
   $form['macroform']['maptype'] = array(
     '#type' => 'select', 
-    '#id' => 'gmap-map-maptype',
+    '#id' => 'gmap-map-maptype0',
     '#title' => t('Map type'), 
     '#options' => drupal_map_assoc(array('Map', 'Satellite', 'Hybrid')), 
     '#default_value' => $defaults['maptype'],
@@ -1420,7 +1420,8 @@ function gmap_macro_form() {
     '#options' => drupal_map_assoc(array('None', 'Small', 'Large')), 
     '#required' => FALSE,
     '#default_value' => $defaults['controltype'],
-    '#attributes' => array('class' => 'gmap-control gmap-map-controltype'),
+    '#id' => 'gmap-map-controltype0',
+    '#attributes' => array('class' => 'gmap-control'),
   );
   $form['macroform']['address'] = array(
     '#type' => 'gmap_address',
@@ -1437,17 +1438,19 @@ function gmap_macro_form() {
   );
   $form['macroform']['width'] = array(
     '#type' => 'textfield',
+    '#id' => 'gmap-map-width0',
     '#title' => t('Map width'),
     '#default_value' => $defaults['width'],
     '#size' => 25,
-    '#attributes' => array('class' => 'gmap-control gmap-map-width'),
+    '#attributes' => array('class' => 'gmap-control'),
   ); 
   $form['macroform']['height'] = array(
     '#type' => 'textfield',
+    '#id' => 'gmap-map-height0',
     '#title' => t('Map height'),
     '#default_value' => $defaults['height'],
     '#size' => 25,
-    '#attributes' => array('class' => 'gmap-control gmap-map-height'),
+    '#attributes' => array('class' => 'gmap-control'),
   );
   $form['macroform']['alignment'] = array(
     '#type' => 'gmap_align',
@@ -1456,11 +1459,12 @@ function gmap_macro_form() {
   );
 
   $form['macroform']['zoom'] = array(
-    '#type' => 'select', 
+    '#type' => 'select',
+    '#id' => 'gmap-map-zoom0',
     '#title' => t('The current magnification of the map'),
     '#default_value' => $defaults['zoom'],
     '#options' => drupal_map_assoc(range(0, 17)),
-    '#attributes' => array('class' => 'gmap-control gmap-map-zoom'),
+    '#attributes' => array('class' => 'gmap-control'),
   );
   $form['macroform']['macro'] = array(
     '#type' => 'gmap_macrotext',
