@@ -1,0 +1,131 @@
+<?php
+/* $Id$ */
+// vim:set ft=php:
+
+/**
+ * @file
+ * GMap Macro Builder
+ *
+ * A dynamic interface to assist in the creation of gmap macro tags.
+ */
+
+/**
+ * Implementation of hook_perm.
+ */
+function gmap_macro_builder_perm() {
+  return array('create macro');
+}
+
+function gmap_macro_builder_menu($may_cache) {
+  $items=array();
+
+  if ($may_cache) {
+    $items[] = array(
+      'path' => 'map/macro',
+      'type' => MENU_NORMAL_ITEM,
+      'title' => t('Build a GMap macro'),
+      'access' => user_access('create macro'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => 'gmap_macro_builder_form',
+    );
+  }
+  return $items;
+}
+
+function gmap_macro_builder_form() {
+  $form['macroform'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Gmap macro creation'),
+    '#theme' => 'gmap_macro',
+  );
+
+  $form['macroform']['mapdiv'] = array(
+    '#type' => 'gmap',
+    '#id' => 'map',
+    '#settings' => array(
+      'points' => array(),
+      'pointsOverlays' => array(),
+    ),
+  );
+
+  $defaults = gmap_defaults();
+
+  $form['macroform']['overlayedit'] = array(
+    '#type' => 'gmap_overlay_edit',
+    '#map' => 'map',
+  );
+  $form['macroform']['mapid'] = array(
+    '#type' => 'textfield',
+    '#id' => 'gmap-map-mapid0',
+    '#title' => t('Map id attribute'),
+    '#default_value' => variable_get('gmap_default_mapid', 'map'),
+    '#attributes' => array('class' => 'gmap-control'),
+  );
+  $form['macroform']['maptype'] = array(
+    '#type' => 'select', 
+    '#id' => 'gmap-map-maptype0',
+    '#title' => t('Map type'), 
+    '#options' => drupal_map_assoc(array('Map', 'Satellite', 'Hybrid')), 
+    '#default_value' => $defaults['maptype'],
+    '#required' => FALSE,
+    '#attributes' => array('class' => 'gmap-control'),
+  );
+  $form['macroform']['controltype'] = array(
+    '#type' => 'select', 
+    '#title' => t('Controls'), 
+    '#options' => drupal_map_assoc(array('None', 'Small', 'Large')), 
+    '#required' => FALSE,
+    '#default_value' => $defaults['controltype'],
+    '#id' => 'gmap-map-controltype0',
+    '#attributes' => array('class' => 'gmap-control'),
+  );
+  $form['macroform']['address'] = array(
+    '#type' => 'gmap_address',
+    '#map' => 'map',
+    '#title' => t('Address'),
+    '#default_value' => '',
+  );
+  $form['macroform']['latlong'] = array(
+    '#type' => 'gmap_latlon',
+    '#map' => 'map',
+    '#title' => t('The Latitude and Longitude of the centre of the map'),
+    '#default_value' => $defaults['latlong'],
+    '#size' => 50,
+  );
+  $form['macroform']['width'] = array(
+    '#type' => 'textfield',
+    '#id' => 'gmap-map-width0',
+    '#title' => t('Map width'),
+    '#default_value' => $defaults['width'],
+    '#size' => 25,
+    '#attributes' => array('class' => 'gmap-control'),
+  ); 
+  $form['macroform']['height'] = array(
+    '#type' => 'textfield',
+    '#id' => 'gmap-map-height0',
+    '#title' => t('Map height'),
+    '#default_value' => $defaults['height'],
+    '#size' => 25,
+    '#attributes' => array('class' => 'gmap-control'),
+  );
+  $form['macroform']['alignment'] = array(
+    '#type' => 'gmap_align',
+    '#map' => 'map',
+    '#title' => t('Alignment'),
+  );
+  $form['macroform']['zoom'] = array(
+    '#type' => 'select',
+    '#id' => 'gmap-map-zoom0',
+    '#title' => t('The current magnification of the map'),
+    '#default_value' => $defaults['zoom'],
+    '#options' => drupal_map_assoc(range(0, 17)),
+    '#attributes' => array('class' => 'gmap-control'),
+  );
+  $form['macroform']['macro'] = array(
+    '#type' => 'gmap_macrotext',
+    '#map' => 'map',
+    '#default_value' => '',
+    '#title' => t('Macro text'),
+  );
+  return $form;
+}

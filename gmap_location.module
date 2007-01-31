@@ -79,6 +79,7 @@ function gmap_location_user_page() {
 
   $thismap = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
   $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
+  
 
   while ($u=db_fetch_object($result)) {
     $account = user_load(array('uid' => $u->eid));
@@ -131,7 +132,6 @@ function gmap_location_user_page() {
     '#map' => $thismap['id'],
     '#settings' => $thismap,
   );
-
   $output .= theme('gmap',$element);
 
   if ($user->uid>0) {

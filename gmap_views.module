@@ -1,0 +1,81 @@
+<?php
+/* $Id$ */
+// vim:set ft=php:
+
+/**
+ * @file
+ * GMap Views: A Views Style plugin providing a GMap view.
+ */
+
+/**
+ * Implementation of hook_views_style_plugins().
+ */
+function gmap_views_views_style_plugins() {
+  return array(
+    'gmap' => array(
+      'name' => t('Gmap View'),
+      'theme' => 'views_view_gmap',
+      'needs_fields' => true,
+      'validate' => 'gmap_views_validate',
+    )
+  );
+}
+
+/**
+ * Validate a GMap View.
+ * GMap Views requires Location: Latitude and Location: Longitude
+ * to generate markers.
+ */
+function gmap_views_validate($type, $view, $form) {
+  $lat_set = FALSE;
+  $lon_set = FALSE;
+  for ($n = 0 ; $n < $view['field']['count'] ; $n++) {
+    if ($view['field'][$n]['id'] == 'location.latitude') {
+      $lat_set = TRUE;
+    }
+    if ($view['field'][$n]['id'] == 'location.longitude') {
+      $lon_set = TRUE;
+    }
+  }
+  if (!($lat_set && $lon_set)) {
+    form_error($form["$type-info"][$type . '_type'], t('GMap View requires Location: Latitude and Location: Longitude!'));
+  }
+  return views_ui_plugin_validate_list($type, $view, $form);
+}
+
+/**
+ * Display the results of a view in a Google Map.
+ */
+function theme_views_view_gmap($view, $results) {
+  // Fields are used to render the markers.
+  $fields = _views_get_fields();
+  $markers = array();
+  foreach ($results as $entry) {
+    // @@@
+    $type = isset($entry->node_type) ? $entry->node_type : '';
+    $location = array(
+      'lat' => $entry->location_latitude,
+      'lon' => $entry->location_longitude,
+    );
+    if (($location['lat']) && ($location['lon'])) {
+      $marker_label = '';
+      foreach ($view->field as $field) {
+        $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $entry, $view) .'</div>';
+      }
+      $markers[] = array(
+        // @@@
+        'markername' => variable_get('gmap_node_marker_'.$type, ''),
+        'text' => strtr($marker_label,"'\n\r",'" '),
+        'latitude' => $location['lat'],
+        'longitude' => $location['lon']
+      );
+    }
+  }
+  $thismap = array(
+    '#map' => 'view_gmap',
+    '#settings' => gmap_defaults(),
+  );
+  $thismap['#settings']['markers'] = $markers;
+  $output .= theme('gmap',$thismap);
+  return $output;
+}

@@ -936,7 +936,6 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
 }
 
 function gmap_filter_tips($delta, $format, $long = false) {
-
   if(user_access('create macro')) { // only display macro if user can create one
     return t('Insert Google Map macro.').'<a href="'.url('map/macro').'" target="_blank" >'.t('Create a macro').'</a>';
   }
@@ -963,14 +962,6 @@ function gmap_menu($may_cache) {
       'callback arguments' => 'gmap_admin_settings',
       'access' => user_access('administer site configuration'),
       'type' => MENU_NORMAL_ITEM,
-    );
-    $items[] = array(
-      'path' => 'map/macro',
-      'type' => MENU_NORMAL_ITEM,
-      'title' => t('Build a GMap macro'),
-      'access' => user_access('create macro'),
-      'callback' => 'drupal_get_form',
-      'callback arguments' => 'gmap_macro_form',
     );
     $items[] = array(
       'path' => 'map/query',
@@ -1006,7 +997,7 @@ function gmap_json_query() {
   }
   if(arg(2)=='markers') {
     echo drupal_to_js(array(
-      'path' => drupal_get_path('module', 'gmap').'/markers',
+      'path' => base_path() . drupal_get_path('module', 'gmap').'/markers',
       'markers' => gmap_get_markers(TRUE),
     ));
     exit();
@@ -1014,14 +1005,8 @@ function gmap_json_query() {
   
   if(arg(2)=='marker') {
     $name = arg(3);
-    
-
-
   }
 }
-
-
-
 
 function gmap_admin_settings() {
   //note the same google api key variable name as in the googlemap module is used
@@ -1225,9 +1210,14 @@ function gmap_elements() {
       )),
       '#process' => array('expand_gmap' => array()),
     ),
-    'gmap_macrotext' => array('#input' => TRUE, '#cols' => 60, '#rows' => 5, '#process' => array(
-      'process_gmap_control' => array('textarea','macrotext')
-    )),
+    'gmap_macrotext' => array(
+      '#input' => TRUE,
+      '#cols' => 60,
+      '#rows' => 5,
+      '#process' => array(
+        'process_gmap_control' => array('textarea','macrotext')
+      ),
+    ),
     'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit' => array())),
     'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address' => array())),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align' => array())),
@@ -1302,6 +1292,10 @@ function theme_gmap_overlay_edit($element) {
   return $o . $extra ;// theme('select',$element);
 }
 
+function gmap_map_cleanup($map) {
+
+}
+
 function theme_gmap_coord($element) {
   //drupal_add_js
   return theme('textfield',$element);
@@ -1374,119 +1368,6 @@ function gmap_widget_setup(&$element, $type) {
   )));
   $element['#id'] = 'gmap-'.$element['#map'].'-'.$type.$serial[$element['#map']][$type];
   $serial[$element['#map']][$type]++;
-}
-
-function gmap_macro_form() {
-  $form['macroform'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Gmap macro creation'),
-    '#theme' => 'gmap_macro',
-  );
-
-  $form['macroform']['mapdiv'] = array(
-    '#type' => 'gmap',
-    '#id' => 'map',
-    '#settings' => array(
-      'points' => array(),
-      'pointsOverlays' => array(),
-    ),
-  );
-
-  $defaults = gmap_defaults();
-
-  $form['macroform']['overlayedit'] = array(
-    '#type' => 'gmap_overlay_edit',
-    '#map' => 'map',
-  );
-  $form['macroform']['mapid'] = array(
-    '#type' => 'textfield',
-    '#id' => 'gmap-map-mapid',
-    '#title' => t('Map id attribute'),
-    '#default_value' => variable_get('gmap_default_mapid', 'map'),
-    '#attributes' => array('class' => 'gmap-control'),
-  );
-  $form['macroform']['maptype'] = array(
-    '#type' => 'select', 
-    '#id' => 'gmap-map-maptype0',
-    '#title' => t('Map type'), 
-    '#options' => drupal_map_assoc(array('Map', 'Satellite', 'Hybrid')), 
-    '#default_value' => $defaults['maptype'],
-    '#required' => FALSE,
-    '#attributes' => array('class' => 'gmap-control'),
-  );
-  $form['macroform']['controltype'] = array(
-    '#type' => 'select', 
-    '#title' => t('Controls'), 
-    '#options' => drupal_map_assoc(array('None', 'Small', 'Large')), 
-    '#required' => FALSE,
-    '#default_value' => $defaults['controltype'],
-    '#id' => 'gmap-map-controltype0',
-    '#attributes' => array('class' => 'gmap-control'),
-  );
-  $form['macroform']['address'] = array(
-    '#type' => 'gmap_address',
-    '#map' => 'map',
-    '#title' => t('Address'),
-    '#default_value' => '',
-  );
-  $form['macroform']['latlong'] = array(
-    '#type' => 'gmap_latlon',
-    '#map' => 'map',
-    '#title' => t('The Latitude and Longitude of the centre of the map'),
-    '#default_value' => $defaults['latlong'],
-    '#size' => 50,
-  );
-  $form['macroform']['width'] = array(
-    '#type' => 'textfield',
-    '#id' => 'gmap-map-width0',
-    '#title' => t('Map width'),
-    '#default_value' => $defaults['width'],
-    '#size' => 25,
-    '#attributes' => array('class' => 'gmap-control'),
-  ); 
-  $form['macroform']['height'] = array(
-    '#type' => 'textfield',
-    '#id' => 'gmap-map-height0',
-    '#title' => t('Map height'),
-    '#default_value' => $defaults['height'],
-    '#size' => 25,
-    '#attributes' => array('class' => 'gmap-control'),
-  );
-  $form['macroform']['alignment'] = array(
-    '#type' => 'gmap_align',
-    '#map' => 'map',
-    '#title' => t('Alignment'),
-  );
-
-  $form['macroform']['zoom'] = array(
-    '#type' => 'select',
-    '#id' => 'gmap-map-zoom0',
-    '#title' => t('The current magnification of the map'),
-    '#default_value' => $defaults['zoom'],
-    '#options' => drupal_map_assoc(range(0, 17)),
-    '#attributes' => array('class' => 'gmap-control'),
-  );
-  $form['macroform']['macro'] = array(
-    '#type' => 'gmap_macrotext',
-    '#map' => 'map',
-    '#default_value' => '',
-    '#title' => t('Macro text'),
-  );
-  return $form;
-}
-
-/**
- * Implementation of hook_views_style_plugins()
- */
-function gmap_views_style_plugins() {
-  return array(
-    'gmap' => array(
-      'name' => t('Gmap View'),
-      'theme' => 'views_view_gmap',
-      'needs_fields' => true,
-      'validate' => 'views_ui_plugin_validate_list',
-    )
-  );
 }
 
 /**
@@ -1571,40 +1452,6 @@ function gmap_marker_titles() {
     $titles[$k] = $v['name'];
   }
   return $titles;
-}
-
-  
-
-
-/**
- * Display the nodes of a view in a Google Map
- */
-function theme_views_view_gmap($view, $nodes) {
-  $fields = _views_get_fields();
-  $markers = array();
-  foreach ($nodes as $node) {
-    $node_data = node_load($node->nid);
-    $location = $node_data->location;
-    if (($location['lat']) && ($location['lon'])) {
-      $marker_label = '';
-      foreach ($view->field as $field) {
-        $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $node, $view) .'</div>';
-      }
-      $markers[] = array(
-        'markername' => variable_get('gmap_node_marker_'.$node_data->type, ''),
-        'label' => strtr($marker_label,"'\n\r",'" '),
-        'latitude' => $location['lat'],
-        'longitude' => $location['lon']
-      );
-    }
-  }
-  $thismap = array(
-    '#map' => 'view_gmap',
-    '#settings' => gmap_defaults(),
-  );
-  $thismap['#settings']['markers'] = $markers;
-  $output .= theme('gmap',$thismap);
-  return $output;
 }
 
 /**
