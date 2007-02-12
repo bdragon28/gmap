@@ -754,21 +754,22 @@ function gmap_set_location($map,&$form,$fields) {
 
   $id = 'loc'.$ctr;
 
+  $map['id'] = $ctr;
+
   $form['map'] = array(
     '#type' => 'gmap',
-    '#map' => $id,
     '#settings' => $map,
   );
 
   $form[$fields['latitude']]['#map']=$id;
-  gmap_widget_setup($form[$fields['latitude']], 'gmap_latitude');
+  gmap_widget_setup($form[$fields['latitude']], 'latitude');
 
   $form[$fields['longitude']]['#map']=$id;
-  gmap_widget_setup($form[$fields['longitude']], 'gmap_longitude');
+  gmap_widget_setup($form[$fields['longitude']], 'longitude');
 
   if (isset($fields['address'])) {
     $form[$fields['address']]['#map'] = $id;
-    gmap_widget_setup($form[$fields['address']], 'gmap_address');
+    gmap_widget_setup($form[$fields['address']], 'address');
 
 //    $form[$fields['address']]['#attributes']= array('onchange'=>'gmap_geocodeaddress('.$map['id'].', this.value);');
   }
