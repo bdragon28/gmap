@@ -754,7 +754,7 @@ function gmap_set_location($map,&$form,$fields) {
 
   $id = 'loc'.$ctr;
 
-  $map['id'] = $ctr;
+  $map['id'] = $id;
 
   $element = array(
     '#type' => 'gmap',
