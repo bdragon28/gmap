@@ -756,7 +756,7 @@ function gmap_set_location($map,&$form,$fields) {
 
   $map['id'] = $ctr;
 
-  $form['map'] = array(
+  $element = array(
     '#type' => 'gmap',
     '#settings' => $map,
   );
@@ -770,8 +770,6 @@ function gmap_set_location($map,&$form,$fields) {
   if (isset($fields['address'])) {
     $form[$fields['address']]['#map'] = $id;
     gmap_widget_setup($form[$fields['address']], 'address');
-
-//    $form[$fields['address']]['#attributes']= array('onchange'=>'gmap_geocodeaddress('.$map['id'].', this.value);');
   }
 
 /*  if ($form[$fields['latitude']]['#default_value']!=0 || $form[$fields['longitude']]['#default_value']!=0) {
@@ -802,11 +800,8 @@ function gmap_set_location($map,&$form,$fields) {
                 });
                // GEvent.addListener({id}, "dragend", function() {{id}.checkResize();} )
               ';
-*/
-  $out = gmap_draw_map($map,$myjava);
-  
-
-  return $out;
+*/  
+  return theme('gmap',$element);
 }
 
 
