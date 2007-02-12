@@ -744,18 +744,32 @@ function _gmap_str2points($str) {
  *
  */
 function gmap_set_location($map,&$form,$fields) {
-echo "Unfinished gmap_set_location called!";
+  static $ctr = 0;
+
+  $ctr++;
+
   if (!is_array($map)){
     $map=gmap_parse_macro($map);
   }
-  $zoom=$map['zoom'];
 
-  $form[$fields['latitude']]['#id']='gmap-'.$map['id'].'-latitude';
-//  $form[$fields['latitude']]['#attributes']=array('onchange'=>'gmap_textchange('.$map['id'].');');
-  $form[$fields['longitude']]['#id']='gmap-'.$map['id'].'-longitude';
-//  $form[$fields['longitude']]['#attributes']= array('onchange'=>'gmap_textchange('.$map['id'].');');
+  $id = 'loc'.$ctr;
+
+  $form['map'] = array(
+    '#type' => 'gmap',
+    '#map' => $id,
+    '#settings' => $map,
+  );
+
+  $form[$fields['latitude']]['#map']=$id;
+  gmap_widget_setup($form[$fields['latitude']], 'gmap_latitude');
+
+  $form[$fields['longitude']]['#map']=$id;
+  gmap_widget_setup($form[$fields['longitude']], 'gmap_longitude');
+
   if (isset($fields['address'])) {
-    $form[$fields['address']]['#id']='gmap-'.$map['id'].'-address';
+    $form[$fields['address']]['#map'] = $id;
+    gmap_widget_setup($form[$fields['address']], 'gmap_address');
+
 //    $form[$fields['address']]['#attributes']= array('onchange'=>'gmap_geocodeaddress('.$map['id'].', this.value);');
   }
 

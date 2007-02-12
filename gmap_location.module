@@ -258,9 +258,6 @@ function gmap_location_node_map($n,$thismap,$single=false){
  *
  */
 function gmap_location_admin_settings() {
-
-  $markers=gmap_marker_titles();
-
   $form['geocoding'] = array(
     '#type' => 'fieldset',
     '#title' => t('Geocode Locations'),
@@ -306,10 +303,9 @@ function gmap_location_admin_settings() {
     '#rows' => 6,
   );
   $form['user']['gmap_user_map_marker'] = array(
-    '#type' => 'select',
+    '#type' => 'gmap_markerchooser',
     '#title' => t('Marker for users'),
     '#default_value' => variable_get('gmap_user_map_marker', 'drupal'),
-    '#options' => $markers,
   );
 
   // Option to use a different marker for each role
@@ -326,10 +322,9 @@ function gmap_location_admin_settings() {
   // Create a selection box per role
   foreach ($roles as $rid => $role) {
     $form['user']['roles']["gmap_role_map_marker_$rid"] = array(
-      '#type' => 'select',
+      '#type' => 'gmap_markerchooser',
       '#title' => $role,
       '#default_value' => variable_get("gmap_role_map_marker_$rid", variable_get('gmap_user_map_marker', 'drupal')),
-      '#options' => $markers,
     );
   }
 
@@ -357,10 +352,9 @@ function gmap_location_admin_settings() {
   foreach ($ntypes as $key => $value) {
     if (variable_get('location_'. $key, 0)) {
       $form['node']['gmap_node_marker_'.$key]=array(
-        '#type' => 'select',
+        '#type' => 'gmap_markerchooser',
         '#title' => t('Marker for '.$value),
         '#default_value' => variable_get('gmap_node_marker_'.$key, ''),
-        '#options' => $markers,
       );
     }
   }
