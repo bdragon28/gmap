@@ -2,6 +2,7 @@
 
 /**
  * Address widget and GMap geocoder routines.
+ * 
  */
 
 ////////////////////////////////////////
@@ -12,7 +13,7 @@
  * Provide a shared geocoder.
  * Lazy initialize it so it's not resident until needed.
  */
-Drupal.gmap.prototype.geocoder = function() {
+Drupal.gmap.geocoder = function() {
   var theGeocoder;
   if (!theGeocoder) {
     theGeocoder = new GClientGeocoder();
@@ -26,8 +27,7 @@ Drupal.gmap.prototype.geocoder = function() {
 ////////////////////////////////////////
 //         Address widget             //
 ////////////////////////////////////////
-
-Drupal.gmap.prototype.handler.address = function(elem) {
+Drupal.gmap.addHandler('address', function(elem) {
   var obj = this;
 
   // Respond to focus event.
@@ -59,5 +59,4 @@ Drupal.gmap.prototype.handler.address = function(elem) {
       elem.value = 'Enter an address';
     }
   });
-}
-
+});

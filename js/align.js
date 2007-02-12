@@ -8,7 +8,7 @@
 ////////////////////////////////////////
 //           Align widget             //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.align = function(elem) {
+Drupal.gmap.addHandler('align', function(elem) {
   var obj = this;
   // Respond to incoming alignment changes.
   var binding = obj.bind("alignchange",function(){elem.value = obj.vars.align});
@@ -17,9 +17,26 @@ Drupal.gmap.prototype.handler.align = function(elem) {
     obj.vars.align = elem.value;
     obj.change("alignchange",binding);
   });
-}
+});
 
-Drupal.gmap.prototype.macroparts.push(function() {
+Drupal.gmap.addHandler('gmap',function(elem) {
+  var obj = this;
+  // Respond to incoming alignment changes.
+  binding = obj.bind("alignchange",function() {
+    var cont = obj.map.getContainer();
+    $(cont)
+      .removeClass('gmap-left')
+      .removeClass('gmap-center')
+      .removeClass('gmap-right');
+    if (obj.vars.align=='Left')   $(cont).addClass('gmap-left');
+    if (obj.vars.align=='Center') $(cont).addClass('gmap-center');
+    if (obj.vars.align=='Right')  $(cont).addClass('gmap-right');
+  });
+  // Send out outgoing alignment changes.
+  // N/A
+});
+
+Drupal.gmap.map.prototype.macroparts.push(function() {
   var obj = this;
   var output = '';
   if (obj.vars.align && obj.vars.align != 'None') {
@@ -27,4 +44,3 @@ Drupal.gmap.prototype.macroparts.push(function() {
   }
   return output;
 });
-    

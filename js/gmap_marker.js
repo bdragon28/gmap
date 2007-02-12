@@ -1,18 +1,30 @@
 /**
  * GMap Markers
- * GMap API version
+ * GMap API version / Base case
  */
-Drupal.gmap.prototype.marker = {};
+/* $Id$ */
 
-Drupal.gmap.prototype.marker.init = function(map) {
+Drupal.gmap.marker = {};
+
+Drupal.gmap.marker.init = function(map) {
   //NA
 }
 
-Drupal.gmap.prototype.marker.makeMarker = function(markerdef) {
+Drupal.gmap.marker.makeMarker = function(markerdef,seq) {
   var opts = {};
   if (markerdef.tooltip) {
     opts.title = markerdef.tooltip; // @@@
   }
+  if (markerdef.markername) {
+    opts.icon = Drupal.gmap.getIcon(markerdef.markername,seq);
+  }
+  else {
+    opts.icon = Drupal.gmap.getIcon('big blue',seq);
+  }
+  //alert('override!');
+  //alert('lat: '+markerdef.latitude+' / lon: '+markerdef.longitude);
+  //alert(opts.icon.image);
+
   var marker = new GMarker(new GLatLng(markerdef.latitude,markerdef.longitude),opts);
 
   if (markerdef.text) {
@@ -27,7 +39,7 @@ Drupal.gmap.prototype.marker.makeMarker = function(markerdef) {
 /**
  * Add a marker.
  */
-Drupal.gmap.prototype.marker.add = function(marker) {
+Drupal.gmap.marker.add = function(marker) {
   var obj = this;
   obj.map.addOverlay(marker);
   if(obj.vars.behavior.autozoom) {
@@ -35,22 +47,25 @@ Drupal.gmap.prototype.marker.add = function(marker) {
   }
 }
 
-Drupal.gmap.prototype.marker.del = function(marker) {
+/**
+ * Remove a marker.
+ */
+Drupal.gmap.marker.del = function(marker) {
   this.map.removeOverlay(marker);
 }
 
 // Add a gmap handler
-Drupal.gmap.prototype.handler.gmap.push(function(elem) {
+Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
 
   if(obj.vars.markers) {
-    obj.bind("init",function() {
+    obj.bind("markersready",function() {
       if (obj.vars.behavior.autozoom) {
         obj.bounds = new GLatLngBounds(new GLatLng(obj.vars.latitude,obj.vars.longitude),new GLatLng(obj.vars.latitude,obj.vars.longitude));
       }
 
       for (var i=0; i<obj.vars.markers.length; i++) {
-        obj.marker.add.call(obj,(obj.marker.makeMarker(obj.vars.markers[i])));
+        Drupal.gmap.marker.add.call(obj,(Drupal.gmap.marker.makeMarker(obj.vars.markers[i],i)));
       }
       if (obj.vars.lines && obj.vars.lines.length>0) {
         for (var i=0; i<obj.vars.lines.length; i++) {

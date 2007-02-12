@@ -45,6 +45,9 @@ function gmap_macro_builder_form() {
     '#settings' => array(
       'points' => array(),
       'pointsOverlays' => array(),
+      'behavior' => array(
+        'dynmarkers' => TRUE,
+      ),
     ),
   );
 

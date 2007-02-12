@@ -165,7 +165,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   // Only attach once.
   if (!this.attached) {
     // If there are markers...
-    if(obj.vars.markers) {
+//    if(obj.vars.markers) {
       // We found a map that will be needing us. Start initialization.
       this.attached = true;
       // We'll start our query in the background during init.
@@ -173,5 +173,5 @@ Drupal.gmap.addHandler('gmap', function(elem) {
         $.getJSON(Drupal.gmap.querypath + '/markers', Drupal.gmap.iconSetup);
       });
     }
-  }
+//  }
 });

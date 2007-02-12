@@ -1,105 +1,93 @@
 /* $Id$ */
 
-Drupal.gmap = function() {
-  this.controls = {};
-  this.vars = {};
-  this.map = undefined;
-  this.bindings = {};
-}
-// Handlers setup
-Drupal.gmap.prototype.handler = {};
-// Handlers operating in array mode
-Drupal.gmap.prototype.handler.gmap = new Array();
+// GMap overseer singleton
+Drupal.gmap = new function() {
+  var _handlers = {};
+  var _maps = {};
+  var querypath;
 
-// Init the macro parts array here.
-Drupal.gmap.prototype.macroparts = new Array();
+  this.addHandler = function(handler,callback) {
+    if (!_handlers[handler]) {
+      _handlers[handler] = new Array();
+    }
+    _handlers[handler].push(callback);
+  };
 
-
-/**
- * Subscribe to notification of a change.
- */
-Drupal.gmap.prototype.bind = function(name,callback) {
-  if(!this.bindings[name]) {
-    this.bindings[name] = new Array();
+  this.globalChange = function(name) {
+    for (var mapid in Drupal.settings.gmap) {
+      _maps[mapid].change(name);
+    }
   }
-  var n = this.bindings[name].length;
-  this.bindings[name][n] = callback;
-  return n;
-}
 
-/**
- * Fire off notification of a change.
- */  
-Drupal.gmap.prototype.change = function(name,id) {
-  var s;
-  var i;
-  if (s = this.bindings[name]) {
-    for (i = 0 ; i < s.length ; i++) {
-      if (i != id) {
-        (this.bindings[name][i])();
+  this.setup = function() {
+    if (Drupal.settings && Drupal.settings.gmap) {
+      for (mapid in Drupal.settings.gmap) {
+        _maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
+        
+        // Pick up the query path for json requests.
+        if (!Drupal.gmap.querypath) {
+          Drupal.gmap.querypath = Drupal.settings.gmap[mapid].querypath;
+        }
+
+        for (control in _handlers) {
+          var s = 0;
+          do {
+            var o = $('#gmap-'+mapid+'-'+control+s);
+            o.each(function() {
+                for (var i=0; i<_handlers[control].length; i++) {
+                  _handlers[control][i].call(_maps[mapid],this);
+                }
+            });
+            s++;
+          }
+          while (o.length>0);
+        }
+
+        _maps[mapid].change("init",-1);
+
+        // Send some changed events to fire up the rest of the initial settings..
+        _maps[mapid].change("maptypechange",-1);
+        _maps[mapid].change("controltypechange",-1);
+        _maps[mapid].change("alignchange",-1);
+
       }
     }
   }
-  // Also fire off "all" event.
-  if (s = this.bindings.all) {
-    for (i = 0 ; i < s.length ; i++) {
-      this.bindings.all[i]();
+}
+
+Drupal.gmap.map = function(v) {
+  this.vars = v;
+  this.map = undefined;
+  var _bindings = {};
+  this.bind = function(name,callback) {
+    if (!_bindings[name]) {
+      _bindings[name] = new Array();
     }
-  }
-}
+    return _bindings[name].push(callback) - 1;
+  };
 
-////////////////////////////////////////
-//              Markers               //
-////////////////////////////////////////
-Drupal.gmap.prototype.markers = function(marker) {
-  var theMarkers;
-  if (!theMarkers) {
-    theMarkers = {};
-    var m = new GIcon();
-    m.image = "http://www.google.com/mapfiles/marker.png";
-    m.shadow = "http://www.google.com/mapfiles/shadow50.png";
-    m.iconSize = new GSize(20, 34);
-    m.shadowSize = new GSize(37,34);
-    m.iconAnchor = new GPoint(9,34);
-    m.infoWindowAnchor = new GPoint(9, 2);
-    m.infoShadowAnchor = new GPoint(18, 25);
-    theMarkers['standard'] = m;
+  this.change = function(name,id) {
+    var c;
+    if (_bindings[name]) {
+      for (c=0; c<_bindings[name].length; c++) {
+        if (c==id) continue;
+        (_bindings[name][c])();
+      }
+    }
+    if (name != 'all') {
+      this.change('all',id);
+    }
+  };
+};
+Drupal.gmap.map.prototype.macroparts = Array();
 
-    m = new GIcon();
-    m.image = gmapMarkerLocation + "/big/blue.png";
-    m.shadow = gmapMarkerLocation + "/big/shadow.png";
-    m.iconsize=new GSize(30,51);
-    m.shadowSize=new GSize(56,51);
-    m.iconAnchor=new GPoint(13,34);
-    m.infoWindowAnchor=new GPoint(13,3);
-    m.infoShadowAnchor=new GPoint(27,37);
-    theMarkers['big'] = m;
-
-    m = new GIcon();
-    m.image = gmapMarkerLocation + "/small/red.png";
-    m.shadow = gmapMarkerLocation + "/small/shadow.png";
-    m.iconSize = new GSize(12, 20);
-    m.shadowSize = new GSize(22, 20);
-    m.iconAnchor = new GPoint(6, 20);
-    m.infoWindowAnchor = new GPoint(5, 1);
-    theMarkers['small'] = m;
-
-    m = new GIcon();
-    m.image = gmapMarkerLocation + "/flat/x.png";
-    m.shadow = "";
-    m.iconSize = new GSize(16, 16);
-    m.shadowSize = new GSize(0, 0);
-    m.iconAnchor = new GPoint(8, 8);
-    m.infoWindowAnchor = new GPoint(8, 8);
-    theMarkers['flat'] = m;
-  }
-  return theMarkers[marker];
-}
+// Init the macro parts array here.
+//Drupal.gmap.prototype.macroparts = new Array();
 
 ////////////////////////////////////////
 //             Map widget             //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.gmap.push(function(elem) {
+Drupal.gmap.addHandler('gmap',function(elem) {
   var obj = this;
   // Make it a gmap.
   var map = new GMap2(elem);
@@ -174,26 +162,12 @@ Drupal.gmap.prototype.handler.gmap.push(function(elem) {
   });
   // Send out outgoing control type changes.
   // N/A
-
-  // Respond to incoming alignment changes.
-  binding = obj.bind("alignchange",function() {
-    var cont = map.getContainer();
-    $(cont)
-      .removeClass('gmap-left')
-      .removeClass('gmap-center')
-      .removeClass('gmap-right');
-    if (obj.vars.align=='Left')   $(cont).addClass('gmap-left');
-    if (obj.vars.align=='Center') $(cont).addClass('gmap-center');
-    if (obj.vars.align=='Right')  $(cont).addClass('gmap-right');
-  });
-  // Send out outgoing alignment changes.
-  // N/A
 });
 
 ////////////////////////////////////////
 //            Zoom widget             //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.zoom = function(elem) {
+Drupal.gmap.addHandler('zoom', function(elem) {
   var obj = this;
   // Respond to incoming zooms
   var binding = obj.bind("zoom",function(){elem.value = obj.vars.zoom});
@@ -202,12 +176,12 @@ Drupal.gmap.prototype.handler.zoom = function(elem) {
     obj.vars.zoom = parseInt(elem.value);
     obj.change("zoom",binding);
   });
-}
+});
 
 ////////////////////////////////////////
 //          Latitude widget           //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.latitude = function(elem) {
+Drupal.gmap.addHandler('latitude', function(elem) {
   var obj = this;
   // Respond to incoming movements.
   var binding = obj.bind("move",function(){elem.value = ''+obj.vars.latitude});
@@ -216,12 +190,12 @@ Drupal.gmap.prototype.handler.latitude = function(elem) {
     obj.vars.latitude = this.value;
     obj.change("move",binding);
   });
-}
+});
 
 ////////////////////////////////////////
 //         Longitude widget           //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.longitude = function(elem) {
+Drupal.gmap.addHandler('longitude', function(elem) {
   var obj = this;
   // Respond to incoming movements.
   var binding = obj.bind("move",function(){elem.value = ''+obj.vars.longitude});
@@ -230,12 +204,12 @@ Drupal.gmap.prototype.handler.longitude = function(elem) {
     obj.vars.longitude = this.value;
     obj.change("move",binding);
   });
-}
+});
 
 ////////////////////////////////////////
 //          Latlon widget             //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.latlon = function(elem) {
+Drupal.gmap.addHandler('latlon', function(elem) {
   var obj = this;
   // Respond to incoming movements.
   var binding = obj.bind("move",function(){elem.value = ''+obj.vars.latitude+','+obj.vars.longitude});
@@ -246,12 +220,12 @@ Drupal.gmap.prototype.handler.latlon = function(elem) {
     obj.vars.longitude = t[1];
     obj.change("move",binding);
   });
-}
+});
 
 ////////////////////////////////////////
 //          Maptype widget            //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.maptype = function(elem) {
+Drupal.gmap.addHandler('maptype', function(elem) {
   var obj = this;
   // Respond to incoming movements.
   var binding = obj.bind("maptypechange",function(){elem.value = obj.vars.maptype});
@@ -260,12 +234,12 @@ Drupal.gmap.prototype.handler.maptype = function(elem) {
     obj.vars.maptype = elem.value;
     obj.change("maptypechange",binding);
   });
-}
+});
 
 ////////////////////////////////////////
 //           Width widget             //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.width = function(elem) {
+Drupal.gmap.addHandler('width', function(elem) {
   var obj = this;
   // Respond to incoming width changes.
   var binding = obj.bind("widthchange",function(){elem.value = obj.vars.width});
@@ -274,12 +248,12 @@ Drupal.gmap.prototype.handler.width = function(elem) {
     obj.vars.width = elem.value;
     obj.change("widthchange",binding);
   });
-}
+});
 
 ////////////////////////////////////////
 //           Height widget            //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.height = function(elem) {
+Drupal.gmap.addHandler('height', function(elem) {
   var obj = this;
   // Respond to incoming height changes.
   var binding = obj.bind("heightchange",function(){elem.value = obj.vars.height});
@@ -288,12 +262,12 @@ Drupal.gmap.prototype.handler.height = function(elem) {
     obj.vars.height = elem.value;
     obj.change("heightchange",binding);
   });
-}
+});
 
 ////////////////////////////////////////
 //        Control type widget         //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.controltype = function(elem) {
+Drupal.gmap.addHandler('controltype', function(elem) {
   var obj = this;
   // Respond to incoming height changes.
   var binding = obj.bind("controltypechange",function(){elem.value = obj.vars.controltype});
@@ -302,12 +276,12 @@ Drupal.gmap.prototype.handler.controltype = function(elem) {
     obj.vars.controltype = elem.value;
     obj.change("controltypechange",binding);
   });
-}
+});
 
 ////////////////////////////////////////
 //           Map ID widget            //
 ////////////////////////////////////////
-Drupal.gmap.prototype.handler.mapid = function(elem) {
+Drupal.gmap.addHandler('mapid', function(elem) {
   var obj = this;
   // Respond to incoming map id changes.
   var binding = obj.bind("idchange",function(){elem.value = obj.vars.id});
@@ -316,55 +290,8 @@ Drupal.gmap.prototype.handler.mapid = function(elem) {
     obj.vars.id = elem.value;
     obj.change("idchange",binding);
   });
-}
+});
 
-Drupal.gmapAutoAttach = function() {
-
-  // Init Google map facilities
-  if (Drupal.settings && Drupal.settings.gmap) {
-    for ( mapid in Drupal.settings.gmap ) {
-      var map = new Drupal.gmap();
-      map.vars = Drupal.settings.gmap[mapid];
-
-      // Convert latlon to latitude and longitude if needed.
-      if (map.vars.latlong) {
-        map.vars.latlon = map.vars.latlong;
-      }
-      if (map.vars.latlon && (!map.vars.latitude || !map.vars.longitude)) {
-        var t = map.vars.latlon.split(',');
-        map.vars.latitude = t[0];
-        map.vars.longitude = t[1];
-      }
-
-      for ( control in map.handler ) {
-        var s = 0;
-        do {
-          var o = $('#gmap-'+mapid+'-'+control+s);
-          o.each(function() {
-            // Handle arrays of functions
-            if (typeof map.handler[control]!='function') {
-              for (var i=0; i<map.handler[control].length; i++) {
-                map.handler[control][i].call(map,this);
-              }
-            }
-            else {
-              map.handler[control].call(map,this);
-            }
-          });
-          s++;
-        }
-        while (o.length>0);
-      }
-      map.change("init",-1);
-
-      // Send some changed events to fire up the rest of the initial settings..
-      map.change("maptypechange",-1);
-      map.change("controltypechange",-1);
-      map.change("alignchange",-1);
-
-    }
-  }
-}
 
 function gmap_validate_dim(dim) {
   return dim;
@@ -380,7 +307,7 @@ function gmap_validate_dim(dim) {
 }
 
 if (Drupal.jsEnabled) {
-  $(document).ready(Drupal.gmapAutoAttach)
+  $(document).ready(Drupal.gmap.setup)
     .unload(function() {
       //Google cleanup.
       GUnload();
