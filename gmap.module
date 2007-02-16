@@ -514,6 +514,12 @@ function gmap_parse_macro($instring,$ver=2) {
     }
   }
 
+  // Synonyms
+  if ($m['type']) {
+    $m['maptype'] = $m['type'];
+    unset($m['type']);
+  }
+
   $m['lines'] = array();
   $m['delme'] = array(); // List of keys to delete.
 
