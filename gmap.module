@@ -1003,6 +1003,9 @@ function expand_gmap($element) {
   else {
     $element['#map'] = $mapid;
   }
+  if (!$element['#settings']) {
+    $element['#settings'] = array();
+  }
   $element['#settings'] = array_merge(gmap_defaults(),array(
     'id' => $mapid,
     'points' => array(),
@@ -1212,7 +1215,10 @@ function theme_gmap($element) {
   if(!$element['#id']) {
     gmap_widget_setup($element, 'gmap');
   }
-
+  // Possible if this gmap was created manually.
+  if (!$element['#settings']) {
+    $element['#settings'] = array();
+  }
   $map = array_merge(gmap_defaults(),$element['#settings']);
   gmap_map_cleanup($map);
 
@@ -1232,8 +1238,8 @@ function theme_gmap($element) {
   $style[] = 'width: '.$map['width'];
   $style[] = 'height: '.$map['height'];
 
-  $element['#attributes']['class'] = trim(implode(' ',array_merge($element['#attributes']['class'],'gmap','gmap-map','gmap-'.$map['id'].'-gmap')));
-  $o = '<div id="'.$element['#id'].'" style="'.implode('; ',$style).';" class="'.$element['#attributes']['class'].'"></div>';
+  $element['#attributes']['class'] = trim($element['#attributes']['class'] .'gmap gmap-map gmap-'.$map['id'].'-gmap');
+  $o = '<div id="'.$element['#id'].'" style="'.implode('; ',$style).';"'.drupal_attributes($element['#attributes']).'></div>';
 
   // Activate markers if needed
   if ($map['behavior']['dynmarkers'] || !empty($map['markers'])) {
