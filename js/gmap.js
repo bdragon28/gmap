@@ -143,11 +143,14 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   });
   // Send out outgoing map type changes.
   GEvent.addListener(map,"maptypechanged",function() {
-    var type = map.getCurrentMapType();
-    if(type==G_NORMAL_MAP) obj.vars.maptype = 'Map';
-    if(type==G_HYBRID_MAP) obj.vars.maptype = 'Hybrid';
-    if(type==G_SATELLITE_MAP) obj.vars.maptype = 'Satellite';
-    obj.change("maptypechange",binding);
+    // If the map isn't ready yet, ignore it.
+    if (map.ready) {
+      var type = map.getCurrentMapType();
+      if(type==G_NORMAL_MAP) obj.vars.maptype = 'Map';
+      if(type==G_HYBRID_MAP) obj.vars.maptype = 'Hybrid';
+      if(type==G_SATELLITE_MAP) obj.vars.maptype = 'Satellite';
+      obj.change("maptypechange",binding);
+    }
   });
 
   // Respond to incoming width changes.
