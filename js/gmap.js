@@ -50,6 +50,9 @@ Drupal.gmap = new function() {
         _maps[mapid].change("controltypechange",-1);
         _maps[mapid].change("alignchange",-1);
 
+        // Set ready to put the event system into action.
+        _maps[mapid].ready = true;
+
       }
     }
   }
@@ -58,6 +61,7 @@ Drupal.gmap = new function() {
 Drupal.gmap.map = function(v) {
   this.vars = v;
   this.map = undefined;
+  this.ready = false;
   var _bindings = {};
   this.bind = function(name,callback) {
     if (!_bindings[name]) {
@@ -67,6 +71,10 @@ Drupal.gmap.map = function(v) {
   };
 
   this.change = function(name,id) {
+    // If we aren't fully initted yet, ignore bound events.
+    if (!this.ready && id!=-1) {
+      return;
+    }
     var c;
     if (_bindings[name]) {
       for (c=0; c<_bindings[name].length; c++) {
@@ -104,7 +112,6 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     else if (!obj.vars.behavior.nokeyboard) {
       new GKeyboardHandler(map);
     }
-
     map.setCenter(new GLatLng(obj.vars.latitude,obj.vars.longitude), obj.vars.zoom);
   });
 
