@@ -71,10 +71,6 @@ Drupal.gmap.map = function(v) {
   };
 
   this.change = function(name,id) {
-    // If we aren't fully initted yet, ignore bound events.
-    if (!this.ready && id!=-1) {
-      return;
-    }
     var c;
     if (_bindings[name]) {
       for (c=0; c<_bindings[name].length; c++) {
