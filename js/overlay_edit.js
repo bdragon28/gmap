@@ -102,9 +102,9 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
       obj.vars.points = new Array();
       // Initialize points...
       
-      if (!edit_text_elem) {
-        edit_text_elem = $('<textarea rows=4 cols=20 id="poopy">sdf</textarea>').appendTo('body');
-      }
+      //if (!edit_text_elem) {
+      //  edit_text_elem = $('<textarea rows=4 cols=20 id="poopy">sdf</textarea>').appendTo('body');
+      //}
       
       GEvent.addListener(obj.map, 'click', function(overlay, point) {
         if (overlay) {
@@ -129,15 +129,15 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
               obj.change('point',-1);
               break;
             case 'Edit Info':
-              var dom = $('<div>What the hell</div>').appendTo('body');
-              overlay.openInfoWindowTabs(
-                [
+              //var dom = $('<div>What the hell</div>').appendTo('body');
+              //overlay.openInfoWindowTabs(
+                //[
                   //new GInfoWindowTab('View','Tesadutfuysadtfnyusadtf uisyad tfuyisad fuyit uysadt fiuytasd fuiyt iuadfuiytuiya dfuiyt st'),
                   //new GInfoWindowTab('Info','<em>Marker:</em>Unk <em>Seq:</em>Unk <br /><em>Lat:</em>' + overlay.getPoint().lat() + '<br /><em>Lon:</em>' + overlay.getPoint().lng()),
                   //new GInfoWindowTab('Edit','<textarea rows="3" cols="20">Foo</textarea>'),
-                  new GInfoWindowTab('Foo',dom[0]),
-                  new GInfoWindowTab('Edit',edit_text_elem[0])
-                ],{maxWidth: 400});
+                  //new GInfoWindowTab('Foo',dom[0]),
+                  //new GInfoWindowTab('Edit',edit_text_elem[0])
+                //],{maxWidth: 400});
               break;
           }
         }
