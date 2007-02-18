@@ -40,6 +40,7 @@ function gmap_defaults() {
     'maptype' => 'Map',
     'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
     'behavior' => array(
+      'locpick' => FALSE,
       'nodrag' => FALSE,
       'nokeyboard' => TRUE,
       'autozoom' => FALSE,
@@ -762,20 +763,34 @@ function gmap_set_location($map,&$form,$fields) {
 
   $map['id'] = $id;
 
+  // Use the latitude and longitude from the fields.
+  $map['latitude'] = $form[$fields['latitude']]['#default_value'];
+  $map['longitude'] = $form[$fields['longitude']]['#default_value'];
+
+  if (isset($form[$fields['latitude']]['#value'])) {
+    $map['latitude'] = $form[$fields['latitude']]['#value'];
+  }
+  if (isset($form[$fields['longitude']]['#value'])) {
+    $map['longitude'] = $form[$fields['longitude']]['#value'];
+  }
+
+  // This is a locpick map.
+  $map['behavior']['locpick'] = TRUE;
+
   $element = array(
     '#type' => 'gmap',
     '#settings' => $map,
   );
 
   $form[$fields['latitude']]['#map']=$id;
-  gmap_widget_setup($form[$fields['latitude']], 'latitude');
+  gmap_widget_setup($form[$fields['latitude']], 'locpick_latitude');
 
   $form[$fields['longitude']]['#map']=$id;
-  gmap_widget_setup($form[$fields['longitude']], 'longitude');
+  gmap_widget_setup($form[$fields['longitude']], 'locpick_longitude');
 
   if (isset($fields['address'])) {
     $form[$fields['address']]['#map'] = $id;
-    gmap_widget_setup($form[$fields['address']], 'address');
+    gmap_widget_setup($form[$fields['address']], 'locpick_address');
   }
 
 /*  if ($form[$fields['latitude']]['#default_value']!=0 || $form[$fields['longitude']]['#default_value']!=0) {
@@ -1184,6 +1199,7 @@ function gmap_map_cleanup(&$map) {
   if (isset($map['latlon']) && (!isset($map['latitude']) || !isset($map['longitude']))) {
     list($map['latitude'],$map['longitude']) = explode(',',$map['latlon']);
   }
+  unset($map['latlon']);
 }
 
 function theme_gmap_coord($element) {
@@ -1211,6 +1227,8 @@ function theme_gmap_align($element) {
  */
 function theme_gmap($element) {
   _gmap_doheader();
+  $path = drupal_get_path('module','gmap') .'/js/';
+
   // If the theme function is called directly, the map is not properly set up yet.
   if(!$element['#id']) {
     gmap_widget_setup($element, 'gmap');
@@ -1243,9 +1261,12 @@ function theme_gmap($element) {
 
   // Activate markers if needed
   if ($map['behavior']['dynmarkers'] || !empty($map['markers'])) {
-    $path = drupal_get_path('module','gmap') .'/js/';
     drupal_add_js($path .'icon.js');
     drupal_add_js($path .variable_get('gmap_mm_type','gmap_marker.js'));
+  }
+
+  if ($map['behavior']['locpick']) {
+    drupal_add_js($path . 'locpick.js');
   }
 
   // Inline settings extend.

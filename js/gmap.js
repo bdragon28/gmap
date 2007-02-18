@@ -52,6 +52,7 @@ Drupal.gmap = new function() {
 
         // Set ready to put the event system into action.
         _maps[mapid].ready = true;
+        _maps[mapid].change("ready",-1);
 
       }
     }
