@@ -23,11 +23,11 @@ Drupal.gmap.addHandler('gmap',function(elem) {
           if (obj.locpick_point) {
             obj.map.removeOverlay(obj.locpick_point);
           }
-          obj.map.panTo(point);
           obj.map.zoomIn();
           obj.map.zoomIn();
           obj.map.addOverlay(obj.locpick_point = new GMarker(point));
           obj.locpick_coord = point;
+          obj.map.panTo(point);
           obj.change('locpickchange', binding);
         }
         else {
