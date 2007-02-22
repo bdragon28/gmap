@@ -350,10 +350,10 @@ function gmap_location_admin_settings() {
 
   $ntypes=node_get_types();
   foreach ($ntypes as $key => $value) {
-    if (variable_get('location_'. $key, 0)) {
+    if (intval(variable_get('location_maxnum_'. $key, 0)) !== 0) {
       $form['node']['gmap_node_marker_'.$key]=array(
         '#type' => 'gmap_markerchooser',
-        '#title' => t('Marker for '.$value),
+        '#title' => t('Marker for '.$value->name),
         '#default_value' => variable_get('gmap_node_marker_'.$key, ''),
       );
     }
