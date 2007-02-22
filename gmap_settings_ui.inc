@@ -165,13 +165,13 @@ function _gmap_admin_settings() {
   );
   $form['markermanager']['gmap_mm_type'] = array(
     '#type' => 'radios',
-    '#parents' => array(),
+    '#tree' => FALSE,
     '#options' => array(
       'gmap_marker.js' => t('No manager (use addOverlay directly)'),
       'gmarkermanager_marker.js' => t("Google's GMarkerManager"),
       'clusterer_marker.js' => t("Jef Poskanzer's Clusterer"),
     ),
-    //'#default_value' => variable_get('g
+    '#default_value' => variable_get('gmap_mm_type'),
     '#description' => t('If you are planning on using many markers on a single map, you may want to consider using a marker manager to speed up map rendering.'),
   );
   
