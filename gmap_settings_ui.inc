@@ -171,7 +171,7 @@ function _gmap_admin_settings() {
       'gmarkermanager_marker.js' => t("Google's GMarkerManager"),
       'clusterer_marker.js' => t("Jef Poskanzer's Clusterer"),
     ),
-    '#default_value' => variable_get('gmap_mm_type'),
+    '#default_value' => variable_get('gmap_mm_type', 'gmap_marker.js'),
     '#description' => t('If you are planning on using many markers on a single map, you may want to consider using a marker manager to speed up map rendering.'),
   );
   
