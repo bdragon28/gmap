@@ -1,85 +1,14 @@
 <?php
- 
-function gmap_location_install() {
-  drupal_set_message('Installing location');
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      db_query("
-      CREATE TABLE {location} (
-        eid int unsigned NOT NULL default '0',
-        type varchar(6) NOT NULL default '',
-        name varchar(255) default NULL,
-        street varchar(255) default NULL,
-        additional varchar(255) default NULL,
-        city varchar(255) default NULL,
-        province varchar(16) default NULL,
-        postal_code varchar(16) default NULL,
-        country char(2) default NULL,
-        latitude decimal(10,6) default NULL,
-        longitude decimal(10,6) default NULL,
-        source tinyint default '0',
-        PRIMARY KEY  (type,eid)
-      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
-      ");
-    
-      $success = TRUE;
-      break;
-    case 'pgsql':
-      db_query("CREATE TABLE {location} (
-        eid int NOT NULL default '0' CHECK (eid >= 0),
-        type varchar(6) NOT NULL default '',
-        name varchar(255) default NULL,
-        street varchar(255) default NULL,
-        additional varchar(255) default NULL,
-        city varchar(255) default NULL,
-        province varchar(16) default NULL,
-        postal_code varchar(16) default NULL,
-        country char(2) default NULL,
-        latitude decimal(10,6) default NULL,
-        longitude decimal(10,6) default NULL,
-        source smallint default '0',
-        PRIMARY KEY (type,eid)
-      )");
-    
-      $success = TRUE;
-      break;
-    default:
-      break;
-  } // End case
+/* $Id$ */
 
-  if ($success) {
-    drupal_set_message(t('GMap module installed location tables successfully.'));
-  }
-  else {
-    drupal_set_message(t('The installation of GMap module was unsuccessful.'), 'error');
-  }
+function gmap_location_install() {
+  // Gmap no longer provides the location table.
 }
 
 function gmap_location_update_1() {
-  return _system_update_utf8(array('location'));
+  drupal_set_message(t('WARNING! Obsolete gmap_location update #@num was triggered! Please verify the schema of your location table manually!',array('@num' => '1')));
 }
 
 function gmap_location_update_2() {
-  $ret = array();
-
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      $ret[] = update_sql("ALTER TABLE {location} CHANGE oid eid int unsigned NOT NULL default '0'");
-      break;
-  }
-  
-  drupal_set_message("The schema for gmap module (location table) has been updated.  The update is such that you may want to re-resave any views you have that may include locations.");
-  
-  if(function_exists('views_invalidate_cache')) {
-    views_invalidate_cache();
-  }
-
-  return $ret;
+  drupal_set_message(t('WARNING! Obsolete gmap_location update #@num was triggered! Please verify the schema of your location table manually!',array('@num' => '2')));
 }
-
-/***************************************************************
-  PostgreSQL must be supported in all updates after this comment
- ***************************************************************/
-
