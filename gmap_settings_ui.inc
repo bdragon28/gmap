@@ -81,11 +81,9 @@ function _gmap_admin_settings() {
     '#map' => 'examplemap',
     '#title' => t('Default center'),
     '#default_value' => $defaults['latlong'],
-    // @@@ This gets overwritten right away. Move into the help hook or something.
-    '#description' => t('The decimal latitude,longitude of the centre of the map. The "." is used for decimal, and "," is used to separate latitude and longitude.'),
     '#size' => 50,
     '#maxlength' => 255,
-    '#description' => t('The default longitude, latitude of a Google map.'),
+    '#description' => t('The default center coordinates of Google map, expressed as a decimal latitude and longitude, separated by a comma.'),
   );
   $form['gmap_default']['zoom'] = array(
     '#type' => 'select',
