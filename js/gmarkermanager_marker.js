@@ -2,6 +2,7 @@
  * GMap Markers
  * Google GMarkerManager API version
  */
+/* $Id$ */
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;

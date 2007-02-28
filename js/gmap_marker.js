@@ -19,7 +19,7 @@ Drupal.gmap.marker.makeMarker = function(markerdef,seq) {
     opts.icon = Drupal.gmap.getIcon(markerdef.markername,seq);
   }
   else {
-    opts.icon = Drupal.gmap.getIcon('big blue',seq);
+    opts.icon = Drupal.gmap.getIcon();
   }
   //alert('override!');
   //alert('lat: '+markerdef.latitude+' / lon: '+markerdef.longitude);

@@ -2,6 +2,7 @@
  * GMap Markers
  * Jef Poskanzer's Clusterer.js API version
  */
+/* $Id$ */
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
