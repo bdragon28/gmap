@@ -579,8 +579,10 @@ function gmap_parse_macro($instring,$ver=2) {
       $marker = array();
       $offset++;
       // Labelled?
+      // @@@ Gmap allows both a tooltip and a popup, how to represent?
       if (strpos($point,':')) {
-        list($point,$marker['label']) = explode(':',$point,2);
+        list($point,$marker['text']) = explode(':',$point,2);
+        $marker['text'] = theme('gmap_marker_popup',$marker['text']);
       }
       list($marker['latitude'],$marker['longitude']) = explode(',',$point,2);
       // Named markers get an offset too.
@@ -733,6 +735,14 @@ function _gmap_str2points($str) {
     );
   }
   return $points;
+}
+
+/**
+ * Theme a marker popup.
+ * This will get called for markers embedded in macros.
+ */
+function theme_gmap_marker_popup($label) {
+  return $label;
 }
 
 /**
