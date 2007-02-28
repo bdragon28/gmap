@@ -1034,12 +1034,6 @@ function process_gmap_overlay_edit($element) {
   }
   $element['#tree'] = TRUE;
 
-  $element = array(
-    '#type' => 'fieldset',
-    '#title' => t('Overlay editor'),
-    '#tree' => TRUE,
-  );
-  
   $element['mapclicktype'] = array(
     '#type' => 'select',
     '#title' => t('Click map'),
