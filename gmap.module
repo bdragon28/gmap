@@ -1027,7 +1027,13 @@ function process_gmap_control($element,$edit,$fieldtype,$control,$theme='') {
 }
 
 function process_gmap_overlay_edit($element) {
-  $bak = $element;
+  // Conver the root element into a fieldset.
+  $element['#type'] = 'fieldset';
+  if (!$element['#title']) {
+    $element['#title'] = t('Overlay editor');
+  }
+  $element['#tree'] = TRUE;
+
   $element = array(
     '#type' => 'fieldset',
     '#title' => t('Overlay editor'),
@@ -1037,7 +1043,7 @@ function process_gmap_overlay_edit($element) {
   $element['mapclicktype'] = array(
     '#type' => 'select',
     '#title' => t('Click map'),
-    '#map' => $bak['#map'],
+    '#map' => $element['#map'],
     '#options' => array(
       'Points' => t('Points'),
       'Lines' => t('Lines'),
@@ -1048,7 +1054,7 @@ function process_gmap_overlay_edit($element) {
   $element['markerclicktype'] = array(
     '#type' => 'select',
     '#title' => t('Click marker'),
-    '#map' => $bak['#map'],
+    '#map' => $element['#map'],
     '#options' => array(
       'Remove' => t('Remove'),
       'Edit Info' => t('Edit Info'),
@@ -1058,7 +1064,7 @@ function process_gmap_overlay_edit($element) {
   
   $element['marker'] = array(
     '#type' => 'select',
-    '#map' => $bak['#map'],
+    '#map' => $element['#map'],
     '#options' => gmap_get_marker_titles(),
     '#title' => t('Marker'),
     '#theme' => 'gmap_overlay_edit',
@@ -1073,7 +1079,7 @@ function process_gmap_overlay_edit($element) {
 
   $element['linesettings']['scol'] = array(
     '#type' => 'textfield',
-    '#map' => $bak['#map'],
+    '#map' => $element['#map'],
     '#size' => 6,
     '#maxlength' => 6,
     '#field_prefix' => '#',
@@ -1084,7 +1090,7 @@ function process_gmap_overlay_edit($element) {
 
   $element['linesettings']['sweight'] = array(
     '#type' => 'textfield',
-    '#map' => $bak['#map'],
+    '#map' => $element['#map'],
     '#size' => 3,
     '#maxlength' => 3,
     '#field_suffix' => t('px'),
@@ -1095,7 +1101,7 @@ function process_gmap_overlay_edit($element) {
 
   $element['linesettings']['sopac'] = array(
     '#type' => 'textfield',
-    '#map' => $bak['#map'],
+    '#map' => $element['#map'],
     '#size' => 3,
     '#maxlength' => 3,
     '#field_suffix' => '%',
@@ -1106,7 +1112,7 @@ function process_gmap_overlay_edit($element) {
 
   $element['linesettings']['fcolor'] = array(
     '#type' => 'textfield',
-    '#map' => $bak['#map'],
+    '#map' => $element['#map'],
     '#size' => 6,
     '#maxlength' => 6,
     '#field_prefix' => '#',
@@ -1117,7 +1123,7 @@ function process_gmap_overlay_edit($element) {
 
   $element['linesettings']['fopac'] = array(
     '#type' => 'textfield',
-    '#map' => $bak['#map'],
+    '#map' => $element['#map'],
     '#size' => 3,
     '#maxlength' => 3,
     '#field_suffix' => '%',
@@ -1126,11 +1132,6 @@ function process_gmap_overlay_edit($element) {
   );
   gmap_widget_setup($element['linesettings']['fopac'], 'overlayedit_fopac');
 
-
- // $element['#type'] = 'select';
-//  gmap_widget_setup($element, 'overlayedit');
-//  $element['#options'] = gmap_get_marker_titles();
-//  $element['#theme'] = 'gmap_overlay_edit';
   return $element;
 }
 
