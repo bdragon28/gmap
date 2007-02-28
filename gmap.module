@@ -792,36 +792,6 @@ function gmap_set_location($map,&$form,$fields) {
     $form[$fields['address']]['#map'] = $id;
     gmap_widget_setup($form[$fields['address']], 'locpick_address');
   }
-
-/*  if ($form[$fields['latitude']]['#default_value']!=0 || $form[$fields['longitude']]['#default_value']!=0) {
-    $myjava .= '{id}.panTo(new GLatLng('.$form[$fields['latitude']]['#default_value'].', '.$form[$fields['longitude']]['#default_value'].'));'."\n".
-             '{id}.addOverlay(thispoint=new GMarker(new GLatLng('.$form[$fields['latitude']]['#default_value'].', '.$form[$fields['longitude']]['#default_value'].')));'."\n";
-  }
-
-  $myjava .=  '   GEvent.addListener({id}, "click", function(overlay, point) {
-                  {id}.checkResize();
-                  if (point) {
-                    {id}.zoomIn();
-                    {id}.zoomIn();
-                    if (thispoint) {
-                      {id}.removeOverlay(thispoint);
-                    }
-                    {id}.addOverlay(thispoint=new GMarker(point));
-
-                    $("gmap-latitude").value=point.lat();
-                    $("gmap-longitude").value=point.lng();
-                    {id}.panTo(point);
-                  }
-                  else {
-                    {id}.removeOverlay(thispoint);
-                    $("gmap-latitude").value="";
-                    $("gmap-longitude").value="";
-                    thispoint=null;
-                  }
-                });
-               // GEvent.addListener({id}, "dragend", function() {{id}.checkResize();} )
-              ';
-*/  
   return theme('gmap',$element);
 }
 
