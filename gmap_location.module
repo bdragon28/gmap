@@ -92,7 +92,7 @@ function gmap_location_user_page() {
       $marker = variable_get("gmap_role_map_marker_$key", $default_marker);
     }
     if (user_access('user locations')) {
-      $newmarker['label'] = theme('gmap_location_user_html',$account);
+      $newmarker['text'] = theme('gmap_location_user_html',$account);
       $newmarker['latitude'] = $u->latitude;
       $newmarker['longitude'] = $u->longitude;
       $newmarker['link']=url('user/'.$account->uid);
