@@ -71,16 +71,17 @@ Drupal.gmap.map.prototype.status = function(text) {
   }
 };
 
+// Extend markers to store type info.
+GMarker.prototype.gmapMarkerData = function(data) {
+  if (data) {
+    this._gmapdata = data;
+  }
+  return this._gmapdata;
+}
 
 /************* Overlay edit widget ******************/
 Drupal.gmap.addHandler('overlayedit',function(elem) {
   var obj = this;
-  
-  var sequences;
-  
-  if (!sequences) {
-    sequences = {};
-  }
 
   var binding = obj.bind('overlay_edit_mode',function() {
     // @@@
@@ -99,45 +100,30 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
 
     if(obj.map) {
       obj.vars.pointsOverlays = new Array();
-      obj.vars.points = new Array();
-      // Initialize points...
-      
-      //if (!edit_text_elem) {
-      //  edit_text_elem = $('<textarea rows=4 cols=20 id="poopy">sdf</textarea>').appendTo('body');
-      //}
+      obj.vars.points = {};
       
       GEvent.addListener(obj.map, 'click', function(overlay, point) {
         if (overlay) {
           switch (obj.vars.overlay_del_mode) {
             case 'Remove':
-              var shft=false;
-              for (i=0; i<obj.vars.points.length; i++){
-                if (overlay==obj.vars.pointsOverlays[i]) {
-                  shft=true;
-                }
-                if (shft==true) {
-                  if (i<obj.vars.points.length) {
-                    obj.vars.pointsOverlays[i]=obj.vars.pointsOverlays[i+1];
-                    obj.vars.points[i]=obj.vars.points[i+1];
-                  }
-                }
-              }
-              obj.vars.points.pop();
-              obj.vars.pointsOverlays.pop();
+              var data = overlay.gmapMarkerData();
+              obj.vars.points[data.type].splice(data.idx,1);
               obj.map.removeOverlay(overlay);
+              // Shift all following markers left one in sequence.
+              for (var i = data.idx ; i < obj.vars.points[data.type].length ; i++) {
+                var tempdata = obj.vars.points[data.type][i].gmapMarkerData();
+                obj.map.removeOverlay(obj.vars.points[data.type][i]);
+                tempdata.idx--;
+                var marker = new GMarker(tempdata.point,Drupal.gmap.getIcon(tempdata.type,tempdata.idx));
+                marker.gmapMarkerData(tempdata);
+                obj.vars.points[data.type][i] = marker;
+                obj.map.addOverlay(marker);
+              }
+
               obj.status("Removed overlay");
               obj.change('point',-1);
               break;
             case 'Edit Info':
-              //var dom = $('<div>What the hell</div>').appendTo('body');
-              //overlay.openInfoWindowTabs(
-                //[
-                  //new GInfoWindowTab('View','Tesadutfuysadtfnyusadtf uisyad tfuyisad fuyit uysadt fiuytasd fuiyt iuadfuiytuiya dfuiyt st'),
-                  //new GInfoWindowTab('Info','<em>Marker:</em>Unk <em>Seq:</em>Unk <br /><em>Lat:</em>' + overlay.getPoint().lat() + '<br /><em>Lon:</em>' + overlay.getPoint().lng()),
-                  //new GInfoWindowTab('Edit','<textarea rows="3" cols="20">Foo</textarea>'),
-                  //new GInfoWindowTab('Foo',dom[0]),
-                  //new GInfoWindowTab('Edit',edit_text_elem[0])
-                //],{maxWidth: 400});
               break;
           }
         }
@@ -145,13 +131,13 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
           switch (obj.vars.overlay_add_mode) {
             // I've got the feeling that some of the following logic could be trimmed
             case 'Points':
-              if (!sequences[elem.value]) {
-                sequences[elem.value] = 0;
+              if (!obj.vars.points[elem.value]) {
+                obj.vars.points[elem.value] = new Array();
               }
-              obj.map.addOverlay(marker=new GMarker(point,Drupal.gmap.getIcon(elem.value,sequences[elem.value])));
-              sequences[elem.value]++;
-              obj.vars.pointsOverlays.push(marker);
-              obj.vars.points.push('' + point.lat() + ',' + point.lng());
+              marker=new GMarker(point,Drupal.gmap.getIcon(elem.value,obj.vars.points[elem.value].length));
+              marker.gmapMarkerData({type: elem.value, idx: obj.vars.points[elem.value].length, point: point});
+              obj.vars.points[elem.value].push(marker);
+              obj.map.addOverlay(marker);
               obj.change('point',-1);
               break;
             case 'Line1':
@@ -209,8 +195,16 @@ Drupal.gmap.map.prototype.macroparts.push(function() {
   var temp;
   var output = '';
   if (this.vars.points) {
-    if (this.vars.points.length > 0) {
-      output += ' |markers=' + this.vars.points.join(' + ');
+    for (var i in this.vars.points) {
+      temp = [];
+      for (var j = 0 ; j < this.vars.points[i].length ; j++) {
+        var data = this.vars.points[i][j].gmapMarkerData();
+        temp.push(''+ data.point.lat() + ',' + data.point.lng());
+      }
+      if (temp.length > 0) {
+        output += ' |markers='+i+'::' + temp.join(' + ');
+      }
+
     }
   }
   for (var q=0; q<3 ; q++) {
@@ -227,5 +221,3 @@ Drupal.gmap.map.prototype.macroparts.push(function() {
   }
   return output;
 });
-
-
