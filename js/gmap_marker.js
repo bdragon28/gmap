@@ -33,6 +33,13 @@ Drupal.gmap.marker.makeMarker = function(markerdef,seq) {
       });
   }
 
+  // @@@ Extend this a bit.
+  if (markerdef.link) {
+    GEvent.addListener(marker,'click',function() {
+      open(link,'_self');
+    });
+  }
+
   return marker;
 }
 

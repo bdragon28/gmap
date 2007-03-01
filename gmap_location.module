@@ -66,6 +66,8 @@ function gmap_location_user_page() {
   // Find default marker
   $default_marker = variable_get('gmap_user_map_marker', 'drupal');
 
+  $mode = variable_get('gmap_on_click',0);
+
   // Determine if any roles override default setting
   $roles = user_roles(TRUE);
   $roles_override = array();
@@ -92,10 +94,14 @@ function gmap_location_user_page() {
       $marker = variable_get("gmap_role_map_marker_$key", $default_marker);
     }
     if (user_access('user locations')) {
-      $newmarker['text'] = theme('gmap_location_user_html',$account);
+      if ($mode==0) {
+        $newmarker['text'] = theme('gmap_location_user_html',$account);
+      }
+      else {
+        $newmarker['link']=url('user/'.$account->uid);
+      }
       $newmarker['latitude'] = $u->latitude;
       $newmarker['longitude'] = $u->longitude;
-      $newmarker['link']=url('user/'.$account->uid);
       $newmarker['markername']=$marker;
       $newmarker['tooltip']=check_plain($account->name);
       $locationbyuser[$u->eid] = array('latitude' => $u->latitude, 'longitude' => $u->longitude);
