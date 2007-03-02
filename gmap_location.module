@@ -207,17 +207,22 @@ function gmap_location_node_map($n,$thismap,$single=false){
     $latitude = isset($n->gmap_location_latitude) ? $n->gmap_location_latitude : $n->location['latitude'];
     $longitude = isset($n->gmap_location_longitude) ? $n->gmap_location_longitude : $n->location['longitude'];
 
+    $mode = variable_get('gmap_on_click',0);
     $newmarker=array();
     $width=0;
-
-    if (!($newmarker['text'] = theme(strtr($n->type,'-','_').'_gmapnodelabel',$n))) {
-      $newmarker['text'] = theme('gmapnodelabel',$n);
+    if ($mode==0) {
+      if (!($newmarker['text'] = theme(strtr($n->type,'-','_').'_gmapnodelabel',$n))) {
+        $newmarker['text'] = theme('gmapnodelabel',$n);
+      }
     }
+    else {
+      $newmarker['link']=url('node/'.$n->nid);
+    }
+
     $newmarker['latitude'] = $latitude;
     $newmarker['longitude'] = $longitude;
     $newmarker['markername']=variable_get('gmap_node_marker_'.$n->type, '');
     $newmarker['tooltip']=$n->title;
-    $newmarker['link']=url('node/'.$n->nid);
     switch ($n->type) {
     case 'acidfree':
       $newmarker['winwidth'] = (variable_get('acidfree_thumb_dim', IMAGE_THUMB_SIZE)+40).'px';
