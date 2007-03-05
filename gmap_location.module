@@ -7,7 +7,6 @@
  * GMap Location module is a module to add some gmap funcationality based on location.modules information.
  *
  * The main functions are to provide a map showing all of the nodes or users that have location information on a map.
- *
  */
 
 /**
@@ -19,7 +18,6 @@ function gmap_location_perm() {
 
 /**
  * Implementation of hook_menu().
- *
  */
 function gmap_location_menu($may_cache) {
   $items = array();
@@ -81,7 +79,6 @@ function gmap_location_user_page() {
 
   $thismap = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
   $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
-  
 
   while ($u=db_fetch_object($result)) {
     $account = user_load(array('uid' => $u->eid));
@@ -184,7 +181,6 @@ function gmap_location_node_page($nid=null) {
 
   return $output;
 }
-
 
 /**
  * Adds the location information from a node for a gmap.
@@ -392,9 +388,8 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
         '#size' => 60,
         '#maxlength' => 500,
         '#description' => t('A macro to be used as a base map for the location block.  This map will be recentered on the location, so the center is not that important. <p>Alternate base map macros can be entered for a specific node type below.'),
-        '#default_value' =>
-        variable_get('gmap_location_block_macro', '[gmap |id=block0|zoom=10 |width=100% |height=200px |control=Small |type=Map] '),
-          );
+        '#default_value' => variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map] '),
+      );
 
       $ntypes=node_get_types();
       foreach ($ntypes as $key => $value) {
@@ -414,11 +409,10 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
         '#type' => 'textfield',
         '#title' => t('Map Macro'),
         '#size' => 60,
-        '#maxlength'=>500,
+        '#maxlength' => 500,
         '#description' => t('A macro to be used as a base map for the location block author.  This map will be recentered on the location, so the center is not that important.'),
-        '#default_value' =>
-        variable_get('gmap_location_author_block_macro', '[gmap |id=block0|zoom=10 |width=100% |height=200px |control=Small |type=Map] '),
-          );
+        '#default_value' => variable_get('gmap_location_author_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map] '),
+      );
 
       $ntypes=node_get_types();
       foreach ($ntypes as $key => $value) {
@@ -455,8 +449,8 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
     }
     return;
 
-  case 'view': default:
-
+  case 'view':
+  default:
     // If $op is "view", then we need to generate the block for display
     // purposes. The $delta parameter tells us which block is being requested.
     switch ($delta) {
@@ -508,9 +502,9 @@ function gmap_location_block_view($nid) {
       $macro=variable_get('gmap_location_block_macro_'.$node->type, '');
     }
     else {
-      $macro=variable_get('gmap_location_block_macro', '[gmap |id=block0|zoom=10 |width=100% |height=200px |control=Small |type=Map] ');
+      $macro=variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map] ');
     }
-    $block['content'] = gmap_draw_map(gmap_location_map_add_node( gmap_parse_macro($macro),$node));
+    $block['content'] = theme('gmap', array('#settings' => gmap_location_map_add_node(gmap_parse_macro($macro),$node)));
   }
   return $block;
 }
@@ -526,14 +520,13 @@ function gmap_location_author_block_view($nid) {
       $macro=variable_get('gmap_location_block_macro_'.$node->type, '');
     }
     else {
-      $macro=variable_get('gmap_location_block_macro', '[gmap |id=block0|zoom=10 |width=100% |height=200px |control=Small |type=Map] ');
+      $macro=variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map] ');
     }
-    $block['content'] = gmap_draw_map(gmap_location_map_add_node( gmap_parse_macro($macro),$node));
+    $block['content'] = theme('gmap', array('#settings' => gmap_location_map_add_node( gmap_parse_macro($macro),$node)));
   }
  */
   return $block;
 }
-
 
 function gmap_location_map_add_node($basemap, $node, $label='') {
   $location=_gmap_location_getlatlon($node);
@@ -549,7 +542,6 @@ function gmap_location_map_add_node($basemap, $node, $label='') {
   $basemap['longitude'] = $location['longitude'];
   return $basemap;
 }
-
 
 //Any module can create a default theme for the display of nodes of the node type by
 //creating a function theme_hook_gmapnodelabel a theme could then further specify it
@@ -697,53 +689,6 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
       return  $form;
     }
   }
-}
-
-
-function gmap_location_form_alter($form_id, &$form) {
-
-  if (module_exists('location')) {
-    return;
-  }
-
-  if ($form_id == 'node_type_form') {
-    $type = $form['old_type']['#value'];
-
-    $form['gmap'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Google Maps'),
-      '#weight' => 0,  //0 puts at the top, 1 puts it at the bottom below the submit??
-    );
-    $form['gmap']['gmap_node'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Allow users to add Google Maps info to this node type'),
-      '#default_value' => variable_get('gmap_node_'. $type, 0),
-      '#description' => t('The location information will be available to the google maps module, and can be shown in a block.'),
-      '#required' => FALSE,
-    );
-    $form['gmap']['gmap_node_marker'] = array(
-      '#type' => 'select',
-      '#title' => t('Marker for this nodetype'),
-      '#default_value' => variable_get('gmap_node_marker_'.$type, variable_get('gmap_user_map_marker', 'drupal')),
-      '#options' => gmap_marker_titles(),
-    );
-  }
-  else {
-    if (isset($form['type']) && $form_id == $form['type'].'_node_form') {
-      echo "Flush!";
-      if(variable_get('gmap_node_'. $type, 0)) {
-        $edit = array();
-        _gmap_location_map_form($form, $edit, 'node');
-      }
-    }
-  }
-}
-
-/**
- * Implementation of hook_form()
- */
-function gmap_location_form(&$node, &$param) {
-
 }
 
 function gmap_location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
