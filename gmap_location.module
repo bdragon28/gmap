@@ -58,7 +58,7 @@ function gmap_location_user_page() {
   global $user;
   $locationbyuser = array();
 
-  $output ='<p>'. t( variable_get('gmap_user_map_header', 'This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
+  $output ='<p>'. t(variable_get('gmap_user_map_header', 'This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.'))."</p>\n";
 
   // Find default marker
   $default_marker = variable_get('gmap_user_map_marker', 'drupal');
@@ -477,11 +477,8 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
 }
 
 function _gmap_location_getlatlon($node) {
-  if (isset($node->gmap_location_latitude) && isset($node->gmap_location_longitude)) {
-    return array('latitude'=>$node->gmap_location_latitude, 'longitude'=>$node->gmap_location_longitude);
-  }
-  if (isset( $node->location['latitude']) &&  isset($node->location['longitude'])) {
-    return array('latitude'=>$node->location['latitude'], 'longitude'=>$node->location['longitude']);
+  if (isset($node->location['latitude']) && isset($node->location['longitude'])) {
+    return $node->location;
   }
   return false;
 }
@@ -526,7 +523,7 @@ function gmap_location_author_block_view($nid) {
 }
 
 function gmap_location_map_add_node($basemap, $node, $label='') {
-  $location=_gmap_location_getlatlon($node);
+  $location = _gmap_location_getlatlon($node);
   if (empty($basemap['markers'])) {
     $thismap['markers']=array();
   }
@@ -575,87 +572,89 @@ function theme_gmap_location_user_html($account) {
 
 function gmap_location_user($op, &$edit, &$user, $category = NULL) {
   if (variable_get('gmap_user', 0) && user_access('set user location')) {
-
     switch ($op) {
-    case 'categories':
-      return array(
-        array(
-          'name' => 'gmap_user',
-          'title'=> variable_get('gmap_user_profile_category', t('location map')),
-          'weight' => 5,
-        ),
-      );
-
-    case 'insert':
-    case 'update':
-      // source==1, location.module's LOCATION_LATLON_USER_SUBMITTED define.
-      // Insert or update based on the existance of $user->gmap_location_set.
-      if ($user->gmap_location_set) {
-        db_query("UPDATE {location} SET latitude = %s , longitude = %s , source = 1 WHERE eid = %d AND type = 'user'",
-          gmap_decimal($edit['gmap_location_latitude']),
-          gmap_decimal($edit['gmap_location_longitude']),
-          $user->uid);
-      }
-      else {
-        db_query("INSERT INTO {location} (eid, type, latitude, longitude, source) VALUES (%d, 'user', %s, %s, 1)",
-          $user->uid,
-          gmap_decimal($edit['gmap_location_latitude']),
-          gmap_decimal($edit['gmap_location_longitude']));
-      }
-      unset($edit['gmap_location_latitude']);
-      unset($edit['gmap_location_longitude']);
-      return;
-
-    case 'form':
-      if ($category == 'gmap_user' && user_access('set user location')) {
-        $form = array();
-
-        $form['coordinates'] = array(
-          '#type' => 'fieldset',
-          '#title' => t('Coordinates'),
-          '#weight' => 5,
-          '#collapsible' => $type!='user', 
-          '#collapsed' => false,
+      case 'categories':
+        return array(
+          array(
+            'name' => 'gmap_user',
+            'title'=> variable_get('gmap_user_profile_category', t('location map')),
+            'weight' => 5,
+          ),
         );
 
-        // Reserve spot for map.
-        $form['coordinates']['gmap_node'] = array();
+      case 'insert':
+      case 'update':
+        // source==1, location.module's LOCATION_LATLON_USER_SUBMITTED define.
+        // Insert or update based on the existance of $user->gmap_location_set.
+        if ($user->gmap_location_set) {
+          db_query("UPDATE {location} SET latitude = %s , longitude = %s , source = 1 WHERE eid = %d AND type = 'user'",
+            gmap_decimal($edit['gmap_location_latitude']),
+            gmap_decimal($edit['gmap_location_longitude']),
+            $user->uid);
+        }
+        else {
+          db_query("INSERT INTO {location} (eid, type, latitude, longitude, source) VALUES (%d, 'user', %s, %s, 1)",
+            $user->uid,
+            gmap_decimal($edit['gmap_location_latitude']),
+            gmap_decimal($edit['gmap_location_longitude']));
+        }
+        unset($edit['gmap_location_latitude']);
+        unset($edit['gmap_location_longitude']);
+        return;
 
-        $form['coordinates']['gmap_location_latitude'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Latitude'),
-          '#default_value' => $edit['gmap_location_latitude'],
-          '#size' => 30,
-          '#maxlength' => 120,
-        );
+      case 'form':
+        if ($category == 'gmap_user' && user_access('set user location')) {
+          $form = array();
 
-        $form['coordinates']['gmap_location_longitude'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Longitude'),
-          '#default_value' => $edit['gmap_location_longitude'],
-          '#size' => 30,
-          '#maxlength' => 120,
-          '#description' => t('The latitude and longitude will be entered here when you click on a location in the interactive map above. You can also fill in the values manually.'),
-        );
-
-        // @@@
-        $map_macro = variable_get('gmap_user_map', '[gmap |id=usermap |center=0,30 |zoom=16 |width=100% |height=400px]');
-
-        $form['coordinates']['gmap_node']['#value'] = gmap_set_location($map_macro, $form['coordinates'], array('latitude' => 'gmap_location_latitude', 'longitude' => 'gmap_location_longitude'));
-
-/*        if (variable_get('gmap_geocode', 1)) {
-          $form['coordinates']['gmap_location_address'] = array(
-            '#type' => 'textfield',
-            '#title' => t('Address'),
-            '#description' => t('The address to be found on the map.  Enter an address and then hit "TAB" and the current location will be updated.  Please note that this address is not saved for the node, it is only used for finding a location.'),
+          $form['coordinates'] = array(
+            '#type' => 'fieldset',
+            '#title' => t('Coordinates'),
+            '#weight' => 5,
+            '#collapsible' => $type!='user', 
+            '#collapsed' => false,
           );
-        } */
-      }
-      return  $form;
+
+          // Reserve spot for map.
+          $form['coordinates']['gmap_node'] = array();
+
+          $form['coordinates']['gmap_location_latitude'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Latitude'),
+            '#default_value' => $edit['gmap_location_latitude'],
+            '#size' => 30,
+            '#maxlength' => 120,
+          );
+
+          $form['coordinates']['gmap_location_longitude'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Longitude'),
+            '#default_value' => $edit['gmap_location_longitude'],
+            '#size' => 30,
+            '#maxlength' => 120,
+            '#description' => t('The latitude and longitude will be entered here when you click on a location in the interactive map above. You can also fill in the values manually.'),
+          );
+
+          // @@@
+          $map_macro = variable_get('gmap_user_map', '[gmap |id=usermap |center=0,30 |zoom=16 |width=100% |height=400px]');
+
+          $form['coordinates']['gmap_node']['#value'] = gmap_set_location($map_macro, $form['coordinates'], array('latitude' => 'gmap_location_latitude', 'longitude' => 'gmap_location_longitude'));
+
+/*
+          if (variable_get('gmap_geocode', 1)) {
+            $form['coordinates']['gmap_location_address'] = array(
+              '#type' => 'textfield',
+              '#title' => t('Address'),
+              '#description' => t('The address to be found on the map.  Enter an address and then hit "TAB" and the current location will be updated.  Please note that this address is not saved for the node, it is only used for finding a location.'),
+            );
+          }
+*/
+        }
+        return $form;
     }
   }
 }
 
+/*
 function gmap_location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   if(variable_get('gmap_node_'. $node->type, 0)) {
     $object->gmap_location_latitude = $node->gmap_location_latitude;
@@ -691,66 +690,9 @@ function gmap_location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     }
   }
 }
+*/
 
-function _gmap_location_map_form(&$form, &$edit, $type) {
-  echo "BOO!";
-  if($type=="user") {
-    $latitude = $edit['gmap_location_latitude'];
-    $longitude = $edit['gmap_location_longitude'];
-  }
-  else {
-    $latitude = $form['#node']->gmap_location_latitude;
-    $longitude = $form['#node']->gmap_location_longitude;
-  }
-
-  $form['coordinates'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Coordinates'),
-    '#weight' => 5,
-    '#collapsible' => $type!='user', 
-    '#collapsed' => false,
-  );
-  $form['coordinates']['gmap_node'] = array(
-    '#type' => 'gmap',
-    '#map' => $type,
-  );
-  $form['coordinates']['gmap_location_latitude'] = array(
-    '#type' => 'gmap_latitude',
-    '#map' => $type,
-    '#title' => t('Latitude'),
-    '#default_value' => $latitude,
-    '#size' => 30,
-    '#maxlength' => 120,
-  );
-  $form['coordinates']['gmap_location_longitude'] = array(
-    '#type' => 'gmap_longitude',
-    '#map' => $type,
-    '#title' => t('Longitude'),
-    '#default_value' => $longitude,
-    '#size' => 30,
-    '#maxlength' => 120,
-    '#description' => t('The latitude and longitude will be entered here when you click on a location in the interactive map above. You can also fill in the values manually.'),
-  );
-
-  $fields=array('longitude'=>'gmap_location_longitude',
-    'latitude'=>'gmap_location_latitude',
-  );
-
-  if (variable_get('gmap_geocode', 1)) {
-    $form['coordinates']['gmap_location_address'] = array(
-      '#type' => 'gmap_address',
-      '#map' => $type,
-      '#title' => t('Address'),
-      '#description' => t('The address to be found on the map.  Enter an address and then hit "TAB" and the current location will be updated.  Please note that this address is not saved for the node, it is only used for finding a location.'),
-    );
-
-    $fields['address']='gmap_location_address';
-  }
-/*  $form['coordinates']['gmap_node']['#value']= gmap_set_location(
-       variable_get('gmap_'.$type.'_map', '[gmap|id='.$type.'map|center=0,30|control=Large|type=Hybrid|zoom=16|width=100%|height=400px]'),
-$form['coordinates'],$fields); */
-}
-
+/*
 function _gmap_location_validate_form(&$object) {
   if (isset($object->latitude)){
     if (!is_numeric($object->latitude) || abs($object->latitude)>90) {
@@ -763,6 +705,7 @@ function _gmap_location_validate_form(&$object) {
     }
   }
 }
+*/
 
 function _gmap_location_store_location($object, $type, $update = false) {
   if (isset($object->gmap_location_latitude) && isset($object->gmap_location_longitude)) {
