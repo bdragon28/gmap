@@ -67,7 +67,7 @@ drupal_add_js($gmap_path.'/js/poly.js');
 }
 
 /**
- * Implementation of hook_perm.
+ * Implementation of hook_perm().
  */
 function gmap_perm() {
   return array('create macro');
@@ -111,13 +111,20 @@ function gmap_perm() {
  *
  */
 function gmap_draw_map($gmap, $javascript='') {
-
-//var_dump(xdebug_get_function_stack());
-
-echo "DRAW_MAP CALLED -- This api does not function at the moment!";
+echo "GMap Module: DRAW_MAP CALLED -- This function is scheduled for deletion!<br />";
+/*
+ * This function will be removed as soon as I can fix all the instances
+ * where it was used in the past.
+ * The reason for completely removing this function lies in the second parameter:
+ * Allowing arbitrary javascript here is somewhat incompatible with the new way
+ * of doing things and is terribly inefficient. The recommended method now is to
+ * put your code in a js file that extends the javascript GMap API and drupal_add_js
+ * it to the page during theming.
+ * 
+ */
 
 return '';
-
+// The rest of this function is legacy code that still needs picked through.
   global $base_url, $node;
     _gmap_doheader();
     
