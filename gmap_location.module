@@ -428,7 +428,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
   case 'save':
     if ($delta == 0) {
       // Have Drupal save the string to the database.
-      variable_set('gmap_location_author_block_macro', $edit['gmap_location_author_block_macro']);
+      variable_set('gmap_location_block_macro', $edit['gmap_location_block_macro']);
       $ntypes=node_get_types();
       foreach ($ntypes as $key => $value) {
         if (variable_get('location_'. $key, 0)) {
