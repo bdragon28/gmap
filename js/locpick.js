@@ -13,6 +13,12 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     }
   });
 
+  obj.bind("locpickremove", function() {
+    obj.map.removeOverlay(obj.locpick_point);
+    obj.locpick_coord = null;
+    obj.change('locpickchange', -1);
+  });
+
   obj.bind("init", function() {
     if (obj.vars.behavior.locpick) {
       obj.locpick_coord = new GLatLng(obj.vars.latitude, obj.vars.longitude);
@@ -32,18 +38,18 @@ Drupal.gmap.addHandler('gmap',function(elem) {
         }
         else {
           // Unsetting the location
-          obj.map.removeOverlay(obj.locpick_point);
-          obj.locpick_coord = null;
-          obj.change('locpickchange', binding);
+          obj.change('locpickremove',-1);
         }
       });
     }
   });
 
   obj.bind("ready", function() {
-    // Fake a click to set the initial point.
+    // Fake a click to set the initial point, if one was set.
     if (obj.vars.behavior.locpick) {
-      obj.change('locpickchange', -1);
+      if (!obj.locpick_invalid) {
+        obj.change('locpickchange', -1);
+      }
     }
   });
 
@@ -53,8 +59,14 @@ Drupal.gmap.addHandler('locpick_latitude',function(elem) {
   var obj = this;
   
   obj.bind("init", function() {
-    obj.vars.latitude = Number(elem.value);
-    obj.locpick_coord = new GLatLng(obj.vars.latitude, obj.vars.longitude);
+    if (elem.value != '') {
+      obj.vars.latitude = Number(elem.value);
+      obj.locpick_coord = new GLatLng(obj.vars.latitude, obj.vars.longitude);
+    }
+    else {
+      obj.locpick_coord = null;
+      obj.locpick_invalid = true;
+    }
   });
 
   var binding = obj.bind("locpickchange", function() {
@@ -67,8 +79,18 @@ Drupal.gmap.addHandler('locpick_latitude',function(elem) {
   });
 
   $(elem).change(function() {
-    obj.locpick_coord = new GLatLng(Number(elem.value), obj.locpick_coord.lng());
-    obj.change('locpickchange', binding);
+    if (elem.value != '') {
+      if (obj.locpick_coord) {
+        obj.locpick_coord = new GLatLng(Number(elem.value), obj.locpick_coord.lng());
+        obj.change('locpickchange', binding);
+      }
+      else {
+        obj.locpick_coord = new GLatLng(Number(elem.value), 0.0);
+      }
+    }
+    else {
+      obj.change('locpickremove', -1);
+    }
   });
 });
 
@@ -76,8 +98,13 @@ Drupal.gmap.addHandler('locpick_longitude', function(elem) {
   var obj = this;
 
   obj.bind("init", function() {
-    obj.vars.longitude = Number(elem.value);
-    obj.locpick_coord = new GLatLng(obj.vars.latitude, obj.vars.longitude);
+    if (elem.value != '') {
+      obj.vars.longitude = Number(elem.value);
+      obj.locpick_coord = new GLatLng(obj.vars.latitude, obj.vars.longitude);
+    }
+    else {
+      obj.locpick_invalid = true;
+    }
   });
 
   var binding = obj.bind("locpickchange", function() {
@@ -90,8 +117,18 @@ Drupal.gmap.addHandler('locpick_longitude', function(elem) {
   });
 
   $(elem).change(function() {
-    obj.locpick_coord = new GLatLng(obj.locpick_coord.lat(), Number(elem.value));
-    obj.change('locpickchange', binding);
+    if (elem.value != '') {
+      if (obj.locpick_coord) {
+        obj.locpick_coord = new GLatLng(obj.locpick_coord.lat(), Number(elem.value));
+        obj.change('locpickchange', binding);
+      }
+      else {
+        obj.locpick_coord = new GLatLng(0.0, Number(elem.value));
+      }
+    }
+    else {
+      obj.change('locpickremove', -1);
+    }
   });
 });
 

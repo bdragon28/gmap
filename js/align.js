@@ -34,13 +34,11 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   });
   // Send out outgoing alignment changes.
   // N/A
-});
 
-Drupal.gmap.map.prototype.macroparts.push(function() {
-  var obj = this;
-  var output = '';
-  if (obj.vars.align && obj.vars.align != 'None') {
-    output += ' |align=' + obj.vars.align;
-  }
-  return output;
+  obj.bind('buildmacro',function(add) {
+    if (obj.vars.align && obj.vars.align != 'None') {
+      add.push('align='+obj.vars.align);
+    }
+  });
+
 });

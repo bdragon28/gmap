@@ -60,6 +60,34 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   // Add status bar
   var status = $(elem).after('<div class="gmap-statusbar">Status</div>').next();
   obj.statusdiv = status[0];
+
+  obj.bind('buildmacro',function(add) {
+    var temp;
+    if (obj.vars.points) {
+      for (var i in obj.vars.points) {
+        temp = [];
+        for (var j = 0 ; j < obj.vars.points[i].length ; j++) {
+          var data = obj.vars.points[i][j].gmapMarkerData();
+          temp.push(''+ data.point.lat() + ',' + data.point.lng());
+        }
+        if (temp.length > 0) {
+          add.push('markers='+i+'::' + temp.join(' + '));
+        }
+      }
+    }
+    for (var q=0; q<3 ; q++) {
+      temp = [];
+      if (obj.vars.lines && obj.vars.lines[q] && obj.vars.lines[q].points) {
+        // Lines have at least 2 points.
+        if (obj.vars.lines[q].points.length > 1) {
+          for(var i=0;i<obj.vars.lines[q].points.length;i++) {
+            temp[i] = '' + obj.vars.lines[q].points[i].lat() + ',' + obj.vars.lines[q].points[i].lng();
+          }
+          add.push('line' + (q+1) + '=' + temp.join(' + '));
+        }
+      }
+    }
+  });
 });
 
 Drupal.gmap.map.prototype.statusdiv = undefined;
@@ -140,7 +168,7 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
               obj.map.addOverlay(marker);
               obj.change('point',-1);
               break;
-            case 'Line1':
+            case 'Line1': // @@@ Broken at the moment.
             case 'Line2':
             case 'Line3':
               var l = 0;
@@ -183,7 +211,6 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
                 obj.map.addOverlay(poly);
               }
               break;
-              
           }
         }
       });
@@ -191,33 +218,3 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
   });
 });
 
-Drupal.gmap.map.prototype.macroparts.push(function() {
-  var temp;
-  var output = '';
-  if (this.vars.points) {
-    for (var i in this.vars.points) {
-      temp = [];
-      for (var j = 0 ; j < this.vars.points[i].length ; j++) {
-        var data = this.vars.points[i][j].gmapMarkerData();
-        temp.push(''+ data.point.lat() + ',' + data.point.lng());
-      }
-      if (temp.length > 0) {
-        output += ' |markers='+i+'::' + temp.join(' + ');
-      }
-
-    }
-  }
-  for (var q=0; q<3 ; q++) {
-    temp = [];
-    if (this.vars.lines && this.vars.lines[q] && this.vars.lines[q].points) {
-      // Lines have at least 2 points.
-      if (this.vars.lines[q].points.length > 1) {
-        for(var i=0;i<this.vars.lines[q].points.length;i++) {
-          temp[i] = '' + this.vars.lines[q].points[i].lat() + ',' + this.vars.lines[q].points[i].lng();
-        }
-        output += ' |line' + (q+1) + '=' + temp.join(' + ');
-      }
-    }
-  }
-  return output;
-});

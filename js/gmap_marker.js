@@ -21,9 +21,6 @@ Drupal.gmap.marker.makeMarker = function(markerdef,seq) {
   else {
     opts.icon = Drupal.gmap.getIcon();
   }
-  //alert('override!');
-  //alert('lat: '+markerdef.latitude+' / lon: '+markerdef.longitude);
-  //alert(opts.icon.image);
 
   var marker = new GMarker(new GLatLng(markerdef.latitude,markerdef.longitude),opts);
 
@@ -61,6 +58,29 @@ Drupal.gmap.marker.del = function(marker) {
   this.map.removeOverlay(marker);
 }
 
+Drupal.gmap.addHandler('gmap', function(elem) {
+  var obj = this;
+  obj.bind('addmarker',function(marker) {
+    var m = new GMarker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
+    marker.marker = m;
+    GEvent.addListener(m,'click',function() {
+      obj.change('clickmarker',-1,marker);
+    });
+    obj.map.addOverlay(m);
+  });
+
+  // Default marker actions.
+  obj.bind('clickmarker',function(marker) {
+    if (marker.text) {
+      marker.marker.openInfoWindowHtml(marker.text);
+    }
+    if (marker.link) {
+        open(marker.link,'_self');
+    }
+  });
+});
+
+/*
 // Add a gmap handler
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
@@ -91,3 +111,4 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     });
   }
 });  
+*/

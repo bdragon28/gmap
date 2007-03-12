@@ -74,7 +74,6 @@ function gmap_perm() {
 }
 
 /**
- *
  * Returns the html required to insert a map from a gmap associative array.
  *
  * @param $gmap
@@ -432,8 +431,7 @@ return '';
 }
 
 /**
- *
- * Cleans the gmap variables to prevent javascript interjection
+ * Cleans the gmap variables to prevent javascript interjection.
  *
  * @param $gmap
  * A Gmap variable
@@ -448,7 +446,7 @@ function gmap_sanitize(&$gmap){
   foreach ($gmap as $key=>$value) {
     if ($key=='id') {
       $out = array();
-      preg_match('([a-zA-Z1-9_-]*)', $value, $out);
+      preg_match('([a-zA-Z0-9_-]*)', $value, $out);
       if (strlen($out[0])==0)  {
         $out[0]='map';
       }
@@ -513,7 +511,7 @@ function gmap_parse_macro($instring,$ver=2) {
     if (strlen(trim($row)) > 0) {
       $r = explode('=',$row);
       // Things that can appear multiple times
-      if (in_array(trim($r[0]),array('points','markers'))) {
+      if (in_array(trim($r[0]),array('points','markers','feed'))) {
         $m[trim($r[0])][] = trim($r[1]);
       }
       else {
@@ -547,6 +545,20 @@ function gmap_parse_macro($instring,$ver=2) {
   }
   unset($m['delme']);
 
+  if (is_array($m['feed'])) {
+    foreach ($m['feed'] as $k => $v) {
+      $temp = explode('::',$v);
+      // Normalize url
+      if (substr($temp[1],0,1) == '/') {
+        $temp[1] = substr($temp[1],1);
+      }
+      $temp[1] = url($temp[1]);
+      $m['feed'][$k] = array(
+        'markername' => $temp[0],
+        'url' => $temp[1],
+      );
+    }
+  }
 
   // Merge points and markers
   if(!is_array($m['points'])) $m['points'] = array();
@@ -760,7 +772,7 @@ function theme_gmap_marker_popup($label) {
  * @param $map
  * Either a macro to use as the base map for setting a location, or an already set map associative array.
  * @param $form
- * A formset associative array.  Cannot be more than one deep.
+ * A formset associative array. Cannot be more than one deep.
  * @param $fields
  * An associative array for the field names.  'latitude', 'longitude'=>name of respective array, 'address' is optional.
  * @return
@@ -769,27 +781,12 @@ function theme_gmap_marker_popup($label) {
  */
 function gmap_set_location($map,&$form,$fields) {
   static $ctr = 0;
-
   $ctr++;
-
   if (!is_array($map)){
-    $map=gmap_parse_macro($map);
+    $map = gmap_parse_macro($map);
   }
-
   $id = 'loc'.$ctr;
-
   $map['id'] = $id;
-
-  // Use the latitude and longitude from the fields.
-  $map['latitude'] = $form[$fields['latitude']]['#default_value'];
-  $map['longitude'] = $form[$fields['longitude']]['#default_value'];
-
-  if (isset($form[$fields['latitude']]['#value'])) {
-    $map['latitude'] = $form[$fields['latitude']]['#value'];
-  }
-  if (isset($form[$fields['longitude']]['#value'])) {
-    $map['longitude'] = $form[$fields['longitude']]['#value'];
-  }
 
   // This is a locpick map.
   $map['behavior']['locpick'] = TRUE;
@@ -811,7 +808,6 @@ function gmap_set_location($map,&$form,$fields) {
   }
   return theme('gmap',$element);
 }
-
 
 function _gmap_prepare($intext) {
   $out = FALSE;
@@ -932,7 +928,6 @@ function gmap_menu($may_cache) {
  * JSON request interface.
  */
 function gmap_json_query() {
-
   // Marker sequence
   if (arg(2)=='markerseq') {
     $markerdir = drupal_get_path('module', 'gmap').'/markers';
@@ -942,7 +937,6 @@ function gmap_json_query() {
     }
     echo drupal_to_js($marker_images);
     exit();
-
   }
   if (arg(2)=='markers') {
     echo drupal_to_js(array(
@@ -951,7 +945,6 @@ function gmap_json_query() {
     ));
     exit();
   }
-  
   if (arg(2)=='marker') {
     $name = arg(3);
   }
@@ -1158,21 +1151,22 @@ function process_gmap_markerchooser($element) {
 }
 
 function theme_gmap_overlay_edit($element) {
+  drupal_add_js(drupal_get_path('module','gmap') .'/js/gmap.js');
   drupal_add_js(drupal_get_path('module','gmap') .'/js/overlay_edit.js');
   return theme('select',$element);
-//  var_dump($element);
-/*  $o = drupal_render($element['marker']);
-  $o .= '<div id="'.$element['#id'].'" class="'.$element['#attributes']['class'].'"></div>';
-  $extra = '<input class="gmap-overlay-edit-path" type="hidden" id="'.$element['#id'].'-path" value="'.
-    check_url(url('map/query/markerseq', NULL, NULL, TRUE)).'" disabled="disabled" />';
-  return $o . $extra ;// theme('select',$element);*/
 }
 
+/**
+ * Perform some normalization on the map object
+ * to prevent errors.
+ */
 function gmap_map_cleanup(&$map) {
   // Google is picky about this one.
   $map['zoom'] = (int)$map['zoom'];
   // JSON query handler
   $map['querypath'] = url('map/query',NULL,NULL,TRUE);
+  // @@@ This really needs to be per-map.
+  $map['markermode'] = variable_get('gmap_on_click',0);
   // Normalize latitude / longitude
   if ($map['latlong']) {
     $map['latlon'] = $map['latlong'];
@@ -1251,13 +1245,23 @@ function theme_gmap($element) {
     drupal_add_js($path . 'locpick.js');
   }
 
+  if ($map['markers'] || $map['lines']) {
+    drupal_add_js($path . 'markerloader_static.js');
+  }
+
+  if (is_array($map['feed'])) {
+    drupal_add_js($path . 'markerloader_georss.js');
+  }
+
   // Inline settings extend.
   $o .= '<script type="text/javascript">Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#map'] => $map)))." });</script>\n"; 
   return $o;
 }
 
 /**
- * Set up widget
+ * Set up widget.
+ * This function will change a form element's ID so it is found
+ * by the GMap handlers system.
  */
 function gmap_widget_setup(&$element, $type) {
   static $serial = array();

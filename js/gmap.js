@@ -13,9 +13,9 @@ Drupal.gmap = new function() {
     _handlers[handler].push(callback);
   };
 
-  this.globalChange = function(name) {
+  this.globalChange = function(name,userdata) {
     for (var mapid in Drupal.settings.gmap) {
-      _maps[mapid].change(name);
+      _maps[mapid].change(name,-1,userdata);
     }
   }
 
@@ -71,23 +71,19 @@ Drupal.gmap.map = function(v) {
     return _bindings[name].push(callback) - 1;
   };
 
-  this.change = function(name,id) {
+  this.change = function(name,id,userdata) {
     var c;
     if (_bindings[name]) {
       for (c=0; c<_bindings[name].length; c++) {
         if (c==id) continue;
-        (_bindings[name][c])();
+        (_bindings[name][c])(userdata);
       }
     }
     if (name != 'all') {
-      this.change('all',id);
+      this.change('all',-1,name,userdata);
     }
   };
 };
-Drupal.gmap.map.prototype.macroparts = Array();
-
-// Init the macro parts array here.
-//Drupal.gmap.prototype.macroparts = new Array();
 
 ////////////////////////////////////////
 //             Map widget             //
@@ -151,11 +147,11 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   });
 
   // Respond to incoming width changes.
-  binding = obj.bind("widthchange",function(){map.getContainer().style.width = obj.vars.width});
+  binding = obj.bind("widthchange",function(w){map.getContainer().style.width = w});
   // Send out outgoing width changes.
   // N/A
   // Respond to incoming height changes.
-  binding = obj.bind("heightchange",function(){map.getContainer().style.height = obj.vars.height});
+  binding = obj.bind("heightchange",function(h){map.getContainer().style.height = h});
   // Send out outgoing height changes.
   // N/A
 
@@ -249,12 +245,15 @@ Drupal.gmap.addHandler('maptype', function(elem) {
 Drupal.gmap.addHandler('width', function(elem) {
   var obj = this;
   // Respond to incoming width changes.
-  var binding = obj.bind("widthchange",function(){elem.value = obj.vars.width});
+  var binding = obj.bind("widthchange",function(w){elem.value = w});
   // Send out outgoing width changes.
   $(elem).change(function() {
-    obj.vars.width = elem.value;
-    obj.change("widthchange",binding);
+    var reg = /\d+(?:px|%)/;
+    if (reg.test(elem.value)) {
+      obj.change("widthchange",binding,elem.value);
+    }
   });
+  obj.bind('init',function(){$(elem).change()});
 });
 
 ////////////////////////////////////////
@@ -263,12 +262,15 @@ Drupal.gmap.addHandler('width', function(elem) {
 Drupal.gmap.addHandler('height', function(elem) {
   var obj = this;
   // Respond to incoming height changes.
-  var binding = obj.bind("heightchange",function(){elem.value = obj.vars.height});
+  var binding = obj.bind("heightchange",function(h){elem.value = h});
   // Send out outgoing height changes.
   $(elem).change(function() {
-    obj.vars.height = elem.value;
-    obj.change("heightchange",binding);
+    var reg = /\d+(?:px|%)/;
+    if (reg.test(elem.value)) {
+      obj.change("heightchange",binding,elem.value);
+    }
   });
+  obj.bind('init',function(){$(elem).change()});
 });
 
 ////////////////////////////////////////
@@ -299,20 +301,6 @@ Drupal.gmap.addHandler('mapid', function(elem) {
   });
 });
 
-
-function gmap_validate_dim(dim) {
-  return dim;
-  //needs to be fixed to allow either 'px' or '%'
-  var reg = /(\d+)/;
-  var ar = reg.exec(dim);
-  try {
-    valid_dim = ar[0] + 'px';
-    return valid_dim;
-  } catch (e) {alert(e);
-    return false;
-  }
-}
-
 if (Drupal.jsEnabled) {
   $(document).ready(Drupal.gmap.setup)
     .unload(function() {
@@ -320,145 +308,3 @@ if (Drupal.jsEnabled) {
       GUnload();
     });
 }
-
-//////////////////// Old functions below the line /////////////////////
-
-function createIcon(marker) {
-  var re = /markers\/([a-zA-Z0-9]+)\//;
-    var m = re.exec(marker);
-    var bicon='standard' ;
-    if (m) {
-      if (baseIcon[m[1]]) {
-        var bicon=m[1];
-      }
-    }
-    var markerIcon = new GIcon(baseIcon[bicon]);
-    markerIcon.image = marker;
-    return markerIcon;
-}
-
-function createGMarker(point, htmltext, marker, tooltip, towebsite) {
-  if (marker.length >0) {
-
-    var markerIcon=createIcon(marker);
-    var returnMarker = new GMarker(point, {icon: markerIcon, title: tooltip});
-
-  }
-  else {
-    var returnMarker = new GMarker(point, {title: tooltip});
-  }
-  if (!towebsite) towebsite='';
-  // Show this htmltext  info window when it is clicked.
-  if (towebsite.length>0 && markerlink){
-    GEvent.addListener(returnMarker, 'click', function() {
-      open(towebsite,'_self');
-    });
-  }
-  else if (htmltext.length>0) {
-    GEvent.addListener(returnMarker, 'click', function() {
-      returnMarker.openInfoWindowHtml(htmltext);
-    });
-  }
-  return returnMarker;
-}
-
-//moves thispoint based on the form with the id gmap-longitude and gmap-latitude
-thispoint=false;
-
-function gmap_textchange(thismap) {
-  if (thispoint) {
-    thismap.removeOverlay(thispoint);
-  }
-  thismap.panTo(newpoint=new GLatLng($("gmap-latitude").value, $("gmap-longitude").value));
-  thismap.addOverlay(thispoint=new GMarker(newpoint));
-}
-
-/* geocoder old behavior...
-
-  if (thispoint) {
-    thismap.removeOverlay(thispoint);
-  }
-  thismap.panTo(newpoint=new GLatLng($("gmap-latitude").value, $("gmap-longitude").value));
-  thismap.addOverlay(thispoint=new GMarker(newpoint));
-}
-*/
-
-function createMarkerFromRSS(item,icon) {
-  var title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
-
-  var description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue;
-  var link = item.getElementsByTagName("link")[0].childNodes[0].nodeValue;
-
-  //SC Good practice is not to have to check for which browser - so just use specified NS in all cases
-  if (navigator.userAgent.toLowerCase().indexOf("msie") < 0) {
-    //SC   Non IE specific code (uses spec in MZ)
-    if (item.getElementsByTagName("lat").length>0) {
-      item.getElementsByTagName("lat")[0].normalize();
-      if (item.getElementsByTagName("lat")[0].hasChildNodes()) {
-        var lat = item.getElementsByTagName("lat")[0].childNodes[0].nodeValue;
-        var lng = item.getElementsByTagName("long")[0].childNodes[0].nodeValue;
-      }
-    } else {
-          if (item.getElementsByTagName("latitude").length>0) {
-        item.getElementsByTagName("latitude")[0].normalize();
-        if (item.getElementsByTagName("latitude")[0].hasChildNodes()) {
-          var lat = item.getElementsByTagName("latitude")[0].childNodes[0].nodeValue;
-          var lng = item.getElementsByTagName("longitude")[0].childNodes[0].nodeValue;
-        }
-      }
-    }
-  } else {
-//SC  IE specific code - has to have specified NS in tagname wont work in MZ code
-//SC  When checking for presence or NULL - IE considers .length attribute false
-//SC   used active check like hasChildNodes
-    if (null != item.getElementsByTagName("geourl:latitude")) {
-//SC  The normalise function is not available (I think?) to IE so needs to be extracted
-      var lat = item.getElementsByTagName("geourl:latitude")[0].childNodes[0].nodeValue;
-      var lng = item.getElementsByTagName("geourl:longitude")[0].childNodes[0].nodeValue;
-    } else {
-      if (null != item.getElementsByTagName("icbm:latitude")) {
-        var lat = item.getElementsByTagName("icbm:latitude")[0].childNodes[0].nodeValue;
-        var lng = item.getElementsByTagName("icbm:longitude")[0].childNodes[0].nodeValue;
-      } else {
-        if (null != item.getElementsByTagName("geo:lat")) {
-          //SC Be aware that with responseText it is likely that corrupted tags will
-          // get through and you end up with badly formed numbers. As I suspect can happen here. 
-          // thats why I left the geo tag til last - as that is still up in the air.
-          var lat = item.getElementsByTagName("geo:lat")[0].childNodes[0].nodeValue;
-          var lng = item.getElementsByTagName("geo:long")[0].childNodes[0].nodeValue;     
-        }
-      }
-    }
-  }
-//SC  Finally we have it all to go ahead - we could concatenate HTML from description later.
-  var point = new GLatLng(parseFloat(lat), parseFloat(lng));
-  var html = "<a href=\"" + link + "\">" + title + "</a>";
-  var marker=createGMarker(point, html, icon, title, link);
-
-return marker;
-}
-
-function parseGeoRSS(map, rssurl,icon) {
-
-  var request = GXmlHttp.create();
-  request.open("GET", rssurl, true);
-  request.onreadystatechange = function() {
-    if (request.readyState == 4) {
-//SC    var xmlDoc = request.responseXML;       IE does not respond to responseXML if not good
-//SC                                              Google suggest their own interface for this
-      var xmlDoc = GXml.parse(request.responseText);
-//SC    var items = xmlDoc.documentElement.getElementsByTagName("item");    IE considers the
-//SC                                                                        documentElement false
-      var items = xmlDoc.getElementsByTagName("item");    
-      for (var i = 0; i < items.length; i++) {
-   
-        var marker = createMarkerFromRSS(items[i], icon);
-        map.addOverlay(marker);
-      }
-
-    }
-  }
-  request.send(null);
-}
-
-

@@ -9,6 +9,7 @@
  * Get the GIcon corresponding to a setname / sequence.
  * There is only one GIcon for each slot in the sequence.
  * The marker set wraps around when reaching the end of the sequence.
+ * @@@ TODO: Move this directly into the preparemarker event binding.
  */
 Drupal.gmap.getIcon = function(setname, sequence) {
   var gicons;
@@ -78,8 +79,8 @@ Drupal.gmap.iconSetup = function(json) {
       jQuery.extend(Drupal.gmap.icons,Drupal.gmap.expandIconDef(json.markers[path].i[ini],path,files));
     }
   }
-  // Tell everyone markers are ready
-  Drupal.gmap.globalChange('markersready');
+  // Tell everyone marker icons are ready
+  Drupal.gmap.globalChange('iconsready');
 }
 
 /**
@@ -168,14 +169,16 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   var attached;
   // Only attach once.
   if (!this.attached) {
-    // If there are markers...
-//    if(obj.vars.markers) {
-      // We found a map that will be needing us. Start initialization.
-      this.attached = true;
-      // We'll start our query in the background during init.
-      obj.bind("init",function() {
-        $.getJSON(Drupal.gmap.querypath + '/markers', Drupal.gmap.iconSetup);
-      });
-    }
-//  }
+    this.attached = true;
+    // We'll start our query in the background during init.
+    obj.bind("init",function() {
+      $.getJSON(Drupal.gmap.querypath + '/markers', Drupal.gmap.iconSetup);
+    });
+  }
+
+  // Provide icons to markers.
+  obj.bind('preparemarker',function(marker) {
+    marker.opts.icon = Drupal.gmap.getIcon(marker.markername,marker.offset);
+  });
+
 });

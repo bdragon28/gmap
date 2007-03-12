@@ -16,8 +16,6 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       for (i=0; i<obj.vars.markers.length; i++) {
         marker = obj.vars.markers[i];
         if (!marker.opts) marker.opts = {};
-        // @@@ Geocoding? General stuff?
-        // Sorted. JS objects are by reference.
         // Pass around the object, bindings can change it if necessary.
         obj.change('preparemarker',-1,marker);
         // And add it.
