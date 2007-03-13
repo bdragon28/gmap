@@ -60,6 +60,12 @@ Drupal.gmap.marker.del = function(marker) {
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
+
+  obj.bind('init',function() {
+    if (obj.vars.behavior.autozoom) {
+      obj.bounds = new GLatLngBounds(new GLatLng(obj.vars.latitude,obj.vars.longitude),new GLatLng(obj.vars.latitude,obj.vars.longitude));
+    }
+  });
   obj.bind('addmarker',function(marker) {
     var m = new GMarker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
     marker.marker = m;
@@ -67,6 +73,10 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       obj.change('clickmarker',-1,marker);
     });
     obj.map.addOverlay(m);
+    if (obj.vars.behavior.autozoom) {
+      obj.bounds.extend(marker.marker.getPoint());
+      obj.map.setCenter(obj.bounds.getCenter(),obj.map.getBoundsZoomLevel(obj.bounds));
+    }
   });
 
   // Default marker actions.

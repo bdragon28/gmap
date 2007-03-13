@@ -359,21 +359,7 @@ return '';
           $outtext .='clusterer.AddMarker(createGMarker(new GLatLng('.$item['latitude'].','.$item['longitude'].'),\''.$mytext.'\',\''.$mymarker."','$tooltip','$link'),'".l($tooltip,$base_url.$link)."');\n";
           $clusterset=true;
         }
-        else {
-          $outtext .=$gmap['id'].'.addOverlay(createGMarker(new GLatLng('.$item['latitude'].','.$item['longitude'].'),\''.$mytext.'\',\''.$mymarker."','$tooltip','$link'));\n";
-          if($gmap['autozoom']){
-            $outtext .='bounds.extend(new GLatLng('.$item['latitude'].','.$item['longitude'].'));'."\n";
-          }
-        }
-      }
-    }
-    if ($gmap['autozoom']){
-      $outtext .= 'var center_lat = (bounds.getNorthEast().lat() + bounds.getSouthWest().lat()) / 2.0;
-                   var center_lng = (bounds.getNorthEast().lng() + bounds.getSouthWest().lng()) / 2.0;
-                   var center = new GLatLng(center_lat,center_lng);
-                   var zoom = '.$gmap['id'].'.getBoundsZoomLevel(bounds);
-                   '.$gmap['id'].'.setCenter(center,zoom);';
-    }
+
     if (isset($gmap['shape']) && !variable_get('gmap_xmaps',0)) {
       //if xmaps is not enabled then just show the lines using straight google maps.
       foreach ($gmap['shape'] as $value) {
@@ -582,6 +568,20 @@ function gmap_parse_macro($instring,$ver=2) {
   if ($m['center']) {
     list($m['latitude'],$m['longitude']) = explode(',',$m['center']);
     unset($m['center']);
+  }
+
+  // Behavior
+  if ($m['behaviour']) {
+    $m['behavior'] = $m['behaviour'];
+    unset($m['behaviour']);
+  }
+  if ($m['behavior']) {
+    $m['behavior-temp'] = explode(' ',$m['behavior']);
+    $m['behavior'] = array();
+    foreach ($m['behavior-temp'] as $v) {
+      $m['behavior'][substr($v,1)] = (substr($v,0,1)=='+') ? TRUE : FALSE;
+    }
+    unset($m['behavior-temp']);
   }
 
   // Markers fixup
