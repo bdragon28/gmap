@@ -573,6 +573,15 @@ function theme_gmap_location_user_html($account) {
 function gmap_location_user($op, &$edit, &$user, $category = NULL) {
   if (variable_get('gmap_user', 0) && user_access('set user location')) {
     switch ($op) {
+      case 'load':
+        $result = db_query("SELECT latitude,longitude FROM {location} WHERE eid = %d AND type='user'", $user->uid);
+        $u = db_fetch_object($result);
+        if ($u) {
+          $user->gmap_location_longitude = $u->longitude;
+          $user->gmap_location_latitude = $u->latitude;
+          $user->gmap_location_set = true;
+        }
+        break;
       case 'categories':
         return array(
           array(
@@ -593,8 +602,9 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
             $user->uid);
         }
         else {
-          db_query("INSERT INTO {location} (eid, type, latitude, longitude, source) VALUES (%d, 'user', %s, %s, 1)",
-            $user->uid,
+          $lid = db_next_id('{location}_lid');
+          db_query("INSERT INTO {location} (eid, lid, type, latitude, longitude, source) VALUES (%d, %d, 'user', %s, %s, 1)",
+            $user->uid, $lid,
             gmap_decimal($edit['gmap_location_latitude']),
             gmap_decimal($edit['gmap_location_longitude']));
         }
@@ -715,9 +725,10 @@ function _gmap_location_store_location($object, $type, $update = false) {
 
     }
     else {
+      $lid = db_next_id('{location}_lid');
       // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
-      db_query("INSERT INTO {location} (eid, type, latitude, longitude, source) VALUES (%d, '%s', '%f', '%f', '%d')",
-        $object->eid, $type, $object->gmap_location_latitude,$object->gmap_location_longitude, 1);
+      db_query("INSERT INTO {location} (eid, lid, type, latitude, longitude, source) VALUES (%d, %d, '%s', '%f', '%f', '%d')",
+        $object->eid, $lid, $type, $object->gmap_location_latitude,$object->gmap_location_longitude, 1);
     }
     unset($object->gmap_location_latitude);
     unset($object->gmap_location_longitude);
