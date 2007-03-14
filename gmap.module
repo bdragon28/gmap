@@ -43,6 +43,7 @@ function gmap_defaults() {
       'locpick' => FALSE,
       'nodrag' => FALSE,
       'nokeyboard' => TRUE,
+      'nomousezoom' => FALSE,
       'autozoom' => FALSE,
       'dynmarkers' => FALSE, // Load the marker system even if no markers are found
     ),
@@ -1245,6 +1246,10 @@ function theme_gmap($element) {
     drupal_add_js($path . 'locpick.js');
   }
 
+  if(variable_get('gmap_load_zoom_plugin',TRUE) && !$map['behavior']['nomousezoom']) {
+    drupal_add_js(drupal_get_path('module','gmap').'/thirdparty/mousewheel.js');
+  }
+
   if ($map['markers'] || $map['lines']) {
     drupal_add_js($path . 'markerloader_static.js');
   }
@@ -1264,27 +1269,37 @@ function theme_gmap($element) {
  * by the GMap handlers system.
  */
 function gmap_widget_setup(&$element, $type) {
-  static $serial = array();
   if (!isset($element['#map'])) {
     // Hmm, missing #map. Try to figure it out.
     if (isset($element['#settings']['id'])) {
       $element['#map'] = $element['#settings']['id'];
     }
   }
-  if (!isset($serial[$element['#map']])) {
-    $serial[$element['#map']] = array();
-  }
-  if (!isset($serial[$element['#map']][$type])) {
-    $serial[$element['#map']][$type] = 0;
-  }
   $element['#attributes']['class'] = trim(implode(' ',array(
     $element['#attributes']['class'],
     'gmap-control',
     'gmap-'.$type,
   )));
-  $element['#id'] = 'gmap-'.$element['#map'].'-'.$type.$serial[$element['#map']][$type];
-  $serial[$element['#map']][$type]++;
+  $element['#id'] = gmap_get_id($element['#map'],$type);
 }
+
+/**
+ * Get a CSS id for a map and type.
+ * Since CSS ids have to be unique, GMap related IDs are assigned by
+ * this function.
+ */
+function gmap_get_id($map,$type) {
+  static $serial = array();
+  if (!isset($serial[$map])) {
+    $serial[$map] = array();
+  }
+  if (!isset($serial[$map][$type])) {
+    $serial[$map][$type] = -1;
+  }
+  $serial[$map][$type]++;
+  return 'gmap-'.$map.'-'.$type.$serial[$map][$type];
+}
+
 
 function gmap_get_marker_titles($reset=FALSE){
   static $titles;

@@ -106,6 +106,20 @@ Drupal.gmap.addHandler('gmap',function(elem) {
       new GKeyboardHandler(map);
     }
     map.setCenter(new GLatLng(obj.vars.latitude,obj.vars.longitude), obj.vars.zoom);
+    if (jQuery.fn.mousewheel && !obj.vars.behavior.nomousezoom) {
+      $(elem).mousewheel(function(event, delta) {
+        var zoom = map.getZoom();
+        if (delta > 0) {
+          zoom++;
+        }
+        else if (delta < 0) {
+          zoom--;
+        }
+        map.setZoom(zoom);
+        // Event handled.
+        return false;
+      });
+    }
   });
 
   // Respond to incoming zooms

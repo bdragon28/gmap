@@ -9,6 +9,7 @@ function _gmap_admin_settings() {
   $form['initialization'] = array(
     '#type' => 'fieldset',
     '#title' => t('Google Map Initialize'),
+    '#description' => t('Note about Drupal 5 version: Shaded out controls are controls for unfinished features that existed in the 4.7 version.'),
   );
   $form['initialization']['googlemap_api_key'] = array(
     '#type' => 'textfield', 
@@ -20,6 +21,7 @@ function _gmap_admin_settings() {
   );
   $form['initialization']['gmap_method'] = array(
     '#type' => 'select',
+    '#disabled' => TRUE,
     '#title' => t('Google map method'),
     '#options'=> array('Static'=>t('Static'), 'Dynamic'=>t('Dynamic'), 'None'=>t('None')),
     '#default_value' => GMAP_LOAD_METHOD,
@@ -28,8 +30,15 @@ function _gmap_admin_settings() {
   $form['initialization']['gmap_wms'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable wms features'),
+    '#disabled' => TRUE, //@@@
     '#default_value' => GMAP_WMS,
     '#description' => t('Enables the wms features.  This allows you to use overlays that are defined using wms.  The wms-gs.js (or other acceptable version) must be installed in the gmap directory.'),
+  );
+  $form['initialization']['gmap_load_zoom_plugin'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable mousewheel zooming'),
+    '#default_value' => variable_get('gmap_load_zoom_plugin',TRUE),
+    '#description' => t('Enables the mousewheel.js jQuery plugin, which adds the ability to use the mouse wheel to zoom the map.'),
   );
   $form['initialization']['gmap_on_click'] = array(
     '#type' => 'radios',
@@ -180,6 +189,7 @@ function _gmap_admin_settings() {
 
   $form['markermanager']['gmarkermanager']['borderPadding'] = array(
     '#type' => 'textfield',
+    '#disabled' => TRUE, //@@@
     '#title' => t('Border padding'),
     '#description' => t('Markers located less than this number of pixels from the viewport will be added to the map by the manager (even if they would be fully invisible.)'),
     '#size' => 3,
@@ -187,12 +197,14 @@ function _gmap_admin_settings() {
   );
   $form['markermanager']['gmarkermanager']['maxZoom'] = array(
     '#type' => 'select',
+    '#disabled' => TRUE, //@@@
     '#title' => t('Maximum zoom'),
     '#options' => drupal_map_assoc(range(0, 17)),
     '#description' => t('At the specified zoom level and above, the marker manager will disable itself for additional speed.'),
   );
   $form['markermanager']['gmarkermanager']['trackMarkers'] = array(
     '#type' => 'checkbox',
+    '#disabled' => TRUE, //@@@
     '#title' => t('Track markers'),
     '#description' => t('If enabled, the marker manager will track marker movements. Leave off unless you need to move markers around with setPoint.'),
   );
@@ -204,6 +216,7 @@ function _gmap_admin_settings() {
   
   $form['markermanager']['clusterer']['marker'] = array(
     '#type' => 'gmap_markerchooser',
+    '#disabled' => TRUE, //@@@
     '#title' => t('Marker for clusters'),
     '#description' => t('The marker to use when creating a cluster.'),
   );
@@ -219,17 +232,20 @@ function _gmap_admin_settings() {
     '#type' => 'checkbox',
     '#title' => t('Enable clusterer.js'),
     '#default_value' => GMAP_CLUSTER,
+    '#disabled' => TRUE, //@@@
     '#description' => t('Enables Jef Poskanzer\'s excellent <a href="@url">clusterer.js</a> script. (useful for a large number of markers on a single map).  This must be installed in the gmap directory of the drupal install.',
       array('@url' => 'http://www.acme.com/javascript/#Clusterer')),
   );
   $form['clusterer']['gmap_cluster_marker'] = array(
     '#type' => 'gmap_markerchooser',
     '#title' => t('Marker for clusters'),
+    '#disabled' => TRUE, //@@@
     '#default_value' => variable_get('gmap_cluster_marker', 'cluster'),
   );
   $form['clusterer']['gmap_cluster_max_markers'] = array(
     '#type' => 'textfield',
     '#title' => t("Maximum number of markers"),
+    '#disabled' => TRUE, //@@@
     '#default_value' => variable_get('gmap_cluster_max_markers', 150),
     '#size' => 3,
     '#maxlength' => 3,
@@ -237,6 +253,7 @@ function _gmap_admin_settings() {
   );
   $form['clusterer']['gmap_cluster_min_per_cluster'] = array(
     '#type' => 'textfield',
+    '#disabled' => TRUE, //@@@
     '#title' => t("Minimal number of markers per cluster"),
     '#default_value' => variable_get('gmap_cluster_min_per_cluster', 5),
     '#size' => 2,
@@ -244,6 +261,7 @@ function _gmap_admin_settings() {
   );
   $form['clusterer']['gmap_cluster_max_lines'] = array(
     '#type' => 'textfield',
+    '#disabled' => TRUE, //@@@
     '#title' => t("Maximum number of lines per info box"),
     '#default_value' => variable_get('gmap_cluster_max_lines', 10),
     '#size' => 2,
