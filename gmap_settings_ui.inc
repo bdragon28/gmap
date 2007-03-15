@@ -40,6 +40,11 @@ function _gmap_admin_settings() {
     '#default_value' => variable_get('gmap_load_zoom_plugin',TRUE),
     '#description' => t('Enables the mousewheel.js jQuery plugin, which adds the ability to use the mouse wheel to zoom the map.'),
   );
+  if(!file_exists(drupal_get_path('module','gmap').'/thirdparty/mousewheel.js')) {
+    variable_set('gmap_load_zoom_plugin',FALSE);
+    $form['initialization']['gmap_load_zoom_plugin']['#disabled'] = TRUE;
+    $form['initialization']['gmap_load_zoom_plugin']['#description'] += '<br />'. t('<em>The mousewheel.js file was not found. Please download and place in the <b>thirdparty/</b> folder.</em>');
+  }
   $form['initialization']['gmap_on_click'] = array(
     '#type' => 'radios',
     '#title' => t('On Click Marker'),
