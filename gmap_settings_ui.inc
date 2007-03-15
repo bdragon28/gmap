@@ -42,6 +42,8 @@ function _gmap_admin_settings() {
   );
   if(!file_exists(drupal_get_path('module','gmap').'/thirdparty/mousewheel.js')) {
     variable_set('gmap_load_zoom_plugin',FALSE);
+    $form['initialization']['gmap_load_zoom_plugin']['#default_value'] = FALSE;
+    $form['initialization']['gmap_load_zoom_plugin']['#value'] = FALSE;
     $form['initialization']['gmap_load_zoom_plugin']['#disabled'] = TRUE;
     $form['initialization']['gmap_load_zoom_plugin']['#description'] += '<br />'. t('<em>The mousewheel.js file was not found. Please download and place in the <b>thirdparty/</b> folder.</em>');
   }
