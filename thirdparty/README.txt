@@ -1,10 +1,9 @@
 /* $Id$ */
 
 Third party code.
-All files in this directory are third party code licensed under the GPL.
+Place downloaded third party code in this folder if instructed to by GMap.
 
 mousewheel.js:
 JQuery Mouse Wheel plugin by Brandon Aaron
-Retrieved from
-http://dev.jquery.com/browser/trunk/plugins/mousewheel
-SVN revision 1497
+Download from http://dev.jquery.com/browser/trunk/plugins/mousewheel
+Tested with SVN revision 1497.
