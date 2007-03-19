@@ -71,10 +71,18 @@ function theme_views_view_gmap($view, $results) {
       );
     }
   }
-  $thismap = array(
-    '#map' => 'view_gmap',
-    '#settings' => gmap_defaults(),
-  );
+  if ($view->gmap_macro) {
+    $thismap = array(
+      '#map' => 'view_gmap',
+      '#settings' => gmap_parse_macro($view->gmap_macro),
+    );
+  }
+  else {
+    $thismap = array(
+      '#map' => 'view_gmap',
+      '#settings' => gmap_defaults(),
+    );
+  }
   $thismap['#settings']['markers'] = $markers;
   $output .= theme('gmap',$thismap);
   return $output;
