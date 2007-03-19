@@ -49,7 +49,28 @@ function gmap_views_validate($type, $view, $form) {
 function theme_views_view_gmap($view, $results) {
   // Fields are used to render the markers.
   $fields = _views_get_fields();
+
+  if ($view->gmap_macro) {
+    $thismap = array(
+      '#map' => 'view_gmap',
+      '#settings' => array_merge(gmap_defaults(),gmap_parse_macro($view->gmap_macro)),
+    );
+  }
+  else {
+    $thismap = array(
+      '#map' => 'view_gmap',
+      '#settings' => gmap_defaults(),
+    );
+  }
+
+  $fatmarkers = (isset($thismap['#settings']['behavior']['fatmarkers']) && $thismap['#settings']['behavior']['fatmarkers']);
+
   $markers = array();
+
+  if ($fatmarkers) {
+    $thismap['#settings']['viewfields'] = $view->field;
+  }
+
   foreach ($results as $entry) {
     // @@@
     $type = isset($entry->node_type) ? $entry->node_type : '';
@@ -58,30 +79,30 @@ function theme_views_view_gmap($view, $results) {
       'lon' => $entry->location_longitude,
     );
     if (($location['lat']) && ($location['lon'])) {
-      $marker_label = '';
-      foreach ($view->field as $field) {
-        $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $entry, $view) .'</div>';
+      if ($fatmarkers) {
+        $themarker = array(
+          'markername' => variable_get('gmap_node_marker_'.$type, ''),
+          'latitude' => $location['lat'],
+          'longitude' => $location['lon'],
+          'view' => array_values((array)$entry),
+        );
       }
-      $markers[] = array(
-        // @@@
-        'markername' => variable_get('gmap_node_marker_'.$type, ''),
-        'text' => strtr($marker_label,"'\n\r",'" '),
-        'latitude' => $location['lat'],
-        'longitude' => $location['lon']
-      );
+      else {
+        $marker_label = '';
+        foreach ($view->field as $field) {
+          $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $entry, $view) .'</div>';
+        }
+        $themarker = array(
+          // @@@
+          'markername' => variable_get('gmap_node_marker_'.$type, ''),
+          'text' => strtr($marker_label,"'\n\r",'" '),
+          'latitude' => $location['lat'],
+          'longitude' => $location['lon']
+        );
+      }
+
+      $markers[] = $themarker;
     }
-  }
-  if ($view->gmap_macro) {
-    $thismap = array(
-      '#map' => 'view_gmap',
-      '#settings' => gmap_parse_macro($view->gmap_macro),
-    );
-  }
-  else {
-    $thismap = array(
-      '#map' => 'view_gmap',
-      '#settings' => gmap_defaults(),
-    );
   }
   $thismap['#settings']['markers'] = $markers;
   $output .= theme('gmap',$thismap);
