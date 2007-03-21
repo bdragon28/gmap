@@ -71,7 +71,9 @@ function theme_views_view_gmap($view, $results) {
     $thismap['#settings']['viewfields'] = $view->field;
     $datafields = array();
     foreach ($view->field as $field) {
-      $datafields[] = $field['queryname'];
+      if ($fields[$field['id']]['visible'] !== FALSE) {
+        $datafields[] = $field['queryname'];
+      }
     }
   }
 
@@ -85,8 +87,10 @@ function theme_views_view_gmap($view, $results) {
     if (($location['lat']) && ($location['lon'])) {
       if ($fatmarkers) {
         $data = array();
-        foreach($datafields as $f) {
-          $data[] = $entry->$f;
+        foreach ($view->field as $field) {
+          if ($fields[$field['id']]['visible'] !== FALSE) {
+            $data[] = views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $entry, $view);
+          }
         }
         $themarker = array(
           'markername' => variable_get('gmap_node_marker_'.$type, ''),
