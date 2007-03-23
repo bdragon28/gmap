@@ -21,6 +21,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
         // And add it.
         obj.change('addmarker',-1,marker);
       }
+      obj.change('markersready',-1);
     });
   }
 });

@@ -61,6 +61,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
           };
         });
       }
+      obj.change('markersready',-1);
     });
   }
 });
