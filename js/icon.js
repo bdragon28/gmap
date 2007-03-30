@@ -41,7 +41,7 @@ Drupal.gmap.getIcon = function(setname, sequence) {
       var t = new GIcon();
       var p = Drupal.gmap.iconpath + q.path;
       t.image = p + q.sequence[i].f;
-      if (q.shadow != '') {
+      if ((typeof(q.shadow)=='string') && (q.shadow != '')) {
         t.shadow = p + q.shadow.f;
         t.shadowSize = new GSize(q.shadow.w, q.shadow.h);
       }
@@ -49,7 +49,7 @@ Drupal.gmap.getIcon = function(setname, sequence) {
       t.iconAnchor = new GPoint(q.anchorX, q.anchorY);
       t.infoWindowAnchor = new GPoint(q.infoX, q.infoY);
       for (var j=0; j<othimg.length; j++) {
-        if (q[othimg[j]] != '') {
+        if ((typeof(q[othimg[j]])=='string') && (q[othimg[j]] != '')) {
           t[othimg[j]] = p + q[othimg[j]];
         }
       }
