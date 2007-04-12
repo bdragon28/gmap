@@ -55,6 +55,23 @@ function theme_views_view_gmap($view, $results) {
       '#map' => 'view_gmap',
       '#settings' => array_merge(gmap_defaults(),gmap_parse_macro($view->gmap_macro)),
     );
+    if ($thismap['#settings']['behavior']['views_autocenter']) {
+      // Find the first valid location.
+      foreach ($results as $entry) {
+        $location = array(
+          'lat' => $entry->location_latitude,
+          'lon' => $entry->location_longitude,
+        );
+        if (($location['lat']) && ($location['lon'])) {
+          // Set default location for map
+          $thismap['#settings']['latitude'] = $location['lat'];
+          $thismap['#settings']['longitude'] = $location['lon'];
+          // Break loop because we have what we want.
+          break;
+        }
+      }
+    }
+
   }
   else {
     $thismap = array(
