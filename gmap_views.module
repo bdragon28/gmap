@@ -50,7 +50,7 @@ function theme_views_view_gmap($view, $results) {
   // Fields are used to render the markers.
   $fields = _views_get_fields();
 
-  if ($view->gmap_macro) {
+  if (isset($view->gmap_macro) && $view->gmap_macro) {
     $thismap = array(
       '#map' => 'view_gmap',
       '#settings' => array_merge(gmap_defaults(),gmap_parse_macro($view->gmap_macro)),
