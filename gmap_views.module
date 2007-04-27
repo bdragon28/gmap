@@ -117,10 +117,8 @@ function theme_views_view_gmap($view, $results) {
         );
       }
       else {
-        $marker_label = '';
-        foreach ($view->field as $field) {
-          $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $entry, $view) .'</div>';
-        }
+        $marker_label = theme('gmap_views_marker_label', $view, $fields, $entry);
+
         $themarker = array(
           // @@@
           'markername' => variable_get('gmap_node_marker_'.$type, ''),
@@ -136,4 +134,15 @@ function theme_views_view_gmap($view, $results) {
   $thismap['#settings']['markers'] = $markers;
   $output .= theme('gmap',$thismap);
   return $output;
+}
+
+/**
+ * Theme a marker label.
+ */
+function theme_gmap_views_marker_label($view, $fields, $entry) {
+  $marker_label = '';
+  foreach ($view->field as $field) {
+    $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $entry, $view) .'</div>';
+  }
+  return $marker_label;
 }
