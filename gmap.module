@@ -941,6 +941,7 @@ function gmap_json_query() {
     exit();
   }
   if (arg(2)=='markers') {
+    drupal_set_header('Content-Type: text/javascript');
     echo drupal_to_js(array(
       'path' => base_path() . drupal_get_path('module', 'gmap').'/markers',
       'markers' => gmap_get_icondata(TRUE),
