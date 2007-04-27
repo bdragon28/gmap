@@ -359,7 +359,7 @@ function gmap_location_settings() {
 
   $ntypes=node_get_types();
   foreach ($ntypes as $key => $value) {
-    if (variable_get('location_'. $key, 0)) {
+    if (variable_get('location_maxnum_'. $key, 0)) {
       $form['node']['gmap_node_marker_'.$key]=array(
         '#type'=>'select',
                                                         '#title'=>t('Marker for '.$value),
@@ -397,7 +397,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
         
         $ntypes=node_get_types();
         foreach ($ntypes as $key => $value) {
-          if (variable_get('location_'. $key, 0)) {
+          if (variable_get('location_maxnum_'. $key, 0)) {
             $form['gmap_location_block_macro_'.$key]=array(
                                                           '#type' => 'textfield',
                                                           '#title' => t('Map Macro for '.$value),
@@ -421,7 +421,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
 
         $ntypes=node_get_types();
         foreach ($ntypes as $key => $value) {
-          if (variable_get('location_'. $key, 0)) {
+          if (variable_get('location_maxnum_'. $key, 0)) {
             $form['gmap_location_author_block_'.$key]=array(
                               '#type' => 'checkbox',
                               '#title' => t('Authoer block enabled '.$value),
@@ -437,7 +437,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
         variable_set('gmap_location_author_block_macro', $edit['gmap_location_author_block_macro']);
         $ntypes=node_get_types();
         foreach ($ntypes as $key => $value) {
-          if (variable_get('location_'. $key, 0)) {
+          if (variable_get('location_maxnum_'. $key, 0)) {
             variable_set('gmap_location_block_macro_'.$key,$edit['gmap_location_block_macro_'.$key]);
           }
         }
@@ -447,7 +447,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
         variable_set('gmap_location_author_block_macro', $edit['gmap_location_author_block_macro']);
         $ntypes=node_get_types();
         foreach ($ntypes as $key => $value) {
-          if (variable_get('location_'. $key, 0)) {
+          if (variable_get('location_maxnum_'. $key, 0)) {
             variable_set('gmap_location_block_'.$key,$edit['gmap_location_block_'.$key]);
           }
         }
