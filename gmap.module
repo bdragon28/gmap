@@ -532,7 +532,7 @@ function gmap_sanitize(&$gmap){
   foreach ($gmap as $key=>$value) {
     if ($key=='id') {
       $out = array();
-      preg_match('([a-zA-Z1-9_-]*)', $value, $out);
+      preg_match('([a-zA-Z0-9_-]*)', $value, $out);
       if (strlen($out[0])==0)  {
         $out[0]='map';
       }
