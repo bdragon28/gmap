@@ -618,7 +618,7 @@ function gmap_parse_macro($instring,$ver=2) {
         unset($ttt);
         $ttt = explode('+',$t[1]);
         for ($i =0; $i<count($ttt); $i++) {
-          unset($tt);
+          $tt = array();
           if (strpos($ttt[$i],':')) {
             list($point,$tt['label']) = explode(':',$ttt[$i],2);
             $tt=array_merge($tt,gmap_dopoint($point,$ver));
