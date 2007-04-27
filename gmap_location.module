@@ -164,7 +164,7 @@ function gmap_location_node_page($nid=null) {
 
   $output .='<p>'. t(variable_get('gmap_node_map_header', 'This map illustrates the extent of nodes of this website.'))."</p>\n";
 
-  $result=db_query("SELECT eid, longitude, latitude FROM {location} WHERE (longitude!=0 OR latitude !=0) AND type='node'");
+  $result=db_query(db_rewrite_sql("SELECT l.eid, l.longitude, l.latitude FROM {location} l INNER JOIN {node} n ON l.eid = n.vid WHERE (l.longitude!=0 OR l.latitude !=0) AND l.type='node' AND n.status = 1"));
   $thismap = gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
   if (empty($thismap['markers'])) {
     $thismap['markers']=array();
