@@ -781,9 +781,9 @@ function _gmap_location_store_location(&$object, $type, $update = false) {
     }
     else {
       // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
-      db_query("INSERT INTO {location} (eid, type, latitude, longitude, source) VALUES (%d, '%s', '%f', '%f', '%d')",
-      $object->eid, $type, $object->gmap_location_latitude,$object->gmap_location_longitude, 1);
-          }
+      $lid = db_next_id('{location}_lid');
+      db_query("INSERT INTO {location} (eid, lid, type, latitude, longitude, source) VALUES (%d, %d, '%s', '%f', '%f', '%d')", $object->eid, $lid, $type, $object->gmap_location_latitude,$object->gmap_location_longitude, 1);
+    }
     unset($object->gmap_location_latitude);
     unset($object->gmap_location_longitude);
     unset($object->gmap_location_set);
