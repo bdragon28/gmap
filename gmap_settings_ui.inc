@@ -2,6 +2,11 @@
 /* $Id$ */
 // vim:set ft=php:
 
+/**
+ * @file
+ * GMap settings form.
+ */
+
 function _gmap_admin_settings() {
   //note the same google api key variable name as in the googlemap module is used
   //note the name of the variable for center of the map is latlong although the format is actually longitude, latitude
@@ -47,13 +52,6 @@ function _gmap_admin_settings() {
     $form['initialization']['gmap_load_zoom_plugin']['#disabled'] = TRUE;
     $form['initialization']['gmap_load_zoom_plugin']['#description'] += '<br />'. t('<em>The mousewheel.js file was not found. Please download and place in the <b>thirdparty/</b> folder.</em>');
   }
-  $form['initialization']['gmap_on_click'] = array(
-    '#type' => 'radios',
-    '#title' => t('On Click Marker'),
-    '#default_value' => variable_get('gmap_on_click',0),
-    '#options' => array(t('Open info window'), t('Open link')),
-    '#description' => t('For markers that have link associated with them, it can either an info window or go directly to the link.'),
-  );
 
   $defaults = gmap_defaults();
 
@@ -65,7 +63,7 @@ function _gmap_admin_settings() {
   );
   $form['gmap_default']['map'] = array(
     '#type' => 'gmap',
-    '#map' => 'examplemap',
+    '#map' => 'settings_default_map',
     '#settings' => array(
       'behavior' => array(
         'nodrag' => FALSE,
@@ -76,13 +74,13 @@ function _gmap_admin_settings() {
   
   $form['gmap_default']['width'] = array(
     '#type' => 'textfield',
-    '#id' => 'gmap-examplemap-width0',
     '#title' => t('Default width'),
     '#default_value' => $defaults['width'],
     '#size' => 25,
     '#maxlength' => 6,
     '#description' => t('The default width of a Google map.'),
   );
+  gmap_widget_setup($form['gmap_default']['width'],'width','settings_default_map');
   $form['gmap_default']['height'] = array(
     '#type' => 'textfield',
     '#id' => 'gmap-examplemap-height0',
@@ -92,9 +90,10 @@ function _gmap_admin_settings() {
     '#maxlength' => 6,
     '#description' => t('The default height of a Google map.'),
   );
+  gmap_widget_setup($form['gmap_default']['height'],'height','settings_default_map');
   $form['gmap_default']['latlong'] = array(
     '#type' => 'gmap_latlon',
-    '#map' => 'examplemap',
+    '#map' => 'settings_default_map',
     '#title' => t('Default center'),
     '#default_value' => $defaults['latlong'],
     '#size' => 50,
@@ -103,48 +102,55 @@ function _gmap_admin_settings() {
   );
   $form['gmap_default']['zoom'] = array(
     '#type' => 'select',
-    '#id' => 'gmap-examplemap-zoom0',
     '#title' => t('Default zoom'),
     '#default_value' => $defaults['zoom'],
     '#options' => drupal_map_assoc(range(0, 17)),
     '#description' => t('The default zoom level of a Google map.'),
   );
+  gmap_widget_setup($form['gmap_default']['zoom'],'zoom','settings_default_map');
+
   $form['gmap_default']['controltype'] = array(
     '#type' => 'select',
     '#title' => t('Default control type'), 
     '#options' => array('None' => t('None'),'Small' => t('Small'),'Large' => t('Large')),
-    '#required' => FALSE,
     '#default_value' => $defaults['controltype'],
-    '#id' => 'gmap-examplemap-controltype0',
-    '#attributes' => array('class' => 'gmap-control'),
   );
+  gmap_widget_setup($form['gmap_default']['controltype'],'controltype','settings_default_map');
 
   $form['gmap_default']['maptype'] = array(
     '#type' => 'select',
-    '#id' => 'gmap-examplemap-maptype0',
     '#title' => t('Default map type'),
     '#default_value' => $defaults['maptype'],
     '#options' => array('Map' => t('Map'),'Satellite' => t('Satellite'),'Hybrid' => t('Hybrid')),
-    '#attributes' => array('class' => 'gmap-control'),
   );
+  gmap_widget_setup($form['gmap_default']['maptype'],'maptype','settings_default_map');
 
   $form['gmap_default']['behavior'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Behavior'),
+    '#title' => t('Map Behavior flags'),
     '#tree' => TRUE,
+    '#description' => t('Behavior flags modify how a map behaves. Disabled flags are for specific purposes and can only be set manually.'),
   );
-  $form['gmap_default']['behavior']['nodrag'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Disable dragging'),
-    '#default_value' => $defaults['behavior']['nodrag'],
-    '#description' => t('If checked, disables dragging the map around. Also disables the keyboard handler.'),
+  $behaviors = module_invoke_all('gmap','behaviors');
+  foreach ($behaviors as $k => $v) {
+    $form['gmap_default']['behavior'][$k] = array(
+      '#type' => 'checkbox',
+      '#title' => t('@name : @title',array('@name'=>$k,'@title'=>$v['title'])),
+      '#default_value' => isset($defaults['behavior'][$k]) ? $defaults['behavior'][$k] : $v['default'],
+      '#description' => isset($v['help']) ? $v['help'] : '',
+    );
+    if ($v['internal']) {
+      $form['gmap_default']['behavior'][$k]['#disabled'] = TRUE;
+    }
+  }
+
+  $form['gmap_default']['markermode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Marker action'),
+    '#description' => t('Perform this action when a marker is clicked.'),
+    '#options' => array(t('Do nothing'),t('Open info window'),t('Open link')),
   );
-  $form['gmap_default']['behavior']['nokeyboard'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Disable keyboard handler'),
-    '#default_value' => $defaults['behavior']['nokeyboard'],
-    '#description' => t('If checked, disables the GKeyboardHandler normally attached to a map.'),
-  );
+
   $form['gmap_default']['line_colors'] = array(
     '#tree' => TRUE,
   );
@@ -170,109 +176,111 @@ function _gmap_admin_settings() {
     '#maxlength' => 7,
   );
 
-  $markers = gmap_get_marker_titles();
-  
-  $form['markermanager'] = array(
+  $opts = variable_get('gmap_markermanager',array(
+    'gmap' => array(),
+    'gmarkermanager' => array(
+      'borderPadding' => 0,
+      'maxZoom' => 4,
+      'trackMarkers' => FALSE,
+    ),
+    'clusterer' => array(
+      'marker' => 'cluster',
+      'max_nocluster' => 150,
+      'cluster_min' => 5,
+      'max_lines' => 10,
+    ),
+  ));
+
+  $form['gmap_markermanager'] = array(
     '#type' => 'fieldset',
     '#title' => t('Marker manager'),
     '#tree' => TRUE,
   );
-  $form['markermanager']['gmap_mm_type'] = array(
+  $form['gmap_markermanager']['gmap_mm_type'] = array(
     '#type' => 'radios',
     '#tree' => FALSE,
+    '#required' => TRUE,
     '#options' => array(
-      'gmap_marker.js' => t('No manager (use addOverlay directly)'),
-      'gmarkermanager_marker.js' => t("Google's GMarkerManager"),
-      'clusterer_marker.js' => t("Jef Poskanzer's Clusterer"),
+      'gmap' => t('No manager (use addOverlay directly)'),
+      'gmarkermanager' => t("Google's GMarkerManager"),
+      'clusterer' => t("Jef Poskanzer's Clusterer"),
     ),
-    '#default_value' => variable_get('gmap_mm_type', 'gmap_marker.js'),
+    '#default_value' => variable_get('gmap_mm_type', 'gmap'),
     '#description' => t('If you are planning on using many markers on a single map, you may want to consider using a marker manager to speed up map rendering.'),
   );
-  
-  $form['markermanager']['gmarkermanager'] = array(
+
+  $form['gmap_markermanager']['gmap'] = array(
     '#type' => 'fieldset',
-    '#title' => t('GMarkerManager settings'),
+    '#title' => t('Unmanaged marker settings'),
+    '#description' => t('There are no settings for unmanaged markers.'),
   );
 
-  $form['markermanager']['gmarkermanager']['borderPadding'] = array(
+  $form['gmap_markermanager']['gmarkermanager'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('GMarkerManager settings'),
+    '#description' => t('GMarkerManager is a new part of the official Google Maps API that provides a marker manager.'),
+  );
+
+  $form['gmap_markermanager']['gmarkermanager']['borderPadding'] = array(
     '#type' => 'textfield',
-    '#disabled' => TRUE, //@@@
     '#title' => t('Border padding'),
     '#description' => t('Markers located less than this number of pixels from the viewport will be added to the map by the manager (even if they would be fully invisible.)'),
     '#size' => 3,
     '#maxlength' => 3,
+    '#default_value' => $opts['gmarkermanager']['borderPadding'],
   );
-  $form['markermanager']['gmarkermanager']['maxZoom'] = array(
+  $form['gmap_markermanager']['gmarkermanager']['maxZoom'] = array(
     '#type' => 'select',
-    '#disabled' => TRUE, //@@@
     '#title' => t('Maximum zoom'),
     '#options' => drupal_map_assoc(range(0, 17)),
     '#description' => t('At the specified zoom level and above, the marker manager will disable itself for additional speed.'),
+    '#default_value' => $opts['gmarkermanager']['maxZoom'],
   );
-  $form['markermanager']['gmarkermanager']['trackMarkers'] = array(
+  $form['gmap_markermanager']['gmarkermanager']['trackMarkers'] = array(
     '#type' => 'checkbox',
-    '#disabled' => TRUE, //@@@
     '#title' => t('Track markers'),
     '#description' => t('If enabled, the marker manager will track marker movements. Leave off unless you need to move markers around with setPoint.'),
+    '#default_value' => $opts['gmarkermanager']['trackMarkers'],
   );
   
-  $form['markermanager']['clusterer'] = array(
+  $form['gmap_markermanager']['clusterer'] = array(
     '#type' => 'fieldset',
     '#title' => t('Clusterer settings'),
+    '#description' => t("Clusterer is a marker manager written by Jef Poskanzer of acme.com. To use, you must place Clusterer2.js (available ".'<a href="@url">here</a>) into the "thirdparty" folder.',array('@url'=>'http://acme.com/javascript/Clusterer2.js')),
   );
-  
-  $form['markermanager']['clusterer']['marker'] = array(
+  $form['gmap_markermanager']['clusterer']['marker'] = array(
     '#type' => 'gmap_markerchooser',
-    '#disabled' => TRUE, //@@@
     '#title' => t('Marker for clusters'),
     '#description' => t('The marker to use when creating a cluster.'),
+    '#default_value' => $opts['clusterer']['marker'],
   );
-  
-  
-  
-
-  $form['clusterer'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Clusterer settings'),
-  );
-  $form['clusterer']['gmap_cluster'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Enable clusterer.js'),
-    '#default_value' => GMAP_CLUSTER,
-    '#disabled' => TRUE, //@@@
-    '#description' => t('Enables Jef Poskanzer\'s excellent <a href="@url">clusterer.js</a> script. (useful for a large number of markers on a single map).  This must be installed in the gmap directory of the drupal install.',
-      array('@url' => 'http://www.acme.com/javascript/#Clusterer')),
-  );
-  $form['clusterer']['gmap_cluster_marker'] = array(
-    '#type' => 'gmap_markerchooser',
-    '#title' => t('Marker for clusters'),
-    '#disabled' => TRUE, //@@@
-    '#default_value' => variable_get('gmap_cluster_marker', 'cluster'),
-  );
-  $form['clusterer']['gmap_cluster_max_markers'] = array(
+  $form['gmap_markermanager']['clusterer']['max_nocluster'] = array(
     '#type' => 'textfield',
-    '#title' => t("Maximum number of markers"),
-    '#disabled' => TRUE, //@@@
-    '#default_value' => variable_get('gmap_cluster_max_markers', 150),
+    '#title' => t('Activate on'),
+    '#field_suffix' => t('or more markers'),
+    '#description' => t("Clustering is enabled when more than the specified number of markers are visible at the same time."),
     '#size' => 3,
     '#maxlength' => 3,
-    '#title' => t("Clustering is enabled when more than the specified number of markers are visible at the same time."),
+    '#default_value' => $opts['clusterer']['max_nocluster'],
   );
-  $form['clusterer']['gmap_cluster_min_per_cluster'] = array(
+  $form['gmap_markermanager']['clusterer']['cluster_min'] = array(
     '#type' => 'textfield',
-    '#disabled' => TRUE, //@@@
-    '#title' => t("Minimal number of markers per cluster"),
-    '#default_value' => variable_get('gmap_cluster_min_per_cluster', 5),
+    '#title' => t('Cluster on'),
+    '#field_suffix' => t('or more markers'),
+    '#description' => t("Minimal number of markers per cluster"),
     '#size' => 2,
     '#maxlength' => 2,
+    '#default_value' => $opts['clusterer']['cluster_min'],
   );
-  $form['clusterer']['gmap_cluster_max_lines'] = array(
+  $form['gmap_markermanager']['clusterer']['max_lines'] = array(
     '#type' => 'textfield',
-    '#disabled' => TRUE, //@@@
-    '#title' => t("Maximum number of lines per info box"),
-    '#default_value' => variable_get('gmap_cluster_max_lines', 10),
+    '#title' => t('Lines per box'),
+    '#field_prefix' => t('at most'),
+    '#field_suffix' => t('lines'),
+    '#description' => t("Maximum number of lines per info box"),
     '#size' => 2,
     '#maxlength' => 2,
+    '#default_value' => $opts['clusterer']['max_lines'],
   );
 
   $form['location'] = array(

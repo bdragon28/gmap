@@ -22,6 +22,23 @@ function gmap_views_views_style_plugins() {
 }
 
 /**
+ * Implementation of hook_gmap().
+ */
+function gmap_views_gmap($op) {
+  switch ($op) {
+    case 'behaviors':
+      return array(
+        'fatmarkers' => array(
+          'title' => t('Views "fat" markers'),
+          'default' => FALSE,
+          'help' => t('Enabling this flag will pass the raw views data with a marker for use with custom manipulation code. Hook the preparemarker event to make use of this.'),
+          'internal' => TRUE,
+        ),
+      );
+  }
+}
+
+/**
  * Validate a GMap View.
  * GMap Views requires Location: Latitude and Location: Longitude
  * to generate markers.

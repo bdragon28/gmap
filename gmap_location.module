@@ -63,8 +63,6 @@ function gmap_location_user_page() {
   // Find default marker
   $default_marker = variable_get('gmap_user_map_marker', 'drupal');
 
-  $mode = variable_get('gmap_on_click',0);
-
   // Determine if any roles override default setting
   $roles = user_roles(TRUE);
   $roles_override = array();
@@ -79,6 +77,8 @@ function gmap_location_user_page() {
   $thismap = gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
   $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
 
+  $mode = $thismap['markermode'];
+
   while ($u=db_fetch_object($result)) {
     $account = user_load(array('uid' => $u->eid));
     $dupes = array_intersect($account->roles, $roles_override);
@@ -90,10 +90,10 @@ function gmap_location_user_page() {
       $marker = variable_get("gmap_role_map_marker_$key", $default_marker);
     }
     if (user_access('user locations')) {
-      if ($mode==0) {
+      if ($mode==1) {
         $newmarker['text'] = theme('gmap_location_user_html',$account);
       }
-      else {
+      else if ($mode==2) {
         $newmarker['link']=url('user/'.$account->uid);
       }
       $newmarker['latitude'] = $u->latitude;
@@ -202,15 +202,15 @@ function gmap_location_node_map($n,$thismap,$single=false){
     $latitude = isset($n->gmap_location_latitude) ? $n->gmap_location_latitude : $n->location['latitude'];
     $longitude = isset($n->gmap_location_longitude) ? $n->gmap_location_longitude : $n->location['longitude'];
 
-    $mode = variable_get('gmap_on_click',0);
+    $mode = $thismap['markermode'];
     $newmarker=array();
     $width=0;
-    if ($mode==0) {
+    if ($mode==1) {
       if (!($newmarker['text'] = theme(strtr($n->type,'-','_').'_gmapnodelabel',$n))) {
         $newmarker['text'] = theme('gmapnodelabel',$n);
       }
     }
-    else {
+    else if ($mode==2) {
       $newmarker['link']=url('node/'.$n->nid);
     }
 

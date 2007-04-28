@@ -20,7 +20,6 @@ define('GMAP_LINECOLOR2', '#ff0000');
 define('GMAP_LINECOLOR3', '#0000ff');
 // @@@ Remove these and generalize lines. @@@
 
-define('GMAP_CLUSTER', variable_get('gmap_cluster',0));
 define('GMAP_WMS', variable_get('gmap_wms',0));
 
 // Minimum is currently V. 2.69 (which implements the new GPolygon stuff)
@@ -30,7 +29,7 @@ define('GMAP_API_V', '2.69');
  * Get the defaults for a gmap.
  */
 function gmap_defaults() {
-  return variable_get('gmap_default', array(
+  $defaults = array(
     'width' => '300px',
     'height' => '200px',
     'zoom' => 3,
@@ -39,7 +38,7 @@ function gmap_defaults() {
     'latlong' => '40,0',
     'maptype' => 'Map',
     'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
-    'behavior' => array(
+/*    'behavior' => array(
       'locpick' => FALSE,
       'nodrag' => FALSE,
       'nokeyboard' => TRUE,
@@ -47,8 +46,56 @@ function gmap_defaults() {
       'autozoom' => FALSE,
       'dynmarkers' => FALSE, // Load the marker system even if no markers are found
       'fatmarkers' => FALSE, // Pass unrecognized fields with markers, useful for gmap_views.
-    ),
-  ));
+    ), */
+  );
+  $defaults['behavior'] = array();
+  $behaviors = module_invoke_all('gmap','behaviors');
+  foreach ($behaviors as $k => $v) {
+    $defaults['behavior'][$k] = $v['default'];
+  }
+  $defaults = array_merge($defaults,variable_get('gmap_default',array()));
+  return $defaults;
+}
+
+/**
+ * Implementation of hook_gmap().
+ */
+function gmap_gmap($op) {
+  switch ($op) {
+    case 'behaviors':
+      return array(
+        'locpick' => array(
+          'title' => t('Location chooser'),
+          'default' => FALSE,
+          'help' => t('Used to activate location choosing using a gmap.'),
+        ),
+        'nodrag' => array(
+          'title' => t('Disable dragging'),
+          'default' => FALSE,
+          'help' => t('Remove the ability for the user to drag the map. If dragging is disabled, keyboard shortcuts are implicitly disabled.'),
+        ),
+        'nokeyboard' => array(
+          'title' => t('Disable keyboard'),
+          'default' => TRUE,
+          'help' => t('Disable the keyboard shortcuts.'),
+        ),
+        'nomousezoom' => array(
+          'title' => t('Disable mousezoom'),
+          'default' => FALSE,
+          'help' => t('Disable using the scroll wheel to zoom the map.'),
+        ),
+        'autozoom' => array(
+          'title' => t('Use AutoZoom'),
+          'default' => FALSE,
+          'help' => t('Automatically zoom the map to fit all markers when markers are added.'),
+        ),
+        'dynmarkers' => array(
+          'title' => t('Unconditionally enable marker interface'),
+          'default' => FALSE,
+          'help' => t('Load the marker loader system even if no markers to load are detected. Useful if you are injecting markers from somewhere else.'),
+        ),
+      );
+  }
 }
 
 /**
@@ -62,6 +109,13 @@ function _gmap_doheader(){
   $gmap_path = drupal_get_path('module','gmap');
   drupal_add_css($gmap_path .'/gmap.css');
   drupal_add_js($gmap_path. '/js/gmap.js');
+  $mm = variable_get('gmap_mm_type','gmap');
+  if ($mm=='clusterer') {
+    drupal_add_js($gmap_path. '/thirdparty/Clusterer2.js');
+  }
+  drupal_add_js($gmap_path. '/js/'.$mm.'_marker.js');
+  $mms = variable_get('gmap_markermanager',0);
+  drupal_add_js(drupal_to_js(array('gmap_markermanager'=>$mms[$mm])),'setting');
 // @@@
 drupal_add_js($gmap_path.'/js/poly.js');
   drupal_set_html_head('<script src="http://maps.google.com/maps?file=api&amp;v='.GMAP_API_V.'&amp;key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>');
@@ -1168,8 +1222,6 @@ function gmap_map_cleanup(&$map) {
   $map['zoom'] = (int)$map['zoom'];
   // JSON query handler
   $map['querypath'] = url('map/query',NULL,NULL,TRUE);
-  // @@@ This really needs to be per-map.
-  $map['markermode'] = variable_get('gmap_on_click',0);
   // Normalize latitude / longitude
   if ($map['latlong']) {
     $map['latlon'] = $map['latlong'];
@@ -1241,7 +1293,7 @@ function theme_gmap($element) {
   // Activate markers if needed
   if ($map['behavior']['dynmarkers'] || !empty($map['markers'])) {
     drupal_add_js($path .'icon.js');
-    drupal_add_js($path .variable_get('gmap_mm_type','gmap_marker.js'));
+    drupal_add_js($path .variable_get('gmap_mm_type','gmap').'_marker.js');
   }
 
   if ($map['behavior']['locpick']) {
@@ -1269,12 +1321,25 @@ function theme_gmap($element) {
  * Set up widget.
  * This function will change a form element's ID so it is found
  * by the GMap handlers system.
+ * @param &$element
+ *   The form element to modify.
+ * @param $type
+ *   The gmap widget type to map to.
+ * @param $map
+ *   The map id. If not defined, $element['#map'] will be used.
+ * @return
+ *   None.
  */
-function gmap_widget_setup(&$element, $type) {
-  if (!isset($element['#map'])) {
-    // Hmm, missing #map. Try to figure it out.
-    if (isset($element['#settings']['id'])) {
-      $element['#map'] = $element['#settings']['id'];
+function gmap_widget_setup(&$element, $type, $map=NULL) {
+  if (!$map) {
+    if (isset($element['#map'])) {
+      $map = $element['#map'];
+    }
+    else {
+      // Hmm, missing #map. Try to figure it out.
+      if (isset($element['#settings']['id'])) {
+        $map = $element['#settings']['id'];
+      }
     }
   }
   $element['#attributes']['class'] = trim(implode(' ',array(
@@ -1282,7 +1347,7 @@ function gmap_widget_setup(&$element, $type) {
     'gmap-control',
     'gmap-'.$type,
   )));
-  $element['#id'] = gmap_get_id($element['#map'],$type);
+  $element['#id'] = gmap_get_id($map,$type);
 }
 
 /**
