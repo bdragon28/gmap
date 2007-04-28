@@ -7,7 +7,7 @@
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
-  var feed, i, j, marker;
+  var feed, i, j, marker, tmp;
   if (obj.vars.feed) {
     // Inject markers as soon as the icon loader is ready.
     obj.bind('iconsready',function() {
@@ -49,8 +49,23 @@ Drupal.gmap.addHandler('gmap', function(elem) {
             else {
               marker.link = f('link');
             }
-            marker.latitude = f('lat','geo') || f('latitude','geourl') || f('latitude','icbm');
-            marker.longitude = f('lon','geo') || f('longitude','geourl') || f('longitude','icbm');
+            // GeoRSS Simple
+            if ((tmp = f('point','georss'))) {
+              tmp = tmp.split(' ');
+              marker.latitude = tmp[0];
+              marker.longitude = tmp[1];
+            }
+            // GeoRSS GML
+            else if ((tmp = f('pos','gml'))) {
+              tmp = tmp.split(' ');
+              marker.latitude = tmp[0];
+              marker.longitude = tmp[1];
+            }
+            // Misc.
+            else {
+              marker.latitude = f('lat','geo') || f('latitude','geourl') || f('latitude','icbm');
+              marker.longitude = f('lon','geo') || f('longitude','geourl') || f('longitude','icbm');
+            }
             marker.markername = feed.markername;
             marker.offset = offset;
             offset++;
