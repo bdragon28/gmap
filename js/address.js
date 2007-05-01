@@ -24,6 +24,23 @@ Drupal.gmap.geocoder = function() {
   }
 }
 
+Drupal.gmap.addHandler('gmap', function(elem) {
+  var obj = this;
+
+  obj.bind('geocode_pan', function(addr) {
+    Drupal.gmap.geocoder().getLatLng(addr,function(point) {
+      if(point) {
+        obj.vars.latitude = point.lat();
+        obj.vars.longitude = point.lng();
+        obj.change("move",-1);
+      }
+      else {
+        // Error condition?
+      }
+    });
+  });
+});
+
 ////////////////////////////////////////
 //         Address widget             //
 ////////////////////////////////////////
