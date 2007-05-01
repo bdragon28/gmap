@@ -1366,6 +1366,7 @@ function gmap_widget_setup(&$element, $type, $map=NULL) {
     'gmap-'.$type,
   )));
   $element['#id'] = gmap_get_id($map,$type);
+  $element['#map'] = $map;
 }
 
 /**
