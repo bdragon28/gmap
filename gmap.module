@@ -62,6 +62,20 @@ function gmap_defaults() {
  */
 function gmap_gmap($op) {
   switch ($op) {
+    case 'macro':
+      return array(
+        'points' => array(
+          'multiple' => TRUE,
+        ),
+        'markers' => array(
+          'multiple' => TRUE,
+        ),
+        'feed' => array(
+          'multiple' => TRUE,
+        ),
+      );
+    case 'macro_multiple':
+      return array('points','markers','feed');
     case 'behaviors':
       return array(
         'locpick' => array(
@@ -115,6 +129,9 @@ function _gmap_doheader(){
   }
   drupal_add_js($gmap_path. '/js/'.$mm.'_marker.js');
   $mms = variable_get('gmap_markermanager',0);
+  if (empty($mms[$mm])) {
+    $mms[$mm] = array();
+  }
   drupal_add_js(drupal_to_js(array('gmap_markermanager'=>$mms[$mm])),'setting');
 // @@@
 drupal_add_js($gmap_path.'/js/poly.js');
@@ -849,6 +866,7 @@ function gmap_set_location($map,&$form,$fields) {
 
   $element = array(
     '#type' => 'gmap',
+    '#map' => $map['id'],
     '#settings' => $map,
   );
 
