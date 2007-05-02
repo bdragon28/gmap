@@ -129,6 +129,15 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     obj.vars.zoom = newzoom;
     obj.change("zoom",binding);
   });
+  // Sync zoom if different after move.
+  // Partial workaround for a zoom + move bug.
+  // Full solution will involve listening to movestart and forbidding zooms
+  // until complete.
+  GEvent.addListener(map, "moveend", function() {
+    if (map.getZoom() != obj.vars.zoom) {
+      obj.change("zoom");
+    }
+  });
 
   // Respond to incoming moves
   binding = obj.bind("move",function(){map.panTo(new GLatLng(obj.vars.latitude,obj.vars.longitude))});
