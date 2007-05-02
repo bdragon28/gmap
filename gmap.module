@@ -128,11 +128,11 @@ function _gmap_doheader(){
     drupal_add_js($gmap_path. '/thirdparty/Clusterer2.js');
   }
   drupal_add_js($gmap_path. '/js/'.$mm.'_marker.js');
-  $mms = variable_get('gmap_markermanager',array());
+  $mms = variable_get('gmap_markermanager', array());
   if (empty($mms[$mm])) {
     $mms[$mm] = array();
   }
-  drupal_add_js(drupal_to_js(array('gmap_markermanager'=>$mms[$mm])),'setting');
+  drupal_add_js(drupal_to_js(array('gmap' => array('gmap_markermanager'=>$mms[$mm]))),'setting');
 // @@@
 drupal_add_js($gmap_path.'/js/poly.js');
   drupal_set_html_head('<script src="http://maps.google.com/maps?file=api&amp;v='.GMAP_API_V.'&amp;key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>');
