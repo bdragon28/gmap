@@ -128,7 +128,7 @@ function _gmap_doheader(){
     drupal_add_js($gmap_path. '/thirdparty/Clusterer2.js');
   }
   drupal_add_js($gmap_path. '/js/'.$mm.'_marker.js');
-  $mms = variable_get('gmap_markermanager',0);
+  $mms = variable_get('gmap_markermanager',array());
   if (empty($mms[$mm])) {
     $mms[$mm] = array();
   }
