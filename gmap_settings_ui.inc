@@ -149,6 +149,7 @@ function _gmap_admin_settings() {
     '#title' => t('Marker action'),
     '#description' => t('Perform this action when a marker is clicked.'),
     '#options' => array(t('Do nothing'),t('Open info window'),t('Open link')),
+    '#default_value' => isset($defaults['markermode']) ? $defaults['markermode'] : 0,
   );
 
   $form['gmap_default']['line_colors'] = array(
