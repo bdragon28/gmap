@@ -39,6 +39,38 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       }
     });
   });
+
+  obj.bind('geocode_panzoom', function(addr) {
+    Drupal.gmap.geocoder().getLocations(addr,function(response) {
+      if (response && response.Status.code == 200) {
+        place = response.Placemark[0];
+        obj.vars.latitude = place.Point.coordinates[1];
+        obj.vars.longitude = place.Point.coordinates[0];
+
+        // This is, of course, temporary.
+
+        switch (place.AddressDetails.Accuracy) {
+          case 1: // Country level
+            obj.vars.zoom = 4;
+            break;
+          case 2: // Region (state, province, prefecture, etc.) level
+            obj.vars.zoom = 6;
+            break;
+          case 3: // Sub-region (county, municipality, etc.) level
+            obj.vars.zoom = 8;
+            break;
+          case 4: // Town (city, village) level accuracy. (Since 2.59)
+          case 5: // Post code (zip code) level accuracy. (Since 2.59)
+          case 6: // Street level accuracy. (Since 2.59)
+          case 7: // Intersection level accuracy. (Since 2.59)
+          case 8: // Address level accuracy. (Since 2.59)
+            obj.vars.zoom = 12;
+        }
+        obj.change('move',-1);
+      }
+    });
+  });
+
 });
 
 ////////////////////////////////////////
