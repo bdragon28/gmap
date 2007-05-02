@@ -99,6 +99,9 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   map.addControl(new GMapTypeControl());
 
   obj.bind("init",function() {
+    if (obj.vars.behavior.overview) {
+      map.addControl(new GOverviewMapControl());
+    }
     if (obj.vars.behavior.nodrag) {
       map.disableDragging();
     }
