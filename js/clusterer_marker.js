@@ -15,6 +15,19 @@ Drupal.gmap.addHandler('gmap', function(elem) {
 
   obj.bind('init',function() {
     obj.clusterer = new Clusterer(obj.map);
+    var s = Drupal.settings.gmap_markermanager;
+    if (s) {
+      obj.clusterer.SetMaxVisibleMarkers(s.max_nocluster);
+      obj.clusterer.SetMinMarkersPerCluster(s.cluster_min);
+      obj.clusterer.SetMaxLinesPerInfoBox(s.max_lines);
+    }
+  });
+
+  obj.bind('iconsready',function() {
+    var s = Drupal.settings.gmap_markermanager;
+    if (s) {
+      obj.clusterer.SetIcon(Drupal.gmap.getIcon(s.marker,0));
+    }
   });
 
   obj.bind('addmarker',function(marker) {

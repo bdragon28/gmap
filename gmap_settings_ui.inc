@@ -179,18 +179,26 @@ function _gmap_admin_settings() {
 
   $opts = variable_get('gmap_markermanager',array(
     'gmap' => array(),
-    'gmarkermanager' => array(
-      'borderPadding' => 0,
-      'maxZoom' => 4,
-      'trackMarkers' => FALSE,
-    ),
-    'clusterer' => array(
-      'marker' => 'cluster',
-      'max_nocluster' => 150,
-      'cluster_min' => 5,
-      'max_lines' => 10,
-    ),
-  ));
+    'gmarkermanager' => array(),
+    'clusterer' => array()));
+  
+  $opts['gmap'] = array_merge(array(
+    // None.
+  ),$opts['gmap']);
+
+  $opts['gmarkermanager'] = array_merge(array(
+    'borderPadding' => 0,
+    'maxZoom' => 4,
+    'trackMarkers' => FALSE,
+  ),$opts['gmarkermanager']);
+
+  $opts['clusterer'] = array_merge(array(
+    'clusterer_file' => 'Clusterer2.js',
+    'marker' => 'cluster',
+    'max_nocluster' => 150,
+    'cluster_min' => 5,
+    'max_lines' => 10,
+  ),$opts['clusterer']);
 
   $form['gmap_markermanager'] = array(
     '#type' => 'fieldset',
@@ -248,6 +256,12 @@ function _gmap_admin_settings() {
     '#type' => 'fieldset',
     '#title' => t('Clusterer settings'),
     '#description' => t("Clusterer is a marker manager written by Jef Poskanzer of acme.com. To use, you must place Clusterer2.js (available ".'<a href="@url">here</a>) into the "thirdparty" folder.',array('@url'=>'http://acme.com/javascript/Clusterer2.js')),
+  );
+  $form['gmap_markermanager']['clusterer']['clusterer_file'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Clusterer filename'),
+    '#description' => t('Set the name of the Clusterer file in the thirdparty folder.'),
+    '#default_value' => $opts['clusterer']['clusterer_file'],
   );
   $form['gmap_markermanager']['clusterer']['marker'] = array(
     '#type' => 'gmap_markerchooser',

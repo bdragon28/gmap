@@ -130,6 +130,7 @@ function _gmap_doheader(){
   drupal_add_js($gmap_path. '/js/gmap.js');
   $mm = variable_get('gmap_mm_type','gmap');
   if ($mm=='clusterer') {
+    drupal_add_js($gmap_path. '/js/icon.js');
     drupal_add_js($gmap_path. '/thirdparty/Clusterer2.js');
   }
   drupal_add_js($gmap_path. '/js/'.$mm.'_marker.js');
