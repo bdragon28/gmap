@@ -96,9 +96,10 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   // Hide away a reference to the map
   obj.map = map;
 
-  map.addControl(new GMapTypeControl());
-
   obj.bind("init",function() {
+    if (!obj.vars.behavior.notype) {
+      map.addControl(new GMapTypeControl());
+    }
     if (obj.vars.behavior.overview) {
       map.addControl(new GOverviewMapControl());
     }

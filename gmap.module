@@ -113,6 +113,11 @@ function gmap_gmap($op) {
           'default' => FALSE,
           'help' => t('Enable the "overview map" in the bottom right corner.'),
         ),
+        'notype' => array(
+          'title' => t('Disable map type control'),
+          'default' => FALSE,
+          'help' => t('Removes the map type control from the upper right corner. Recommended for very narrow maps.'),
+        ),
       );
   }
 }
@@ -203,53 +208,9 @@ echo "GMap Module: DRAW_MAP CALLED -- This function is scheduled for deletion!<b
 
 return '';
 // The rest of this function is legacy code that still needs picked through.
-  global $base_url, $node;
-    _gmap_doheader();
-    
-    if (file_exists('misc/gxmarker.2.js')) {
-      $gxmarkerjs=1;
-    }
-    else {
-      $gxmarkerjs=0;
-    }
-
-    $defaults = array(
-      'autozoom' => FALSE,
-      'align' => '',
-      'tcontrol' => 'off',
-      'scontrol' => 'off',
-//    'ocontrol' => 'off',
-      'id' => 'map',
-      'drag' => 'yes',
-    );
-
-      
-
-    // prefer $gmap, then $defaults, then the global defaults..
-    $gmap = array_merge(gmap_defaults(),$defaults,$gmap);
-
-    $clusterset=false;
-
-    (!isset($gmap['drag'])) ? $gmap['drag']='yes':NULL;
-
-    if (!isset($gmap['latitude']) && !isset($gmap['center'])&& isset($gmap['latlong'])){
-      //backwards compatible with macros created by previous version of this program
-      list($gmap['latitude'],$gmap['longitude']) =explode(',',$gmap['latlong']);
-    }
-    elseif (!isset($gmap['latitude']) && isset($gmap['center'])){
-      list($gmap['latitude'],$gmap['longitude']) =explode(',',$gmap['center']);
-    }
-
-    
 // @@@ FIX THIS!
-/*'              var mycontrol=null;
-              var mytypecontrol=null;
-              var '.$gmap['id'].'=null;
-              var gxmarkerjs='.$gxmarkerjs.';
-              var gmapMarkerLocation="/'.variable_get('gmap_markerfiles',drupal_get_path('module', 'gmap') .'/markers').'";
-              var markerlink='.variable_get('gmap_on_click',0).';
-              var bounds = new GLatLngBounds();
-';
+/*
+
     if (isset($gmap['wmss'])) {
       $outtext.= '
                  // WMS layers ';
@@ -970,9 +931,8 @@ function gmap_filter_tips($delta, $format, $long = false) {
 }
 
 function gmap_menu($may_cache) {
-  $items=array();
-
   if ($may_cache) {
+    $items = array();
 /*    $items[] = array(
       'path' => 'map',
       'type' => MENU_ITEM_GROUPING,
@@ -994,30 +954,14 @@ function gmap_menu($may_cache) {
       'access' => TRUE, //@@@
       'callback' => 'gmap_json_query',
     );
-
+    return $items;
   }
-/*  if (!$may_cache && (strlen(variable_get('googlemap_api_key', '')) > 0)) {
-    if (variable_get('gmap_method', 'Static')=='Static') {
-      _gmap_doheader();
-    }
-  }*/
-  return $items;
 }
 
 /**
  * JSON request interface.
  */
 function gmap_json_query() {
-  // Marker sequence
-  if (arg(2)=='markerseq') {
-    $markerdir = drupal_get_path('module', 'gmap').'/markers';
-    $marker_images = file_scan_directory($markerdir, '.*\.png$',array('shadow.png','.','..'),0,true, 'filename');
-    foreach($marker_images as $k => $v) {
-      $marker_images[$k]->filename = base_path() . $marker_images[$k]->filename;
-    }
-    echo drupal_to_js($marker_images);
-    exit();
-  }
   if (arg(2)=='markers') {
     drupal_set_header('Content-Type: text/javascript');
     echo drupal_to_js(array(
@@ -1031,6 +975,9 @@ function gmap_json_query() {
   }
 }
 
+/**
+ * Settings page.
+ */
 function gmap_admin_settings() {
   require_once(drupal_get_path('module','gmap') .'/gmap_settings_ui.inc');
   return _gmap_admin_settings();
