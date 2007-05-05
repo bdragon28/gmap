@@ -19,7 +19,6 @@ function gmap_macro_builder_help($section) {
   }
 }
 
-
 /**
  * Implementation of hook_perm().
  */
@@ -31,9 +30,8 @@ function gmap_macro_builder_perm() {
  * Implementation of hook_menu().
  */
 function gmap_macro_builder_menu($may_cache) {
-  $items=array();
-
   if ($may_cache) {
+    $items = array();
     $items[] = array(
       'path' => 'map/macro',
       'type' => MENU_NORMAL_ITEM,
@@ -42,8 +40,8 @@ function gmap_macro_builder_menu($may_cache) {
       'callback' => 'drupal_get_form',
       'callback arguments' => 'gmap_macro_builder_form',
     );
+    return $items;
   }
-  return $items;
 }
 
 /**
