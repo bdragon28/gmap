@@ -177,11 +177,17 @@ function _gmap_admin_settings() {
     '#maxlength' => 7,
   );
 
-  $opts = variable_get('gmap_markermanager',array(
-    'gmap' => array(),
-    'gmarkermanager' => array(),
-    'clusterer' => array()));
-  
+  $opts = variable_get('gmap_markermanager',array());
+  if (!is_array($opts['gmap'])) {
+    $opts['gmap'] = array();
+  }
+  if (!is_array($opts['gmarkermanager'])) {
+    $opts['gmarkermanager'] = array();
+  }
+  if (!is_array($opts['clusterer'])) {
+    $opts['clusterer'] = array();
+  }
+
   $opts['gmap'] = array_merge(array(
     // None.
   ),$opts['gmap']);
