@@ -27,7 +27,7 @@ function gmap_location_help($section) {
  */
 
 function gmap_location_perm() {
-  return array('set user location', 'show user map', 'user locations', 'show node map');
+  return array('set user location', 'show user map', 'user locations', 'show node map', 'show buddy links');
 }
 
 /**
@@ -113,7 +113,7 @@ function gmap_location_user_page() {
     $thismap['markers'][]=$newmarker;
   }
   
-  if (user_access('user locations') && function_exists('buddylist_get_buddies') && count($locationbyuser)>0) {
+  if (user_access('user locations') && function_exists('buddylist_get_buddies') && user_access('show buddy links') && count($locationbyuser)>0) {
     //create lines for buddies
     if (!isset($thismap['shapes'])) {
       $thismap['shapes']=array();
