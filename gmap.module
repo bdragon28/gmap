@@ -601,6 +601,58 @@ function gmap_parse_macro($instring,$ver=2) {
   unset($m['points']);
   unset($m['markers']);
 
+  // all shapes in 1 array
+  if ($m['circle']) {
+    foreach ($m['circle'] as $shape) {
+      $s = array('type' => 'circle');
+      $cp = strpos($shape, ':');
+      if ($cp !== false) {
+        $stylestr = substr($shape, 0, $cp);
+        $s['style'] = explode('/', $stylestr);
+        $shape = substr($shape, $cp+1);
+      }
+      $tmp = explode('+', $shape);
+      $s['radius'] = $tmp[1] ? ($tmp[1] * 1000) : 10000;
+      if ($tmp[2]) $s['numpoints'] = trim($tmp[2]);
+      $tmp = _gmap_str2points($tmp[0]);
+      $s['center'] = $tmp[0];
+      $m['shapes'][] = $s;
+    }
+    unset($m['circle']);
+  }
+  if ($m['rpolygon']) {
+    foreach ($m['rpolygon'] as $shape) {
+      $s = array('type' => 'rpolygon');
+      $cp = strpos($shape, ':');
+      if ($cp !== false) {
+        $stylestr = substr($shape, 0, $cp);
+        $s['style'] = explode('/', $stylestr);
+        $shape = substr($shape, $cp+1);
+      }
+      $tmp = explode('+', $shape);
+      if ($tmp[2]) $s['numpoints'] = trim($tmp[2]);
+      $tmp = _gmap_str2points($shape);
+      $s['center'] = $tmp[0];
+      $s['point2'] = $tmp[1];
+      $m['shapes'][] = $s;
+    }
+    unset($m['rpolygon']);
+  }
+  if ($m['polygon']) {
+    foreach ($m['polygon'] as $shape) {
+      $s = array('type' => 'polygon');
+      $cp = strpos($shape, ':');
+      if ($cp !== false) {
+        $stylestr = substr($shape, 0, $cp);
+        $s['style'] = explode('/', $stylestr);
+        $shape = substr($shape, $cp+1);
+      }
+      $s['points'] = _gmap_str2points($shape);
+      $m['shapes'][] = $s;
+    }
+    unset($m['polygon']);
+  }
+
   // Version 1 -> 2 conversion
   if ($ver==1) {
     // Zoom is flipped
@@ -1285,6 +1337,11 @@ function theme_gmap($element) {
 
   if ($map['markers'] || $map['lines']) {
     drupal_add_js($path . 'markerloader_static.js');
+  }
+
+  if ($map['shapes']) {
+    drupal_add_js($path . 'shapeloader_static.js');
+    drupal_add_js($path . 'gmap_shapes.js');
   }
 
   if (is_array($map['feed'])) {

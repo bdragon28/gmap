@@ -33,6 +33,31 @@ Drupal.gmap.map.prototype.poly.computeCircle = function(obj,center,point2) {
   return points;
 };
 
+Drupal.gmap.map.prototype.poly.calcPolyPoints = function(center, radM, numPoints, sAngle) {
+  if(!numPoints) numPoints = 32;
+  if(!sAngle) sAngle = 0;
+
+  var d2r = Math.PI / 180.0;
+  var r2d = 180.0 / Math.PI;
+  var angleRad = sAngle * d2r;
+  // earth semi major axis is about 6378137 m
+  var latScale = radM / 6378137 * r2d;
+  var lngScale = latScale / Math.cos(center.lngRadians())
+
+  var angInc = 2 * Math.PI / numPoints;
+  var points = [];
+  for (var i = 0; i < numPoints; i++) {
+    var lat = parseFloat(center.lat()) + latScale * Math.sin(angleRad);
+    var lng = parseFloat(center.lng()) + lngScale * Math.cos(angleRad);
+    points.push(new GLatLng(lat, lng));
+    angleRad += angInc;
+  }
+
+  // close the shape and return it
+  points.push(points[0]);
+  return points;
+}
+
 /**
  * Circle -- on screen.
  */
