@@ -522,6 +522,9 @@ function gmap_sanitize(&$gmap){
  */
 function gmap_parse_macro($instring,$ver=2) {
 
+  // @@@ Figure out how to make this extensible.
+  static $multiple = array('points','markers','feed','circle','rpolygon','polygon');
+
   // Remove leading and trailing tags
   if (substr(trim($instring),-1)==']') {
     $instring=substr(trim($instring), 0, -1);
@@ -534,14 +537,19 @@ function gmap_parse_macro($instring,$ver=2) {
   $temp = explode('|',$instring);
   $m = array();
   foreach ($temp as $row) {
-    if (strlen(trim($row)) > 0) {
-      $r = explode('=',$row);
-      // Things that can appear multiple times
-      if (in_array(trim($r[0]),array('points','markers','feed'))) {
-        $m[trim($r[0])][] = trim($r[1]);
+    $offset = strpos($row,'=');
+    if ($offset !== FALSE) {
+      $k = trim(substr($row,0,$offset));
+      $r = trim(substr($row,$offset+1));
+      if (in_array($k, $multiple)) {
+        // Things that can appear multiple times
+        if (!isset($m[$k])) {
+          $m[$k] = array();
+        }
+        $m[$k][] = $r;
       }
       else {
-        $m[trim($r[0])] = trim($r[1]);
+        $m[$k] = $r;
       }
     }
   }
