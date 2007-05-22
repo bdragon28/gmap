@@ -33,6 +33,10 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   obj.bind('clearmarkers',function() {
     // @@@ Maybe don't nuke ALL overlays?
     obj.map.clearOverlays();
+    // Reset bounds if autozooming
+    if (obj.vars.behavior.autozoom) {
+      obj.bounds = new GLatLngBounds(new GLatLng(obj.vars.latitude,obj.vars.longitude),new GLatLng(obj.vars.latitude,obj.vars.longitude));
+    }
   });
 
   // Default marker actions.
