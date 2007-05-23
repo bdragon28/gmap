@@ -179,16 +179,22 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   var attached;
   // Only attach once.
   if (!this.attached) {
-    this.attached = true;
-    // We'll start our query in the background during init.
-    obj.bind("init",function() {
-      $.getJSON(Drupal.gmap.querypath + '/markers', Drupal.gmap.iconSetup);
-    });
+    // If all maps on the page are doing their own thing regarding icons,
+    // we just skip attaching.
+    if (!obj.vars.behavior.customicons) {
+      this.attached = true;
+      // We'll start our query in the background during init.
+      obj.bind("init",function() {
+        $.getJSON(Drupal.gmap.querypath + '/markers', Drupal.gmap.iconSetup);
+      });
+    }
   }
 
-  // Provide icons to markers.
-  obj.bind('preparemarker',function(marker) {
-    marker.opts.icon = Drupal.gmap.getIcon(marker.markername,marker.offset);
-  });
+  if (!obj.vars.behavior.customicons) {
+    // Provide icons to markers.
+    obj.bind('preparemarker',function(marker) {
+      marker.opts.icon = Drupal.gmap.getIcon(marker.markername,marker.offset);
+    });
+  }
 
 });

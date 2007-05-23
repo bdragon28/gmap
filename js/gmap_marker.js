@@ -4,6 +4,11 @@
  */
 /* $Id$ */
 
+// Replace to override marker creation
+Drupal.gmap.factory.marker = function(loc,opts) {
+  return new GMarker(loc,opts);
+}
+
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
 
@@ -14,7 +19,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   });
 
   obj.bind('addmarker',function(marker) {
-    var m = new GMarker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
+    var m = Drupal.gmap.factory.marker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
     marker.marker = m;
     GEvent.addListener(m,'click',function() {
       obj.change('clickmarker',-1,marker);

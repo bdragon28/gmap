@@ -59,6 +59,8 @@ Drupal.gmap = new function() {
   }
 }
 
+Drupal.gmap.factory = {};
+
 Drupal.gmap.map = function(v) {
   this.vars = v;
   this.map = undefined;
