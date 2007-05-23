@@ -19,6 +19,17 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     GEvent.addListener(m,'click',function() {
       obj.change('clickmarker',-1,marker);
     });
+    if (obj.vars.behavior.extramarkerevents) {
+      GEvent.addListener(m,'mouseover',function() {
+        obj.change('mouseovermarker',-1,marker);
+      });
+      GEvent.addListener(m,'mouseout',function() {
+        obj.change('mouseoutmarker',-1,marker);
+      });
+      GEvent.addListener(m,'dblclick',function() {
+        obj.change('dblclickmarker',-1,marker);
+      });
+    }
     obj.map.addOverlay(m);
     if (obj.vars.behavior.autozoom) {
       obj.bounds.extend(marker.marker.getPoint());
