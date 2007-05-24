@@ -40,22 +40,16 @@ function gmap_views_gmap($op) {
 
 /**
  * Validate a GMap View.
- * GMap Views requires Location: Latitude and Location: Longitude
- * to generate markers.
+ * GMap Views requires one of the following:
+ * - Location: Lat and Location: Lon
+ * - Two columns, one titled t('Latitude'), one titled t('Longitude')
+ * - A module that can transform a field into lat, long coordinates
  */
 function gmap_views_validate($type, $view, $form) {
-  $lat_set = FALSE;
-  $lon_set = FALSE;
-  for ($n = 0 ; $n < $view['field']['count'] ; $n++) {
-    if ($view['field'][$n]['id'] == 'location.latitude') {
-      $lat_set = TRUE;
-    }
-    if ($view['field'][$n]['id'] == 'location.longitude') {
-      $lon_set = TRUE;
-    }
-  }
-  if (!($lat_set && $lon_set)) {
-    form_error($form["$type-info"][$type . '_type'], t('GMap View requires Location: Latitude and Location: Longitude!'));
+  $ids = _gmap_views_find_coords_ids($view);
+  if (!($ids['lat'] && $ids['lon']) && !(isset($ids['module']))) {
+    form_error($form["$type-info"][$type . '_type'], 
+              t('GMap View requires: either "Location: Latitude" and "Location: Longitude" or a field titled "Latitude" and a field titled "Longitude"'));
   }
   return views_ui_plugin_validate_list($type, $view, $form);
 }
@@ -66,7 +60,10 @@ function gmap_views_validate($type, $view, $form) {
 function theme_views_view_gmap($view, $results) {
   // Fields are used to render the markers.
   $fields = _views_get_fields();
-
+  
+  // find the ids of the column we want to use
+  $point_ids = _gmap_views_find_coords_ids($view);
+  
   if (isset($view->gmap_macro) && $view->gmap_macro) {
     $thismap = array(
       '#map' => 'view_gmap',
@@ -75,10 +72,7 @@ function theme_views_view_gmap($view, $results) {
     if ($thismap['#settings']['behavior']['views_autocenter']) {
       // Find the first valid location.
       foreach ($results as $entry) {
-        $location = array(
-          'lat' => $entry->location_latitude,
-          'lon' => $entry->location_longitude,
-        );
+        $location = _gmap_views_get_lat_long_from_ids($entry, $point_ids);
         if (($location['lat']) && ($location['lon'])) {
           // Set default location for map
           $thismap['#settings']['latitude'] = $location['lat'];
@@ -114,10 +108,8 @@ function theme_views_view_gmap($view, $results) {
   foreach ($results as $entry) {
     // @@@
     $type = isset($entry->node_type) ? $entry->node_type : '';
-    $location = array(
-      'lat' => $entry->location_latitude,
-      'lon' => $entry->location_longitude,
-    );
+    $location = _gmap_views_get_lat_long_from_ids($entry, $point_ids);
+    
     if (($location['lat']) && ($location['lon'])) {
       if ($fatmarkers) {
         $data = array();
@@ -162,4 +154,52 @@ function theme_gmap_views_marker_label($view, $fields, $entry) {
     $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $entry, $view) .'</div>';
   }
   return $marker_label;
+}
+
+/**
+ * Helper function to find a valid latitude and longitude in this field
+ */
+function _gmap_views_find_coords_ids($view) {
+  $ids = array();
+  $copy = (array) $view;
+  foreach ($copy['field'] as $key => $field) {
+    if (!is_numeric($key)) { 
+      continue; // skip the 'count', etc. 
+    }
+
+    // we check to see if the field is a location:lat field or titled Latitude
+    if ($field['id'] == 'location.latitude' || $field['label'] == t('Latitude')) {
+      $ids['lat'] = $field['queryname'];
+    }
+    
+    if ($field['id'] == 'location.longitude' || $field['label'] == t('Longitude')) {
+      $ids['lon'] = $field['queryname'];
+    }
+
+    // see if any module will take on the task of adding lat-lon to the view
+    foreach (module_implements('gmap_views_handle_field') as $module) {
+      if ($res = module_invoke($module, 'gmap_views_handle_field', 'discover', $field)) {
+        $ids['module'] = array(
+          'module' => $module,
+          'field' => $field['queryname'],
+          'extra' => $res,
+        );
+      }
+    }
+  }
+  
+  return $ids;
+}
+
+/**
+ * Helper function to find actual lat and lon values from the work done in _gmap_views_find_coords_ids
+ */
+function _gmap_views_get_lat_long_from_ids($entry, $ids) {
+  // during the discovery phase, a module registered that it could turn this entry into a lat-lon array
+  if ($ids['module']) {
+    $ids['entry'] = $entry;
+    return module_invoke($ids['module']['module'], 'gmap_views_handle_field', 'process', $ids);
+  }
+  // standard stuff, we can handle it
+  return array('lat' => $entry->{$ids['lat']}, 'lon' => $entry->{$ids['lon']});
 }

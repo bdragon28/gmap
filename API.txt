@@ -196,5 +196,35 @@ $mymap=array('id' => 'mymap',
               
 gmap_draw_map($mymap);
 
+GMAP VIEWS API
+
+The gmap_views module also provides a small API for providing additional
+overlay data to the produced map. By defining:
+
+function hook_gmap_views_handle_field($phases, $data)
+
+You can tell gmap which column contains the geographic information it
+needs to plot the nodes on the map.
+
+There are two phases to the hook, 'discovery' and 'process'. During the
+discovery phase, your hook will be called once for each field in the 
+view. If your module can transform this field into latitude and 
+longitude coordinates, you should return a value. This value will be
+store and returned to you during the 'process' phase. This can be use-
+ful in caching information, such has how to process the data, etc.
+
+If your module cannot process this field, return NULL (the norm in most
+cases).
+
+In the 'process' phase, the $data arugment will contain two keys:
+
+- 'module' => this will hold the name of the field, the module that is
+being invoked (your module) and an 'extra' field, containing whatever
+you returned during the 'discovery' phase.
+- 'entry' => the views "entry" containing all the fields returned from
+the database/
+
+From this data you should return an array with keys "lat" and "lon". 
+Gmap_views will use this array to plot the node on the map.
 
 
