@@ -28,7 +28,7 @@ define('GMAP_XMAPS_SCRIPT', variable_get('gmap_xmaps_script','misc/xmaps.1c.js')
 define('GMAP_CLUSTER', variable_get('gmap_cluster',0));
 define('GMAP_WMS', variable_get('gmap_wms',0));
 
-define('GMAP_API_V', '2.55a');
+define('GMAP_API_V', '2.69');
 
 /**
  * Implementation of hook_help.
