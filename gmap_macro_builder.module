@@ -46,8 +46,10 @@ function gmap_macro_builder_menu($may_cache) {
 
 /**
  * Macro builder form.
+ * @param $settings
+ *   Additional settings to apply to the macro map.
  */
-function gmap_macro_builder_form() {
+function gmap_macro_builder_form($settings = array()) {
   $form['macroform'] = array(
     '#type' => 'fieldset',
     '#title' => t('Gmap macro creation'),
@@ -57,13 +59,13 @@ function gmap_macro_builder_form() {
   $form['macroform']['mapdiv'] = array(
     '#type' => 'gmap',
     '#map' => 'macro_map',
-    '#settings' => array(
+    '#settings' => array_merge(array(
       'points' => array(),
       'pointsOverlays' => array(),
       'behavior' => array(
         'dynmarkers' => TRUE,
       ),
-    ),
+    ), $settings),
   );
 
   $defaults = gmap_defaults();
