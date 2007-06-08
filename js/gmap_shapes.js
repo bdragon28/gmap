@@ -17,25 +17,32 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     //var m = new GMarker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
     pa = []; // point array (array of GLatLng-objects)
     if (shape.type == 'circle') {
-      shape.center = new GLatLng(shape.center.latitude, shape.center.longitude);
+      shape.center = new GLatLng(parseFloat(shape.center.latitude),
+                                 parseFloat(shape.center.longitude));
       pa = obj.poly.calcPolyPoints(shape.center, shape.radius, shape.numpoints);
     }
     else if (shape.type == 'rpolygon') {
-      shape.center = new GLatLng(shape.center.latitude, shape.center.longitude);
-      shape.point2 = new GLatLng(shape.point2.latitude, shape.point2.longitude);
+      shape.center = new GLatLng(parseFloat(shape.center.latitude),
+                                 parseFloat(shape.center.longitude));
+      shape.point2 = new GLatLng(parseFloat(shape.point2.latitude),
+                                 parseFloat(shape.point2.longitude));
       var radius = shape.center.distanceFrom(shape.point2);
       pa = obj.poly.calcPolyPoints(shape.center, radius, shape.numpoints);
     }
     else if(shape.type == 'polygon') { // CHECK: ??? always shape.type == 'polygon' here ???
       for(i = 0; i < shape.points.length; i++) {
         pp = shape.points[i];
-        pa.push(new GLatLng(pp.latitude, pp.longitude));
+        pa.push(new GLatLng(parseFloat(pp.latitude), parseFloat(pp.longitude)));
       }
     }
     var sa = (shape.style) ? shape.style : [];
     // GPolygon(points, strokeColor?, strokeWeight?, strokeOpacity?,
     //          fillColor?,  fillOpacity?)
-    shape.shape = new GPolygon(pa, sa[0], sa[1], sa[2], sa[3], sa[4]);
+    if (sa.length > 3) {
+      shape.shape = new GPolygon(pa, sa[0], sa[1], sa[2], sa[3], sa[4]);
+    } else {
+      shape.shape = new GPolyline(pa, sa[0], sa[1], sa[2]);
+    }
     obj.map.addOverlay(shape.shape);
     //if (obj.vars.behavior.autozoom) {
     //  obj.bounds.extend(marker.marker.getPoint());
