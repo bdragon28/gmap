@@ -1,5 +1,7 @@
 $Id$
 
+!!WARNING!! THESE INSTRUCTIONS ARE OUT OF DATE! !!WARNING!!
+
 Description
 -----------
 
