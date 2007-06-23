@@ -142,7 +142,7 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
                 var tempdata = obj.vars.points[data.type][i].gmapMarkerData();
                 obj.map.removeOverlay(obj.vars.points[data.type][i]);
                 tempdata.idx--;
-                var marker = new GMarker(tempdata.point,Drupal.gmap.getIcon(tempdata.type,tempdata.idx));
+                var marker = new GMarker(tempdata.point,{icon:Drupal.gmap.getIcon(tempdata.type,tempdata.idx)});
                 marker.gmapMarkerData(tempdata);
                 obj.vars.points[data.type][i] = marker;
                 obj.map.addOverlay(marker);
@@ -162,7 +162,7 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
               if (!obj.vars.points[elem.value]) {
                 obj.vars.points[elem.value] = new Array();
               }
-              marker=new GMarker(point,Drupal.gmap.getIcon(elem.value,obj.vars.points[elem.value].length));
+              marker=new GMarker(point,{icon:Drupal.gmap.getIcon(elem.value,obj.vars.points[elem.value].length)});
               marker.gmapMarkerData({type: elem.value, idx: obj.vars.points[elem.value].length, point: point});
               obj.vars.points[elem.value].push(marker);
               obj.map.addOverlay(marker);

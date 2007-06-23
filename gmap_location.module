@@ -98,7 +98,7 @@ function gmap_location_user_page() {
       $newmarker['latitude'] = $u->latitude;
       $newmarker['longitude'] = $u->longitude;
       $newmarker['markername']=$marker;
-      $newmarker['tooltip']=check_plain($account->name);
+      $newmarker['opts']['title']=check_plain($account->name);
       $locationbyuser[$u->eid] = array('latitude' => $u->latitude, 'longitude' => $u->longitude);
     }
     else {
@@ -216,7 +216,7 @@ function gmap_location_node_map($n,$thismap,$single=false){
     $newmarker['latitude'] = $latitude;
     $newmarker['longitude'] = $longitude;
     $newmarker['markername']=variable_get('gmap_node_marker_'.$n->type, '');
-    $newmarker['tooltip']=$n->title;
+    $newmarker['opts']['title']=$n->title;
     switch ($n->type) {
     case 'acidfree':
       $newmarker['winwidth'] = (variable_get('acidfree_thumb_dim', IMAGE_THUMB_SIZE)+40).'px';
