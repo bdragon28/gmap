@@ -66,6 +66,13 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     if (marker.text) {
       marker.marker.openInfoWindowHtml(marker.text);
     }
+    if (marker.tabs) {
+      var infoWinTabs = [];
+      for (m in marker.tabs) {
+        infoWinTabs.push(new GInfoWindowTab(m,marker.tabs[m]));
+      }
+      marker.marker.openInfoWindowTabsHtml(infoWinTabs);
+    }
     if (marker.link) {
         open(marker.link,'_self');
     }

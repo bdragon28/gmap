@@ -126,15 +126,23 @@ function theme_views_view_gmap($view, $results) {
         );
       }
       else {
-        $marker_label = theme('gmap_views_marker_label', $view, $fields, $entry);
+        $marker_tabs = theme('gmap_views_marker_label', $view, $fields, $entry);
 
         $themarker = array(
           // @@@
           'markername' => variable_get('gmap_node_marker_'.$type, ''),
-          'text' => strtr($marker_label,"'\n\r",'" '),
           'latitude' => $location['lat'],
           'longitude' => $location['lon']
         );
+        // add themed infoWindow HTML to either 'tabs' or 'text' 
+        if(is_array($marker_tabs)) {
+            foreach($marker_tabs as $tabi => &$tabvalue) {
+                $tabvalue = strtr($tabvalue, "'\n\r", '" ');
+            }
+            $themarker['tabs'] = $marker_tabs;
+        } else {
+            $themarker['text'] = strtr($marker_tabs,"'\n\r",'" ');
+        }
       }
 
       $markers[] = $themarker;
