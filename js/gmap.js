@@ -6,6 +6,16 @@ Drupal.gmap = new function() {
   var _maps = {};
   var querypath;
 
+  /**
+   * Retrieve a map object for use by a non-widget.
+   * Use this if you need to be able to fire events against a certain map
+   * which you have the mapid for.
+   * Be a good GMap citizen! Remember to send change()s after modifying variables!
+   */
+  this.getMap = function(mapid) {
+    return _maps[mapid];
+  };
+
   this.addHandler = function(handler,callback) {
     if (!_handlers[handler]) {
       _handlers[handler] = new Array();
