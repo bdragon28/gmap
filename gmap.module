@@ -60,7 +60,7 @@ function gmap_defaults() {
 /**
  * Implementation of hook_gmap().
  */
-function gmap_gmap($op) {
+function gmap_gmap($op, $map=null) {
   switch ($op) {
     case 'macro':
       return array(
@@ -74,6 +74,30 @@ function gmap_gmap($op) {
           'multiple' => TRUE,
         ),
       );
+    case 'pre_theme_map':
+      $path = drupal_get_path('module','gmap') .'/js/';
+      // Activate markers if needed
+      if ($map['behavior']['dynmarkers'] || !empty($map['markers'])) {
+        drupal_add_js($path .'icon.js');
+        drupal_add_js($path .variable_get('gmap_mm_type','gmap').'_marker.js');
+      }
+      if ($map['behavior']['locpick']) {
+        drupal_add_js($path . 'locpick.js');
+      }
+      if(variable_get('gmap_load_zoom_plugin',TRUE) && !$map['behavior']['nomousezoom']) {
+        drupal_add_js(drupal_get_path('module','gmap').'/thirdparty/mousewheel.js');
+      }
+      if ($map['markers'] || $map['lines']) {
+        drupal_add_js($path . 'markerloader_static.js');
+      }
+      if ($map['shapes']) {
+        drupal_add_js($path . 'shapeloader_static.js');
+        drupal_add_js($path . 'gmap_shapes.js');
+      }
+      if (is_array($map['feed'])) {
+        drupal_add_js($path . 'markerloader_georss.js');
+      }
+      break;
     case 'macro_multiple':
       return array('points','markers','feed');
     case 'behaviors':
@@ -1282,7 +1306,6 @@ function theme_gmap_align($element) {
  */
 function theme_gmap($element) {
   _gmap_doheader();
-  $path = drupal_get_path('module','gmap') .'/js/';
 
   // If the theme function is called directly, the map is not properly set up yet.
   if(!$element['#id']) {
@@ -1314,32 +1337,7 @@ function theme_gmap($element) {
   $element['#attributes']['class'] = trim($element['#attributes']['class'] .'gmap gmap-map gmap-'.$map['id'].'-gmap');
   $o = '<div id="'.$element['#id'].'" style="'.implode('; ',$style).';"'.drupal_attributes($element['#attributes']).'></div>';
 
-  // Activate markers if needed
-  if ($map['behavior']['dynmarkers'] || !empty($map['markers'])) {
-    drupal_add_js($path .'icon.js');
-    drupal_add_js($path .variable_get('gmap_mm_type','gmap').'_marker.js');
-  }
-
-  if ($map['behavior']['locpick']) {
-    drupal_add_js($path . 'locpick.js');
-  }
-
-  if(variable_get('gmap_load_zoom_plugin',TRUE) && !$map['behavior']['nomousezoom']) {
-    drupal_add_js(drupal_get_path('module','gmap').'/thirdparty/mousewheel.js');
-  }
-
-  if ($map['markers'] || $map['lines']) {
-    drupal_add_js($path . 'markerloader_static.js');
-  }
-
-  if ($map['shapes']) {
-    drupal_add_js($path . 'shapeloader_static.js');
-    drupal_add_js($path . 'gmap_shapes.js');
-  }
-
-  if (is_array($map['feed'])) {
-    drupal_add_js($path . 'markerloader_georss.js');
-  }
+  module_invoke_all('gmap','pre_theme_map',$map);
 
   // Inline settings extend.
   $o .= '<script type="text/javascript">Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#map'] => $map)))." });</script>\n"; 
