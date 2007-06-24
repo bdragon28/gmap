@@ -40,6 +40,12 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       obj.bounds.extend(marker.marker.getPoint());
       obj.map.setCenter(obj.bounds.getCenter(),obj.map.getBoundsZoomLevel(obj.bounds));
     }
+    /**
+     * Perform a synthetic marker click on this marker on load.
+     */
+    if (marker.autoclick) {
+      obj.deferChange('clickmarker',-1,marker);
+    }
   });
 
   obj.bind('delmarker',function(marker) {

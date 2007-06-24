@@ -152,7 +152,7 @@ function gmap_location_node_page($nid=null) {
   if ($nid && $n=node_load($nid)){
     if (node_access('view',$n)) {
       $output .='<p>'.t(variable_get('gmap_node_map_header', 'This map illustrates the extent of nodes of this website. '))."</p>\n";
-      $thismap = gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=nodemap|center=30,0|zoom=2|width=100%|height=400px]'));
+      $thismap = array_merge(gmap_defaults(),gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=nodemap|center=30,0|zoom=2|width=100%|height=400px]')));
       $thismap = gmap_location_node_map($n,$thismap,true);
       $output .= '<p>'.theme('gmap',array('#settings' => $thismap));
       return $output;
@@ -165,7 +165,7 @@ function gmap_location_node_page($nid=null) {
   $output .='<p>'. t(variable_get('gmap_node_map_header', 'This map illustrates the extent of nodes of this website.'))."</p>\n";
 
   $result=db_query(db_rewrite_sql("SELECT l.eid, l.longitude, l.latitude FROM {location} l INNER JOIN {node} n ON l.eid = n.vid WHERE (l.longitude!=0 OR l.latitude !=0) AND l.type='node' AND n.status = 1"));
-  $thismap = gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'));
+  $thismap = array_merge(gmap_defaults(),gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]')));
   if (empty($thismap['markers'])) {
     $thismap['markers']=array();
   }
@@ -208,6 +208,10 @@ function gmap_location_node_map($n,$thismap,$single=false){
     if ($mode==1) {
       if (!($newmarker['text'] = theme(strtr($n->type,'-','_').'_gmapnodelabel',$n))) {
         $newmarker['text'] = theme('gmapnodelabel',$n);
+        if ($single && $mode==1) {
+          // Autoclick
+          $newmarker['autoclick'] = true;
+        }
       }
     }
     else if ($mode==2) {
@@ -243,13 +247,21 @@ function gmap_location_node_map($n,$thismap,$single=false){
             $newmarker['label'] .= theme('username', $user);
             $newmarker['latitude'] = $latitude;
             $newmarker['longitude'] = $longitude;
-            $newmarker['markername']=variable_get('gmap_user_map_marker', 'drupal');
+            $newmarker['markername'] = variable_get('gmap_user_map_marker', 'drupal');
+            if ($mode==1) {
+              // Autoclick
+              $newmarker['autoclick'] = true;
+            }
             $thismap['markers'][]=$newmarker;
           }
         }
         else {
           $newmarker['latitude'] = $u->latitude;
           $newmarker['longitude'] = $u->longitude;
+          if ($mode==1) {
+            // Autoclick
+            $newmarker['autoclick'] = true;
+          }
           $thismap['markers'][]=$newmarker;
         }
       }

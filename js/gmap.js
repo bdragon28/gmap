@@ -66,6 +66,10 @@ Drupal.gmap.map = function(v) {
   this.map = undefined;
   this.ready = false;
   var _bindings = {};
+
+  /**
+   * Register interest in a change.
+   */
   this.bind = function(name,callback) {
     if (!_bindings[name]) {
       _bindings[name] = new Array();
@@ -73,6 +77,10 @@ Drupal.gmap.map = function(v) {
     return _bindings[name].push(callback) - 1;
   };
 
+  /**
+   * Change notification.
+   * Interested parties can act on changes.
+   */
   this.change = function(name,id,userdata) {
     var c;
     if (_bindings[name]) {
@@ -84,6 +92,16 @@ Drupal.gmap.map = function(v) {
     if (name != 'all') {
       this.change('all',-1,name,userdata);
     }
+  };
+
+  /**
+   * Deferred change notification.
+   * This will cause a change notification to be tacked on to the *end* of the event queue.
+   */
+  this.deferChange = function(name,id,userdata) {
+    var obj = this;
+    // This will move the function call to the end of the event loop.
+    setTimeout(function(){obj.change(name,id,userdata)},0);
   };
 };
 
