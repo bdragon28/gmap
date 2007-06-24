@@ -24,7 +24,7 @@ function gmap_views_views_style_plugins() {
 /**
  * Implementation of hook_gmap().
  */
-function gmap_views_gmap($op) {
+function gmap_views_gmap($op, $map=null) {
   switch ($op) {
     case 'behaviors':
       return array(
