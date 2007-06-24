@@ -151,13 +151,6 @@ drupal_add_js($gmap_path.'/js/poly.js');
 }
 
 /**
- * Implementation of hook_perm().
- */
-function gmap_perm() {
-  return array('create macro');
-}
-
-/**
  * Returns the html required to insert a map from a gmap associative array.
  *
  * @param $gmap
