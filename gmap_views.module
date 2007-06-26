@@ -136,8 +136,8 @@ function theme_views_view_gmap($view, $results) {
         );
         // add themed infoWindow HTML to either 'tabs' or 'text' 
         if(is_array($marker_tabs)) {
-            foreach($marker_tabs as $tabi => &$tabvalue) {
-                $tabvalue = strtr($tabvalue, "'\n\r", '" ');
+            foreach($marker_tabs as $tabi => $tabvalue) {
+                $marker_tabs[$tabi] = strtr($tabvalue, "'\n\r", '" ');
             }
             $themarker['tabs'] = $marker_tabs;
         } else {
