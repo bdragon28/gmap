@@ -71,6 +71,17 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     });
   });
 
+  obj.bind('preparemarker', function(marker) {
+    if (marker.address && (!marker.latitude || !marker.longitude)) {
+      Drupal.gmap.geocoder().getLatLng(marker.address,function(point) {
+        if (point) {
+          marker.latitude = point.lat();
+          marker.longitude = point.lng();
+        }
+      });
+    }
+  });
+
 });
 
 ////////////////////////////////////////
