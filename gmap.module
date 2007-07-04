@@ -38,15 +38,6 @@ function gmap_defaults() {
     'latlong' => '40,0',
     'maptype' => 'Map',
     'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
-/*    'behavior' => array(
-      'locpick' => FALSE,
-      'nodrag' => FALSE,
-      'nokeyboard' => TRUE,
-      'nomousezoom' => FALSE,
-      'autozoom' => FALSE,
-      'dynmarkers' => FALSE, // Load the marker system even if no markers are found
-      'fatmarkers' => FALSE, // Pass unrecognized fields with markers, useful for gmap_views.
-    ), */
   );
   $defaults['behavior'] = array();
   $behaviors = module_invoke_all('gmap','behaviors');
@@ -106,6 +97,7 @@ function gmap_gmap($op, $map=null) {
           'title' => t('Location chooser'),
           'default' => FALSE,
           'help' => t('Used to activate location choosing using a gmap.'),
+          'internal' => TRUE,
         ),
         'nodrag' => array(
           'title' => t('Disable dragging'),

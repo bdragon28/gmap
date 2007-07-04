@@ -141,6 +141,8 @@ function _gmap_admin_settings() {
     );
     if ($v['internal']) {
       $form['gmap_default']['behavior'][$k]['#disabled'] = TRUE;
+      // Compensate for behaviors becoming internal after acquiring the wrong value.
+      $form['gmap_default']['behavior'][$k]['#value'] = $v['default'];
     }
   }
 
