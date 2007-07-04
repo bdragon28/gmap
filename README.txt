@@ -25,7 +25,7 @@ lets one display location information from nodes or users on google maps.
 Installation
 ------------
 
-1) copy the gmap directory into the modules directory
+1) Copy the gmap directory into the modules directory (recommended: sites/all/modules)
 
 2) edit the theme files to ensure that the html file has the following at
    the top of each page (the first one  is recommended by Google, the

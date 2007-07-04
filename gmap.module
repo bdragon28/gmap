@@ -134,6 +134,11 @@ function gmap_gmap($op, $map=null) {
           'default' => FALSE,
           'help' => t('Removes the map type control from the upper right corner. Recommended for very narrow maps.'),
         ),
+        'collapsehack' => array(
+          'title' => t('Work around bugs when maps appear in collapsible fieldsets'),
+          'default' => FALSE,
+          'help' => t('Enabling this will work around some issues that can occur when maps appear inside collapsible fieldsets.'),
+        ),
       );
   }
 }
@@ -892,7 +897,7 @@ function gmap_set_location($map,&$form,$fields) {
   static $ctr = 0;
   $ctr++;
   if (!is_array($map)){
-    $map = gmap_parse_macro($map);
+    $map = array_merge(gmap_defaults(),gmap_parse_macro($map));
   }
   $id = 'loc'.$ctr;
   $map['id'] = $id;

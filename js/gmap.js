@@ -139,6 +139,17 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     else if (!obj.vars.behavior.nokeyboard) {
       new GKeyboardHandler(map);
     }
+    if (obj.vars.behavior.collapsehack) {
+      // Modify collapsable fieldsets to make maps check dom state when the resize handle
+      // is clicked. This may not necessarily be the correct thing to do in all themes,
+      // hence it being a behavior.
+      setTimeout(function(){
+        var r = function() { map.checkResize() };
+        $(elem).parents('fieldset.collapsible').children('legend').children('a').click(r);
+        // Would be nice, but doesn't work.
+        //$(elem).parents('fieldset.collapsible').children('.fieldset-wrapper').scroll(r);
+      },0);
+    }
     map.setCenter(new GLatLng(obj.vars.latitude,obj.vars.longitude), obj.vars.zoom);
     if (jQuery.fn.mousewheel && !obj.vars.behavior.nomousezoom) {
       $(elem).mousewheel(function(event, delta) {

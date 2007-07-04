@@ -17,11 +17,8 @@ Drupal.gmap.geocoder = function() {
   var theGeocoder;
   if (!theGeocoder) {
     theGeocoder = new GClientGeocoder();
-    return theGeocoder;
   }
-  else {
-    return theGeocoder;
-  }
+  return theGeocoder;
 }
 
 Drupal.gmap.addHandler('gmap', function(elem) {
