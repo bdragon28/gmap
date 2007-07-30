@@ -117,3 +117,41 @@ Drupal.gmap.addHandler('address', function(elem) {
     }
   });
 });
+
+
+////////////////////////////////////////
+//  Locpick address handler (testing) //
+////////////////////////////////////////
+Drupal.gmap.addHandler('locpick_address', function(elem) {
+  var obj = this;
+
+  // Respond to focus event.
+  $(elem).focus(function() {
+    this.value = '';
+  });
+
+  // Respond to incoming movements.
+  // Clear the box when the coords change...
+  var binding = obj.bind("locpickchange",function(){elem.value = 'Enter an address'});
+  // Send out outgoing movements.
+  // This happens ASYNC!!!
+  $(elem).change(function() {
+    if(elem.value.length > 0) {
+      obj.geocoder().getLatLng(elem.value,function(point) {
+        if(point) {
+          obj.locpick_coord = point;
+          obj.change("locpickchange",binding);
+        }
+        else {
+          // Todo: Get translated value using settings.
+          elem.value = 'Geocoder error: Address not found';
+        }
+      });
+    }
+    else {
+      // Was empty. Ignore.
+      elem.value = 'Enter an address';
+    }
+  });
+});
+
