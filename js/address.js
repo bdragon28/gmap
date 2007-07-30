@@ -99,7 +99,7 @@ Drupal.gmap.addHandler('address', function(elem) {
   // This happens ASYNC!!!
   $(elem).change(function() {
     if(elem.value.length > 0) {
-      obj.geocoder().getLatLng(elem.value,function(point) {
+      Drupal.gmap.geocoder().getLatLng(elem.value,function(point) {
         if(point) {
           obj.vars.latitude = point.lat();
           obj.vars.longitude = point.lng();
@@ -137,7 +137,7 @@ Drupal.gmap.addHandler('locpick_address', function(elem) {
   // This happens ASYNC!!!
   $(elem).change(function() {
     if(elem.value.length > 0) {
-      obj.geocoder().getLatLng(elem.value,function(point) {
+      Drupal.gmap.geocoder().getLatLng(elem.value,function(point) {
         if(point) {
           obj.locpick_coord = point;
           obj.change("locpickchange",binding);
