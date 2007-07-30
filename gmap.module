@@ -1438,7 +1438,7 @@ function gmap_get_icondata($reset=FALSE){
 
 /**
  * Utility function to allow high-precision decimals to work with the SQL layer.
- * Use as an unquoted %s parameter.
+ * Use concatenation. (Apparently unquoted %s is bad.)
  */
 function gmap_decimal($num) {
   // Paraphrased from postgresql documentation:
@@ -1459,4 +1459,29 @@ function gmap_decimal($num) {
   }
   // Otherwise, cast to float, possibly losing precision.
   return (float) $num;
+}
+
+/**
+ * Utility function to use the google maps geocoder server side.
+ * This is an easy, quick way to geocode a single address.
+ * Note: This is a REMOTE CALL TO GOOGLE. Do NOT use this where performance matters,
+ * as it could possibly take several seconds for this function to return.
+ * See http://www.google.com/apis/maps/documentation/reference.html#GGeoStatusCode
+ *  for a description of the possible status codes.
+ */
+function gmap_geocode($address) {
+  $data = drupal_http_request('http://maps.google.com/maps/geo?q='.drupal_urlencode($address).'&output=csv&key='.variable_get('googlemap_api_key', ''));
+  if ($data->code == 200) {
+    $r = explode(',',$data->data);
+    return array(
+      'status' => (int)$r[0],
+      'accuracy' => (int)$r[1],
+      'latitude' => $r[2],
+      'longitude' => $r[3],
+    );
+  }
+  // Non 200 is G_GEO_SERVER_ERROR (500).
+  return array(
+    'status' => 500,
+  );
 }
