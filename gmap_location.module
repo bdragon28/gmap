@@ -406,7 +406,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
           if (variable_get('location_maxnum_'. $key, 0)) {
             $form['gmap_location_block_macro_'.$key]=array(
               '#type' => 'textfield',
-              '#title' => t('Map Macro for '.$value),
+              '#title' => t('Map Macro for '.$value->name),
               '#size' => 60,
               '#maxlength'=>500,
               '#default_value' => variable_get('gmap_location_block_macro_'.$key, ''),
