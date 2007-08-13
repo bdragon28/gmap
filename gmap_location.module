@@ -599,23 +599,25 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
 
       case 'insert':
       case 'update':
-        // source==1, location.module's LOCATION_LATLON_USER_SUBMITTED define.
-        // Insert or update based on the existance of $user->gmap_location_set.
-        if ($user->gmap_location_set) {
-          db_query("UPDATE {location} SET latitude = %s , longitude = %s , source = 1 WHERE eid = %d AND type = 'user'",
-            gmap_decimal($edit['gmap_location_latitude']),
-            gmap_decimal($edit['gmap_location_longitude']),
-            $user->uid);
+        if ($category == 'gmap_user') {
+          // source==1, location.module's LOCATION_LATLON_USER_SUBMITTED define.
+          // Insert or update based on the existance of $user->gmap_location_set.
+          if ($user->gmap_location_set) {
+            db_query("UPDATE {location} SET latitude = %s , longitude = %s , source = 1 WHERE eid = %d AND type = 'user'",
+              gmap_decimal($edit['gmap_location_latitude']),
+              gmap_decimal($edit['gmap_location_longitude']),
+              $user->uid);
+          }
+          else {
+            $lid = db_next_id('{location}_lid');
+            db_query("INSERT INTO {location} (eid, lid, type, latitude, longitude, source) VALUES (%d, %d, 'user', %s, %s, 1)",
+              $user->uid, $lid,
+              gmap_decimal($edit['gmap_location_latitude']),
+              gmap_decimal($edit['gmap_location_longitude']));
+          }
+          unset($edit['gmap_location_latitude']);
+          unset($edit['gmap_location_longitude']);
         }
-        else {
-          $lid = db_next_id('{location}_lid');
-          db_query("INSERT INTO {location} (eid, lid, type, latitude, longitude, source) VALUES (%d, %d, 'user', %s, %s, 1)",
-            $user->uid, $lid,
-            gmap_decimal($edit['gmap_location_latitude']),
-            gmap_decimal($edit['gmap_location_longitude']));
-        }
-        unset($edit['gmap_location_latitude']);
-        unset($edit['gmap_location_longitude']);
         return;
 
       case 'form':
