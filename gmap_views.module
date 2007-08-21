@@ -48,7 +48,7 @@ function gmap_views_gmap($op, $map=null) {
 function gmap_views_validate($type, $view, $form) {
   $ids = _gmap_views_find_coords_ids($view);
   if (!($ids['lat'] && $ids['lon']) && !(isset($ids['module']))) {
-    form_error($form["$type-info"][$type . '_type'], 
+    form_error($form["$type-info"][$type . '_type'],
               t('GMap View requires: either "Location: Latitude" and "Location: Longitude" or a field titled "Latitude" and a field titled "Longitude"'));
   }
   return views_ui_plugin_validate_list($type, $view, $form);
@@ -60,10 +60,10 @@ function gmap_views_validate($type, $view, $form) {
 function theme_views_view_gmap($view, $results) {
   // Fields are used to render the markers.
   $fields = _views_get_fields();
-  
+
   // find the ids of the column we want to use
   $point_ids = _gmap_views_find_coords_ids($view);
-  
+
   if (isset($view->gmap_macro) && $view->gmap_macro) {
     $thismap = array(
       '#map' => 'view_gmap',
@@ -109,7 +109,7 @@ function theme_views_view_gmap($view, $results) {
     // @@@
     $type = isset($entry->node_type) ? $entry->node_type : '';
     $location = _gmap_views_get_lat_long_from_ids($entry, $point_ids);
-    
+
     if (($location['lat']) && ($location['lon'])) {
       if ($fatmarkers) {
         $data = array();
@@ -134,7 +134,7 @@ function theme_views_view_gmap($view, $results) {
           'latitude' => $location['lat'],
           'longitude' => $location['lon']
         );
-        // add themed infoWindow HTML to either 'tabs' or 'text' 
+        // add themed infoWindow HTML to either 'tabs' or 'text'
         if(is_array($marker_tabs)) {
             foreach($marker_tabs as $tabi => $tabvalue) {
                 $marker_tabs[$tabi] = strtr($tabvalue, "'\n\r", '" ');
@@ -143,6 +143,9 @@ function theme_views_view_gmap($view, $results) {
         } else {
             $themarker['text'] = strtr($marker_tabs,"'\n\r",'" ');
         }
+      }
+      if (isset($entry->node_title)) {
+        $themarker['opts']['title'] = $entry->node_title;
       }
 
       $markers[] = $themarker;
@@ -171,15 +174,15 @@ function _gmap_views_find_coords_ids($view) {
   $ids = array();
   $copy = (array) $view;
   foreach ($copy['field'] as $key => $field) {
-    if (!is_numeric($key)) { 
-      continue; // skip the 'count', etc. 
+    if (!is_numeric($key)) {
+      continue; // skip the 'count', etc.
     }
 
     // we check to see if the field is a location:lat field or titled Latitude
     if ($field['id'] == 'location.latitude' || $field['label'] == t('Latitude')) {
       $ids['lat'] = $field['queryname'];
     }
-    
+
     if ($field['id'] == 'location.longitude' || $field['label'] == t('Longitude')) {
       $ids['lon'] = $field['queryname'];
     }
@@ -195,7 +198,7 @@ function _gmap_views_find_coords_ids($view) {
       }
     }
   }
-  
+
   return $ids;
 }
 
