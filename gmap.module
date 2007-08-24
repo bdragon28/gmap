@@ -623,12 +623,15 @@ function gmap_parse_macro($instring,$ver=2) {
       if ($cp !== false) {
         $stylestr = substr($shape, 0, $cp);
         $s['style'] = explode('/', $stylestr);
+        foreach ($s['style'] as $k => $v) {
+          if (is_numeric($v)) $s['style'][$k] = (float)$v;
+        }
         $shape = substr($shape, $cp+1);
       }
       $tmp = explode('+', $shape);
-      $s['radius'] = $tmp[1] ? ($tmp[1] * 1000) : 10000;
+      $s['radius'] = $tmp[1] ? $tmp[1] : 100;
       if ($tmp[2]) $s['numpoints'] = trim($tmp[2]);
-      $tmp = _gmap_str2points($tmp[0]);
+      $tmp = _gmap_str2coord($tmp[0]);
       $s['center'] = $tmp[0];
       $m['shapes'][] = $s;
     }
@@ -853,7 +856,23 @@ function gmap_parse_macro($instring,$ver=2) {
 }
 
 /**
- * Parse a set of points in string format
+ * Parse "x.xxxxx , y.yyyyyy" into an array of points.
+ */
+function _gmap_str2coord($str) {
+  // Explode along + axis
+  $arr = explode('+',$str);
+  // Explode along , axis
+  $points = array();
+  foreach($arr as $pt) {
+    list($lat,$lon) = explode(',',$pt);
+    $points[] = array((float)trim($lat), (float)trim($lon));
+  }
+  return $points;
+}
+
+/**
+ * Parse a set of points in string format.
+ * (Trying to convert this to the more efficient _gmap_str2coord...)
  */
 function _gmap_str2points($str) {
   // Explode along + axis
@@ -863,8 +882,8 @@ function _gmap_str2points($str) {
   foreach($arr as $pt) {
     list($lat,$lon) = explode(',',$pt);
     $points[] = array(
-      'latitude' => trim($lat),
-      'longitude' => trim($lon),
+      'latitude' => (float)trim($lat),
+      'longitude' => (float)trim($lon),
     );
   }
   return $points;
@@ -1253,8 +1272,10 @@ function process_gmap_markerchooser($element) {
 }
 
 function theme_gmap_overlay_edit($element) {
-  drupal_add_js(drupal_get_path('module','gmap') .'/js/gmap.js');
-  drupal_add_js(drupal_get_path('module','gmap') .'/js/overlay_edit.js');
+  $path = drupal_get_path('module', 'gmap');
+  drupal_add_js($path .'/js/gmap.js');
+  drupal_add_js($path .'/js/gmap_shapes.js');
+  drupal_add_js($path .'/js/overlay_edit.js');
   return theme('select',$element);
 }
 
@@ -1337,7 +1358,11 @@ function theme_gmap($element) {
   module_invoke_all('gmap','pre_theme_map',$map);
 
   // Inline settings extend.
-  $o .= '<script type="text/javascript">Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#map'] => $map)))." });</script>\n"; 
+  $o .= '<script type="text/javascript">'."\n";
+  $o .= "/* <![CDATA[ */\n";
+  $o .= 'Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#map'] => $map)))." });\n";
+  $o .= "/* ]]> */\n";
+  $o .= "</script>\n"; 
   return $o;
 }
 

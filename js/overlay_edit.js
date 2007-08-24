@@ -63,6 +63,18 @@ Drupal.gmap.addHandler('gmap',function(elem) {
 
   obj.bind('buildmacro',function(add) {
     var temp;
+    if (obj.vars.shapes) {
+      var circles  = [];
+      $.each(obj.vars.shapes,function(i,n){
+        if (n.type == 'circle') {
+          if (!n.style) n.style = [];
+          circles.push(n.style.join('/') +':'+ n.center.join(' , ') +' + '+ n.radius);
+        }
+      });
+      $.each(circles,function(i,n) {
+        add.push('circle='+n);
+      });
+    }
     if (obj.vars.points) {
       for (var i in obj.vars.points) {
         temp = [];
@@ -200,15 +212,27 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
               else {
                 var point1 = obj.temp_circle_point;
                 delete obj.temp_circle_point;
-                obj.status("Would place circle. "+obj.poly.distance(point1,point));
-                var poly = new GPolygon(obj.poly.computeCircle(obj,point1,point),
-                  obj.vars.overlay_stroke_color,
-                  obj.vars.overlay_stroke_weight,
-                  obj.vars.overlay_stroke_opacity,
-                  obj.vars.overlay_fill_color,
-                  obj.vars.overlay_fill_opacity
-                );
-                obj.map.addOverlay(poly);
+                obj.status("Placed circle. Radius was "+ point1.distanceFrom(point) / 1000 + " km.");
+                if (!obj.vars.shapes) {
+                  obj.vars.shapes = [];
+                }
+                var shape = {
+                  type: 'circle',
+                  center: [
+                    point1.lat(),
+                    point1.lng()
+                  ],
+                  radius: point1.distanceFrom(point) / 1000,
+                  style: [
+                    obj.vars.overlay_stroke_color,
+                    obj.vars.overlay_stroke_weight,
+                    obj.vars.overlay_stroke_opacity,
+                    obj.vars.overlay_fill_color,
+                    obj.vars.overlay_fill_opacity
+                  ]
+                };
+                obj.change('prepareshape', -1, shape);
+                obj.change('addshape', -1, shape);
               }
               break;
           }

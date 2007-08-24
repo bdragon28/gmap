@@ -13,13 +13,11 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     }
   });
 */
-  obj.bind('addshape',function(shape) {
+  obj.bind('prepareshape',function(shape) {
     //var m = new GMarker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
     pa = []; // point array (array of GLatLng-objects)
     if (shape.type == 'circle') {
-      shape.center = new GLatLng(parseFloat(shape.center.latitude),
-                                 parseFloat(shape.center.longitude));
-      pa = obj.poly.calcPolyPoints(shape.center, shape.radius, shape.numpoints);
+      pa = obj.poly.calcPolyPoints(new GLatLng(shape.center[0],shape.center[1]), shape.radius * 1000, shape.numpoints);
     }
     else if (shape.type == 'rpolygon') {
       shape.center = new GLatLng(parseFloat(shape.center.latitude),
@@ -35,14 +33,22 @@ Drupal.gmap.addHandler('gmap', function(elem) {
         pa.push(new GLatLng(parseFloat(pp.latitude), parseFloat(pp.longitude)));
       }
     }
-    var sa = (shape.style) ? shape.style : [];
-    // GPolygon(points, strokeColor?, strokeWeight?, strokeOpacity?,
-    //          fillColor?,  fillOpacity?)
-    if (sa.length > 3) {
-      shape.shape = new GPolygon(pa, sa[0], sa[1], sa[2], sa[3], sa[4]);
-    } else {
-      shape.shape = new GPolyline(pa, sa[0], sa[1], sa[2]);
+    cargs = [pa];
+    $.each(shape.style, function(i,n){
+      cargs.push(n);
+    });
+    var s = function(args) {
+      GPolygon.apply(this,args);
     }
+    s.prototype = new GPolygon();
+    shape.shape = new s(cargs);
+  });
+
+  obj.bind('addshape', function(shape) {
+    if (!obj.vars.shapes) {
+      obj.vars.shapes = [];
+    }
+    obj.vars.shapes.push(shape);
     obj.map.addOverlay(shape.shape);
     //if (obj.vars.behavior.autozoom) {
     //  obj.bounds.extend(marker.marker.getPoint());
@@ -55,7 +61,10 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   });
 
   obj.bind('clearshapes',function() {
-    // @@@ Maybe don't nuke ALL overlays?
-    obj.map.clearOverlays();
+    if (obj.vars.shapes) {
+      $.each(obj.vars.shapes, function(i,n) {
+        obj.change('delshape', -1, n);
+      });
+    }
   });
 });

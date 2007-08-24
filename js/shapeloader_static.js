@@ -13,14 +13,18 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   if (obj.vars.shapes) {
     // Inject shapes during init.
     obj.bind('init',function() {
-      for (i=0; i<obj.vars.shapes.length; i++) {
-        shape = obj.vars.shapes[i];
+      // We need to move the incoming shapes out of the way,
+      // because addshape will readd them, causing an infinate loop.
+      // Store the shapes in s and reset obj.vars.shapes.
+      var s = obj.vars.shapes;
+      obj.vars.shapes = [];
+      $.each(s, function(i,shape) {
         if (!shape.opts) shape.opts = {};
         // TODO: style props?
         // And add it.
         obj.change('prepareshape',-1,shape);
         obj.change('addshape',-1,shape);
-      }
+      });
       obj.change('shapesready',-1);
     });
   }
