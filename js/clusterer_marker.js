@@ -35,6 +35,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     var t;
     if (marker.opts.title) {
       t = marker.opts.title;
+      if (marker.link) t = t.link(marker.link);
     }
     marker.marker = m;
     GEvent.addListener(m,'click',function() {
@@ -57,7 +58,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     if (marker.text) {
       marker.marker.openInfoWindowHtml(marker.text);
     }
-    if (marker.link) {
+    else if (marker.link) {
         open(marker.link,'_self');
     }
   });

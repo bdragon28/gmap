@@ -147,6 +147,7 @@ function theme_views_view_gmap($view, $results) {
       if (isset($entry->node_title)) {
         $themarker['opts']['title'] = $entry->node_title;
       }
+      $themarker['link'] = url('node/'. $entry->nid);
 
       $markers[] = $themarker;
     }
