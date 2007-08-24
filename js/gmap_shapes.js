@@ -33,15 +33,31 @@ Drupal.gmap.addHandler('gmap', function(elem) {
         pa.push(new GLatLng(parseFloat(pp.latitude), parseFloat(pp.longitude)));
       }
     }
+    else if (shape.type == 'line') {
+      $.each(shape.points, function(i,n) {
+        pa.push(new GLatLng(n[0],n[1]));
+      });
+    }
     cargs = [pa];
     $.each(shape.style, function(i,n){
       cargs.push(n);
     });
-    var s = function(args) {
+    var pg = function(args) {
       GPolygon.apply(this,args);
     }
-    s.prototype = new GPolygon();
-    shape.shape = new s(cargs);
+    pg.prototype = new GPolygon();
+    var pl = function(args) {
+      GPolyline.apply(this,args);
+    }
+    pl.prototype = new GPolyline();
+    switch (shape.type) {
+      case 'circle':
+        shape.shape = new pg(cargs);
+        break;
+      case 'line':
+        shape.shape = new pl(cargs);
+        break;
+    }
   });
 
   obj.bind('addshape', function(shape) {

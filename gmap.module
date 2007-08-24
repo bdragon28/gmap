@@ -537,7 +537,7 @@ function gmap_sanitize(&$gmap){
 function gmap_parse_macro($instring,$ver=2) {
 
   // @@@ Figure out how to make this extensible.
-  static $multiple = array('points','markers','feed','circle','rpolygon','polygon');
+  static $multiple = array('points','markers','feed','circle','rpolygon','polygon','line');
 
   // Remove leading and trailing tags
   if (substr(trim($instring),-1)==']') {
@@ -573,25 +573,6 @@ function gmap_parse_macro($instring,$ver=2) {
     $m['maptype'] = $m['type'];
     unset($m['type']);
   }
-
-  $m['lines'] = array();
-  $m['delme'] = array(); // List of keys to delete.
-
-  // Look for keys needing handling
-  reset($m);
-  while (list($k,$v) = each($m)) {
-
-    // Put all lines in the line array.
-    if((strpos($k,'line')===0) && $k!='lines') {
-      $m['lines'][intval(substr($k,4))-1] = _gmap_str2points($v);
-      $m['delme'][] = $k;
-    }
-  }
-  // Clean up unneeded elements.
-  foreach($m['delme'] as $k => $v) {
-    unset($m[$v]);
-  }
-  unset($m['delme']);
 
   if (is_array($m['feed'])) {
     foreach ($m['feed'] as $k => $v) {
@@ -636,6 +617,40 @@ function gmap_parse_macro($instring,$ver=2) {
       $m['shapes'][] = $s;
     }
     unset($m['circle']);
+  }
+  // Fixup legacy lines.
+  if ($m['line1']) {
+    if (!isset($m['line'])) $m['line'] = array();
+    $m['line'][] = GMAP_LINECOLOR1 .':'. $m['line1'];
+    unset($m['line1']);
+  }
+  if ($m['line2']) {
+    if (!isset($m['line'])) $m['line'] = array();
+    $m['line'][] = GMAP_LINECOLOR2 .':'. $m['line3'];
+    unset($m['line2']);
+  }
+  if ($m['line3']) {
+    if (!isset($m['line'])) $m['line'] = array();
+    $m['line'][] = GMAP_LINECOLOR3 .':'. $m['line3'];
+    unset($m['line3']);
+  }
+
+  if ($m['line']) {
+    foreach ($m['line'] as $shape) {
+      $s = array('type' => 'line');
+      $cp = strpos($shape, ':');
+      if ($cp != false) {
+        $stylestr = substr($shape, 0, $cp);
+        $s['style'] = explode('/', $stylestr);
+        foreach ($s['style'] as $k => $v) {
+          if (is_numeric($v)) $s['style'][$k] = (float)$v;
+        }
+        $shape = substr($shape, $cp+1);
+      }
+      $s['points'] = _gmap_str2coord($shape);
+      $m['shapes'][] = $s;
+    }
+    unset($m['line']);
   }
   if ($m['rpolygon']) {
     foreach ($m['rpolygon'] as $shape) {

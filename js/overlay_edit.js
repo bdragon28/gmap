@@ -8,6 +8,9 @@ Drupal.gmap.addHandler('overlayedit_mapclicktype',function(elem) {
   obj.vars.overlay_add_mode = elem.value;
   $(elem).change(function() {
     obj.vars.overlay_add_mode = elem.value;
+    if (obj.temp_point) {
+      delete obj.temp_point;
+    }
   });
 });
 Drupal.gmap.addHandler('overlayedit_markerclicktype',function(elem) {
@@ -65,14 +68,26 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     var temp;
     if (obj.vars.shapes) {
       var circles  = [];
+      var lines = [];
       $.each(obj.vars.shapes,function(i,n){
         if (n.type == 'circle') {
           if (!n.style) n.style = [];
           circles.push(n.style.join('/') +':'+ n.center.join(' , ') +' + '+ n.radius);
         }
+        else if (n.type == 'line') {
+          if (!n.style) n.style = [];
+          var tmp = [];
+          $.each(n.points, function(idx,pt) {
+            tmp.push(''+ pt[0] +' , '+ pt[1]);
+          });
+          lines.push(n.style.join('/') +':'+ tmp.join(' + '));
+        }
       });
-      $.each(circles,function(i,n) {
-        add.push('circle='+n);
+      $.each(circles, function(i,n) {
+        add.push('circle='+ n);
+      });
+      $.each(lines, function(i,n) {
+        add.push('line='+ n);
       });
     }
     if (obj.vars.points) {
@@ -180,38 +195,26 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
               obj.map.addOverlay(marker);
               obj.change('point',-1);
               break;
-            case 'Line1': // @@@ Broken at the moment.
-            case 'Line2':
-            case 'Line3':
-              var l = 0;
-              if(elem.value=='Line1') l=0;
-              if(elem.value=='Line2') l=1;
-              if(elem.value=='Line3') l=2; // @@@ Obvious hack.
-              if (!obj.vars.lines) {
-                obj.vars.lines = new Array();
-              }
-              if (!obj.vars.lines[l]) {
-                obj.vars.lines[l] = {};
-              }
-              if (!obj.vars.lines[l].points) {
-                obj.vars.lines[l].points = new Array();
-              }
-              obj.vars.lines[l].points.push(point);
-              if (obj.vars.lines[l].overlay) {
-                obj.map.removeOverlay(obj.vars.lines[l].overlay);
-              }
-              obj.map.addOverlay(obj.vars.lines[l].overlay = new GPolyline(obj.vars.lines[l].points, obj.vars.line_colors[l], 5));
-              obj.change('lines',-1);
-              break;
-            case 'Circles':
-              if (!obj.temp_circle_point) {
-                obj.temp_circle_point = point;
-                // @@@ Translate
-                obj.status("Center: x,x. Click a point on the rim to place.");
+            case 'Lines':
+              if (!obj.temp_point) {
+                obj.temp_point = [];
+                obj.temp_point.push(point);
+                obj.status("Drawing line. Click for more points, double click to finish.");
               }
               else {
-                var point1 = obj.temp_circle_point;
-                delete obj.temp_circle_point;
+                obj.temp_point.push(point);
+                // @@@ Add a temporary overlay here?
+              }
+              break;
+            case 'Circles':
+              if (!obj.temp_point) {
+                obj.temp_point = point;
+                // @@@ Translate
+                obj.status("Drawing circle. Click a point on the rim to place.");
+              }
+              else {
+                var point1 = obj.temp_point;
+                delete obj.temp_point;
                 obj.status("Placed circle. Radius was "+ point1.distanceFrom(point) / 1000 + " km.");
                 if (!obj.vars.shapes) {
                   obj.vars.shapes = [];
@@ -236,6 +239,40 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
               }
               break;
           }
+        }
+      });
+      GEvent.addListener(obj.map, 'dblclick', function(overlay, point) {
+        if (overlay) {
+
+        }
+        else if (point) {
+          switch (obj.vars.overlay_add_mode) {
+            case 'Lines':
+              obj.temp_point.pop(); // Remove the second of two click events that happens before the dblclick...
+              if (obj.temp_point.length < 2) return; // If the user started by double clicking...
+              var points = obj.temp_point;
+              delete obj.temp_point;
+              obj.status("Placed "+ points.length +"-segment line.");
+
+              if (!obj.vars.shapes) {
+                obj.vars.shapes = [];
+              }
+              var coords = [];
+              $.each(points, function(i,n) {
+                coords.push([n.lat(), n.lng()]);
+              });
+              var shape = {
+                type: 'line',
+                points: coords,
+                style: [
+                  obj.vars.overlay_stroke_color,
+                  obj.vars.overlay_stroke_weight,
+                  obj.vars.overlay_stroke_opacity
+                ]
+              };
+              obj.change('prepareshape', -1, shape);
+              obj.change('addshape', -1, shape);
+            }
         }
       });
     }
