@@ -33,8 +33,8 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   obj.bind('addmarker',function(marker) {
     var m = new GMarker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
     var t;
-    if (marker.title) {
-      t = marker.title;
+    if (marker.opts.title) {
+      t = marker.opts.title;
     }
     marker.marker = m;
     GEvent.addListener(m,'click',function() {
