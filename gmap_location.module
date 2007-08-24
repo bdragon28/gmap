@@ -288,7 +288,7 @@ function gmap_location_admin_settings() {
   );
 
   $form['user'] = array(
-    '#type' => 'fieldset', 
+    '#type' => 'fieldset',
     '#title' => t('Location settings for users'),
   );
   $form['user']['gmap_user'] = array(
@@ -347,7 +347,7 @@ function gmap_location_admin_settings() {
   }
 
   $form['node'] = array(
-    '#type' => 'fieldset', 
+    '#type' => 'fieldset',
     '#title' => t('Location settings for nodes'),
   );
   $form['node']['gmap_node_map'] = array(
@@ -567,7 +567,8 @@ function theme_gmapnodelabel($n) {
   // a module called 'flexinode_#.module' in your site's module
   // directory and add theme_hook_gmapnodelabel($node, $location) to it.
   // Be sure to enable your 'flexinode_#.module'.
-  return strtr(theme('node',$n,true),"'\n\r",'"  ');    //make sure it all goes on one line.
+  return '<div class="gmapnodelabel gmapnodelabel-'. form_clean_id($n->type) .
+    '">'. strtr(theme('node',$n,true),"'\n\r",'"  ') .'</div>'; // make sure it all goes on one line.
 }
 
 function theme_gmap_location_user_html($account) {
@@ -628,7 +629,7 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
             '#type' => 'fieldset',
             '#title' => t('Coordinates'),
             '#weight' => 5,
-            '#collapsible' => $type!='user', 
+            '#collapsible' => $type!='user',
             '#collapsed' => false,
           );
 
