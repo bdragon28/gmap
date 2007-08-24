@@ -1393,6 +1393,15 @@ function gmap_get_id($map,$type) {
 }
 
 /**
+ * Generate a dynamic map identifier.
+ */
+function gmap_get_auto_mapid() {
+  static $auto = 0;
+  $auto++;
+  return 'auto'. $auto .'map';
+}
+
+/**
  * Get the list of marker titles.
  */
 function gmap_get_marker_titles($reset=FALSE){
@@ -1484,4 +1493,71 @@ function gmap_geocode($address) {
   return array(
     'status' => 500,
   );
+}
+
+/**
+ * Simple way to draw a map from inside a theme.
+ * @param $latitude
+ *   Latitude of marker.
+ * @param $longitude
+ *   Longitude of marker.
+ * @param $markername
+ *   Marker to use.
+ *   '' will fall back to google's default marker.
+ * @param $info
+ *   What to show in the bubble when the marker is clicked.
+ *   Leave blank if you don't want a bubble.
+ * @param $zoom
+ *   Map zoom.
+ *   'default' will use the default zoom from the settings page.
+ *   3 is usually a good value to use.
+ * @param $width
+ *   Map width.
+ *   'default' will use the default width from the settings page.
+ * @param $height
+ *   Map height.
+ *   'default' will use the default height from the settings page.
+ * @param $autoshow
+ *   If set to TRUE, automatically show the marker bubble.
+ * @param $map
+ *   Override parts of the map array.
+ *   If you need to do much with this, you should probabaly be putting together
+ *   the map array manually.
+ */
+function gmap_simple_map($latitude, $longitude, $markername = '', $info = '', $zoom = 'auto', $width = 'default', $height = 'default', $autoshow = FALSE, $map = array()) {
+  $settings = array(
+    'id' => gmap_get_auto_mapid(),
+    'latitude' => $latitude,   // Center the map
+    'longitude' => $longitude, // on the marker.
+  );
+  if ($zoom != 'default') {
+    $settings['zoom'] = $zoom;
+  }
+  if ($width != 'default') {
+    $settings['width'] = $width;
+  }
+  if ($height != 'default') {
+    $settings['height'] = $height;
+  }
+
+  $settings['markers'] = array(array(
+    'latitude' => $latitude,
+    'longitude' => $longitude,
+    'markername' => $markername,
+    'offset' => 0,
+  ));
+
+  if (!empty($info)) {
+    $settings['markers'][0]['text'] = $info;
+  }
+
+  if ($autoshow) {
+    $settings['markers'][0]['autoclick'] = TRUE;
+  }
+
+  if (!empty($map)) {
+    $settings = array_merge($settings,$map);
+  }
+
+  return theme('gmap', array('#settings' => $settings));
 }
