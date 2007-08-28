@@ -980,12 +980,17 @@ function _gmap_prepare($intext) {
   return $out;
 }
 
+/**
+ * Make sure a string is a valid css 
+ */
 function gmap_todim($instring) {
-  if (strpos($instring,'%')) {
-    return intval($instring).'%';
+  $s = strtolower($instring);
+  $matches = array();
+  if (preg_match('/([\d.]+)\s*(em|ex|px|in|cm|mm|pt|pc|%)/', $s, $matches)) {
+    return $matches[1] . $matches[2];
   }
   else {
-    return intval($instring).'px';
+    return FALSE;
   }
 }
 

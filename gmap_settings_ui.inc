@@ -77,20 +77,19 @@ function _gmap_admin_settings() {
     '#title' => t('Default width'),
     '#default_value' => $defaults['width'],
     '#size' => 25,
-    '#maxlength' => 6,
-    '#description' => t('The default width of a Google map.'),
+    '#maxlength' => 25,
+    '#description' => t('The default width of a Google map, as a CSS length or percentage. Examples: <em>50px</em>, <em>5em</em>, <em>2.5in</em>, <em>95%</em>'),
   );
-  gmap_widget_setup($form['gmap_default']['width'],'width','settings_default_map');
+  gmap_widget_setup($form['gmap_default']['width'], 'width', 'settings_default_map');
   $form['gmap_default']['height'] = array(
     '#type' => 'textfield',
-    '#id' => 'gmap-examplemap-height0',
     '#title' => t('Default height'),
     '#default_value' => $defaults['height'],
     '#size' => 25,
-    '#maxlength' => 6,
-    '#description' => t('The default height of a Google map.'),
+    '#maxlength' => 25,
+    '#description' => t('The default height of a Google map, as a CSS length or percentage. Examples: <em>50px</em>, <em>5em</em>, <em>2.5in</em>, <em>95%</em>'),
   );
-  gmap_widget_setup($form['gmap_default']['height'],'height','settings_default_map');
+  gmap_widget_setup($form['gmap_default']['height'], 'height', 'settings_default_map');
   $form['gmap_default']['latlong'] = array(
     '#type' => 'gmap_latlon',
     '#map' => 'settings_default_map',
@@ -107,7 +106,7 @@ function _gmap_admin_settings() {
     '#options' => drupal_map_assoc(range(0, 17)),
     '#description' => t('The default zoom level of a Google map.'),
   );
-  gmap_widget_setup($form['gmap_default']['zoom'],'zoom','settings_default_map');
+  gmap_widget_setup($form['gmap_default']['zoom'], 'zoom', 'settings_default_map');
 
   $form['gmap_default']['controltype'] = array(
     '#type' => 'select',

@@ -215,11 +215,17 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   });
 
   // Respond to incoming width changes.
-  binding = obj.bind("widthchange",function(w){map.getContainer().style.width = w});
+  binding = obj.bind("widthchange",function(w){
+    map.getContainer().style.width = w;
+    map.checkResize();
+  });
   // Send out outgoing width changes.
   // N/A
   // Respond to incoming height changes.
-  binding = obj.bind("heightchange",function(h){map.getContainer().style.height = h});
+  binding = obj.bind("heightchange",function(h){
+    map.getContainer().style.height = h;
+    map.checkResize();
+  });
   // Send out outgoing height changes.
   // N/A
 
@@ -307,18 +313,27 @@ Drupal.gmap.addHandler('maptype', function(elem) {
   });
 });
 
+(function() { // BEGIN CLOSURE
+  var re = /([0-9.]+)\s*(em|ex|px|in|cm|mm|pt|pc|%)/;
+  var normalize = function(str) {
+    if ((ar = re.exec(str.toLowerCase()))) {
+      return ar[1] + ar[2];
+    }
+    return null;
+  };
 ////////////////////////////////////////
 //           Width widget             //
 ////////////////////////////////////////
 Drupal.gmap.addHandler('width', function(elem) {
   var obj = this;
   // Respond to incoming width changes.
-  var binding = obj.bind("widthchange",function(w){elem.value = w});
+  var binding = obj.bind("widthchange",function(w){elem.value = normalize(w)});
   // Send out outgoing width changes.
   $(elem).change(function() {
-    var reg = /\d+(?:px|%)/;
-    if (reg.test(elem.value)) {
-      obj.change("widthchange",binding,elem.value);
+    var n;
+    if ((n = normalize(elem.value))) {
+      elem.value = n;
+      obj.change('widthchange', binding, n);
     }
   });
   obj.bind('init',function(){$(elem).change()});
@@ -330,16 +345,19 @@ Drupal.gmap.addHandler('width', function(elem) {
 Drupal.gmap.addHandler('height', function(elem) {
   var obj = this;
   // Respond to incoming height changes.
-  var binding = obj.bind("heightchange",function(h){elem.value = h});
+  var binding = obj.bind("heightchange",function(h){elem.value = normalize(h)});
   // Send out outgoing height changes.
   $(elem).change(function() {
-    var reg = /\d+(?:px|%)/;
-    if (reg.test(elem.value)) {
-      obj.change("heightchange",binding,elem.value);
+    var n;
+    if ((n = normalize(elem.value))) {
+      elem.value = n;
+      obj.change('heightchange', binding, n);
     }
   });
   obj.bind('init',function(){$(elem).change()});
 });
+
+})(); // END CLOSURE
 
 ////////////////////////////////////////
 //        Control type widget         //
