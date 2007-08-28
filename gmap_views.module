@@ -163,7 +163,7 @@ function theme_views_view_gmap($view, $results) {
 function theme_gmap_views_marker_label($view, $fields, $entry) {
   $marker_label = '';
   foreach ($view->field as $field) {
-    $marker_label .= '<div class="'. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $entry, $view) .'</div>';
+    $marker_label .= '<div class="gmap-popup '. $field['field'] .'">'. views_theme_field('views_handle_field', $field['queryname'], $fields, $field, $entry, $view) .'</div>';
   }
   return $marker_label;
 }
