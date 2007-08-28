@@ -82,7 +82,7 @@ function gmap_macro_builder_form($settings = array(), $hide = array()) {
     '#title' => t('Map id attribute'),
     '#default_value' => variable_get('gmap_default_mapid', 'map'),
   );
-  gmap_widget_setup($form['macroform']['mapid'],'mapid','macro_map');
+  gmap_widget_setup($form['macroform']['mapid'], 'mapid', 'macro_map');
 
   $form['macroform']['maptype'] = array(
     '#type' => 'select', 
@@ -91,7 +91,7 @@ function gmap_macro_builder_form($settings = array(), $hide = array()) {
     '#default_value' => $defaults['maptype'],
     '#required' => FALSE,
   );
-  gmap_widget_setup($form['macroform']['maptype'],'maptype','macro_map');
+  gmap_widget_setup($form['macroform']['maptype'], 'maptype', 'macro_map');
 
   $form['macroform']['controltype'] = array(
     '#type' => 'select', 
@@ -100,7 +100,7 @@ function gmap_macro_builder_form($settings = array(), $hide = array()) {
     '#required' => FALSE,
     '#default_value' => $defaults['controltype'],
   );
-  gmap_widget_setup($form['macroform']['controltype'],'controltype','macro_map');
+  gmap_widget_setup($form['macroform']['controltype'], 'controltype', 'macro_map');
 
   $form['macroform']['address'] = array(
     '#type' => 'gmap_address',
@@ -147,7 +147,7 @@ function gmap_macro_builder_form($settings = array(), $hide = array()) {
     '#default_value' => $defaults['zoom'],
     '#options' => drupal_map_assoc(range(0, 17)),
   );
-  gmap_widget_setup($form['macroform']['zoom'],'zoom','macro_map');
+  gmap_widget_setup($form['macroform']['zoom'], 'zoom', 'macro_map');
 
   $form['macroform']['macro'] = array(
     '#type' => 'gmap_macrotext',
