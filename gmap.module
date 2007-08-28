@@ -11,7 +11,7 @@
  * html and javascript code required to insert a google map.
  */
 
-define('GMAP_LOAD_METHOD', variable_get('gmap_method','Static'));
+define('GMAP_LOAD_METHOD', variable_get('gmap_method', 'Static'));
 
 // @@@ Remove these and generalize lines. @@@
 // These are now stored in the map defaults, but not all the code uses it yet.
@@ -20,7 +20,7 @@ define('GMAP_LINECOLOR2', '#ff0000');
 define('GMAP_LINECOLOR3', '#0000ff');
 // @@@ Remove these and generalize lines. @@@
 
-define('GMAP_WMS', variable_get('gmap_wms',0));
+define('GMAP_WMS', variable_get('gmap_wms', 0));
 
 // Minimum is currently V. 2.69 (which implements the new GPolygon stuff)
 define('GMAP_API_V', '2');
@@ -40,11 +40,11 @@ function gmap_defaults() {
     'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
   );
   $defaults['behavior'] = array();
-  $behaviors = module_invoke_all('gmap','behaviors');
+  $behaviors = module_invoke_all('gmap', 'behaviors');
   foreach ($behaviors as $k => $v) {
     $defaults['behavior'][$k] = $v['default'];
   }
-  $defaults = array_merge($defaults,variable_get('gmap_default',array()));
+  $defaults = array_merge($defaults, variable_get('gmap_default', array()));
   return $defaults;
 }
 
@@ -66,27 +66,27 @@ function gmap_gmap($op, $map=null) {
         ),
       );
     case 'pre_theme_map':
-      $path = drupal_get_path('module','gmap') .'/js/';
+      $path = drupal_get_path('module', 'gmap') .'/js/';
       // Activate markers if needed
       if ($map['behavior']['dynmarkers'] || !empty($map['markers'])) {
         drupal_add_js($path .'icon.js');
-        drupal_add_js($path .variable_get('gmap_mm_type','gmap').'_marker.js');
+        drupal_add_js($path . variable_get('gmap_mm_type', 'gmap') .'_marker.js');
       }
       if ($map['behavior']['locpick']) {
-        drupal_add_js($path . 'locpick.js');
+        drupal_add_js($path .'locpick.js');
       }
-      if(variable_get('gmap_load_zoom_plugin',TRUE) && !$map['behavior']['nomousezoom']) {
-        drupal_add_js(drupal_get_path('module','gmap').'/thirdparty/mousewheel.js');
+      if (variable_get('gmap_load_zoom_plugin', TRUE) && !$map['behavior']['nomousezoom']) {
+        drupal_add_js(drupal_get_path('module', 'gmap') .'/thirdparty/mousewheel.js');
       }
       if ($map['markers'] || $map['lines']) {
-        drupal_add_js($path . 'markerloader_static.js');
+        drupal_add_js($path .'markerloader_static.js');
       }
       if ($map['shapes']) {
-        drupal_add_js($path . 'shapeloader_static.js');
-        drupal_add_js($path . 'gmap_shapes.js');
+        drupal_add_js($path .'shapeloader_static.js');
+        drupal_add_js($path .'gmap_shapes.js');
       }
       if (is_array($map['feed'])) {
-        drupal_add_js($path . 'markerloader_georss.js');
+        drupal_add_js($path .'markerloader_georss.js');
       }
       break;
     case 'macro_multiple':
@@ -146,28 +146,28 @@ function gmap_gmap($op, $map=null) {
 /**
  * Set up the HTML header for GMap.
  */
-function _gmap_doheader(){
+function _gmap_doheader() {
   static $gmap_initialized = FALSE;
   if ($gmap_initialized) {
     return;
   }
-  $gmap_path = drupal_get_path('module','gmap');
+  $gmap_path = drupal_get_path('module', 'gmap');
   drupal_add_css($gmap_path .'/gmap.css');
-  drupal_add_js($gmap_path. '/js/gmap.js');
-  $mm = variable_get('gmap_mm_type','gmap');
+  drupal_add_js($gmap_path .'/js/gmap.js');
+  $mm = variable_get('gmap_mm_type', 'gmap');
   if ($mm=='clusterer') {
-    drupal_add_js($gmap_path. '/js/icon.js');
-    drupal_add_js($gmap_path. '/thirdparty/Clusterer2.js');
+    drupal_add_js($gmap_path .'/js/icon.js');
+    drupal_add_js($gmap_path .'/thirdparty/Clusterer2.js');
   }
-  drupal_add_js($gmap_path. '/js/'.$mm.'_marker.js');
+  drupal_add_js($gmap_path .'/js/'. $mm .'_marker.js');
   $mms = variable_get('gmap_markermanager', array());
   if (empty($mms[$mm])) {
     $mms[$mm] = array();
   }
-  drupal_add_js(array('gmap_markermanager'=>$mms[$mm]),'setting');
+  drupal_add_js(array('gmap_markermanager' => $mms[$mm]), 'setting');
 // @@@
-drupal_add_js($gmap_path.'/js/poly.js');
-  drupal_set_html_head('<script src="http://maps.google.com/maps?file=api&amp;v='.GMAP_API_V.'&amp;key='.variable_get('googlemap_api_key', '').'" type="text/javascript"></script>');
+drupal_add_js($gmap_path .'/js/poly.js');
+  drupal_set_html_head('<script src="http://maps.google.com/maps?file=api&amp;v='. GMAP_API_V .'&amp;key='. variable_get('googlemap_api_key', '') .'" type="text/javascript"></script>');
   $gmap_initialized = TRUE;
 }
 
@@ -481,9 +481,9 @@ return '';
  *
  * This does not really do much of anything right now.
  */
-function gmap_sanitize(&$gmap){
+function gmap_sanitize(&$gmap) {
   //sanitizes the gmap variables to reduce the possibility of javascript inserts
-  foreach ($gmap as $key=>$value) {
+  foreach ($gmap as $key => $value) {
     if ($key=='id') {
       $out = array();
       preg_match('([a-zA-Z0-9_-]*)', $value, $out);
@@ -493,7 +493,7 @@ function gmap_sanitize(&$gmap){
       $gmap[$key]=$out[0];
     }
     else {
-      $gmap[$key]=str_replace(';','',$value);
+      $gmap[$key]=str_replace(';', '', $value);
     }
   }
 }
@@ -534,28 +534,26 @@ function gmap_sanitize(&$gmap){
  * A string with the google map ready to be inserted into a node.
  *
  */
-function gmap_parse_macro($instring,$ver=2) {
-
-  // @@@ Figure out how to make this extensible.
+function gmap_parse_macro($instring, $ver=2) {
+  // Get a list of keys that are "multiple."
   $multiple = module_invoke_all('gmap', 'macro_multiple');
-//array('points','markers','feed','circle','rpolygon','polygon','line');
 
   // Remove leading and trailing tags
-  if (substr(trim($instring),-1)==']') {
-    $instring=substr(trim($instring), 0, -1);
+  if (substr(trim($instring), -1)==']') {
+    $instring = substr(trim($instring), 0, -1);
   }
-  if (substr($instring, 0,5)=='[gmap') {
-    $instring=substr($instring, 6);
+  if (substr($instring, 0, 5)=='[gmap') {
+    $instring = substr($instring, 6);
   }
 
   // Chop the macro into an array
-  $temp = explode('|',$instring);
+  $temp = explode('|', $instring);
   $m = array();
   foreach ($temp as $row) {
-    $offset = strpos($row,'=');
+    $offset = strpos($row, '=');
     if ($offset !== FALSE) {
-      $k = trim(substr($row,0,$offset));
-      $r = trim(substr($row,$offset+1));
+      $k = trim(substr($row, 0, $offset));
+      $r = trim(substr($row, $offset+1));
       if (in_array($k, $multiple)) {
         // Things that can appear multiple times
         if (!isset($m[$k])) {
@@ -577,10 +575,10 @@ function gmap_parse_macro($instring,$ver=2) {
 
   if (is_array($m['feed'])) {
     foreach ($m['feed'] as $k => $v) {
-      $temp = explode('::',$v);
+      $temp = explode('::', $v);
       // Normalize url
-      if (substr($temp[1],0,1) == '/') {
-        $temp[1] = substr($temp[1],1);
+      if (substr($temp[1], 0, 1) == '/') {
+        $temp[1] = substr($temp[1], 1);
       }
       $temp[1] = url($temp[1]);
       $m['feed'][$k] = array(
@@ -591,9 +589,9 @@ function gmap_parse_macro($instring,$ver=2) {
   }
 
   // Merge points and markers
-  if(!is_array($m['points'])) $m['points'] = array();
-  if(!is_array($m['markers'])) $m['markers'] = array();
-  $m['markers-temp'] = array_merge($m['points'],$m['markers']);
+  if (!is_array($m['points'])) $m['points'] = array();
+  if (!is_array($m['markers'])) $m['markers'] = array();
+  $m['markers-temp'] = array_merge($m['points'], $m['markers']);
   unset($m['points']);
   unset($m['markers']);
 
@@ -699,7 +697,7 @@ function gmap_parse_macro($instring,$ver=2) {
 
   // Center -> latitude and longitude
   if ($m['center']) {
-    list($m['latitude'],$m['longitude']) = explode(',',$m['center']);
+    list($m['latitude'], $m['longitude']) = explode(',', $m['center']);
     unset($m['center']);
   }
 
@@ -709,10 +707,10 @@ function gmap_parse_macro($instring,$ver=2) {
     unset($m['behaviour']);
   }
   if ($m['behavior']) {
-    $m['behavior-temp'] = explode(' ',$m['behavior']);
+    $m['behavior-temp'] = explode(' ', $m['behavior']);
     $m['behavior'] = array();
     foreach ($m['behavior-temp'] as $v) {
-      $m['behavior'][substr($v,1)] = (substr($v,0,1)=='+') ? TRUE : FALSE;
+      $m['behavior'][substr($v, 1)] = (substr($v, 0, 1) == '+') ? TRUE : FALSE;
     }
     unset($m['behavior-temp']);
   }
@@ -721,22 +719,22 @@ function gmap_parse_macro($instring,$ver=2) {
   foreach ($m['markers-temp'] as $t) {
     unset($markername);
     // Named?
-    if(strpos($t,'::')) { // Single : gets handled below.
-      list($markername,$t) = explode('::',$t,2);
+    if (strpos($t, '::')) { // Single : gets handled below.
+      list($markername, $t) = explode('::', $t, 2);
     }
     // Break down into points
-    $points = explode('+',$t);
+    $points = explode('+', $t);
     $offset = 0;
     foreach ($points as $point) {
       $marker = array();
       $offset++;
       // Labelled?
       // @@@ Gmap allows both a tooltip and a popup, how to represent?
-      if (strpos($point,':')) {
-        list($point,$marker['text']) = explode(':',$point,2);
-        $marker['text'] = theme('gmap_marker_popup',$marker['text']);
+      if (strpos($point, ':')) {
+        list($point, $marker['text']) = explode(':', $point, 2);
+        $marker['text'] = theme('gmap_marker_popup', $marker['text']);
       }
-      list($marker['latitude'],$marker['longitude']) = explode(',',$point,2);
+      list($marker['latitude'], $marker['longitude']) = explode(',', $point, 2);
       // Named markers get an offset too.
       if (isset($markername)) {
         $marker['markername'] = $markername;
@@ -876,11 +874,11 @@ function gmap_parse_macro($instring,$ver=2) {
  */
 function _gmap_str2coord($str) {
   // Explode along + axis
-  $arr = explode('+',$str);
+  $arr = explode('+', $str);
   // Explode along , axis
   $points = array();
-  foreach($arr as $pt) {
-    list($lat,$lon) = explode(',',$pt);
+  foreach ($arr as $pt) {
+    list($lat, $lon) = explode(',', $pt);
     $points[] = array((float)trim($lat), (float)trim($lon));
   }
   return $points;
@@ -892,11 +890,11 @@ function _gmap_str2coord($str) {
  */
 function _gmap_str2points($str) {
   // Explode along + axis
-  $arr = explode(' + ',$str);
+  $arr = explode(' + ', $str);
   // Explode along , axis
   $points = array();
-  foreach($arr as $pt) {
-    list($lat,$lon) = explode(',',$pt);
+  foreach ($arr as $pt) {
+    list($lat, $lon) = explode(',', $pt);
     $points[] = array(
       'latitude' => (float)trim($lat),
       'longitude' => (float)trim($lon),
@@ -928,13 +926,13 @@ function theme_gmap_marker_popup($label) {
  * A string with the google map code to be inserted onto the page.
  *
  */
-function gmap_set_location($map,&$form,$fields) {
+function gmap_set_location($map, &$form, $fields) {
   static $ctr = 0;
   $ctr++;
-  if (!is_array($map)){
-    $map = array_merge(gmap_defaults(),gmap_parse_macro($map));
+  if (!is_array($map)) {
+    $map = array_merge(gmap_defaults(), gmap_parse_macro($map));
   }
-  $id = 'loc'.$ctr;
+  $id = 'loc'. $ctr;
   $map['id'] = $id;
 
   // This is a locpick map.
@@ -956,7 +954,7 @@ function gmap_set_location($map,&$form,$fields) {
     $form[$fields['address']]['#map'] = $id;
     gmap_widget_setup($form[$fields['address']], 'locpick_address');
   }
-  return theme('gmap',$element);
+  return theme('gmap', $element);
 }
 
 function _gmap_prepare($intext) {
@@ -967,15 +965,15 @@ function _gmap_prepare($intext) {
 
   while (isset($matches[1][$i])) {
     $out[0][$i] = $matches[0][$i];
-    if ($matches[1][$i][0]=='1'){
-      $ver=1;
-      $matches[1][$i]=substr($matches[0][$i],1);
+    if ($matches[1][$i][0] == '1') {
+      $ver = 1;
+      $matches[1][$i] = substr($matches[0][$i], 1);
     }
     else {
-      $ver=2;
+      $ver = 2;
     }
-    $map = array('#settings'=>gmap_parse_macro($matches[1][$i],$ver));
-    $out[1][$i] = theme('gmap',$map);
+    $map = array('#settings' => gmap_parse_macro($matches[1][$i], $ver));
+    $out[1][$i] = theme('gmap', $map);
     $i++;
   } // endwhile process macro
   return $out;
@@ -995,14 +993,14 @@ function gmap_todim($instring) {
   }
 }
 
-function gmap_dopoint($point,$ver) {
-  if ($ver==1) {
-    $lonlat=explode(',',$point,2);
-    return array('latitude'=>$lonlat[1],'longitude'=>$lonlat[0]);
+function gmap_dopoint($point, $ver) {
+  if ($ver == 1) {
+    $lonlat = explode(',', $point, 2);
+    return array('latitude' => $lonlat[1], 'longitude' => $lonlat[0]);
   }
   else {
-    $lonlat=explode(',',$point,2);
-    return array('latitude'=>$lonlat[0],'longitude'=>$lonlat[1]);
+    $lonlat = explode(',', $point, 2);
+    return array('latitude' => $lonlat[0], 'longitude' => $lonlat[1]);
   }
 }
 
@@ -1036,8 +1034,8 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
 }
 
 function gmap_filter_tips($delta, $format, $long = false) {
-  if(user_access('create macro')) { // only display macro if user can create one
-    return t('Insert Google Map macro.').'<a href="'.url('map/macro').'" target="_blank" >'.t('Create a macro').'</a>';
+  if (user_access('create macro')) { // only display macro if user can create one
+    return t('Insert Google Map macro.') .'<a href="'. url('map/macro') .'" target="_blank" >'. t('Create a macro') .'</a>';
   }
   else {
     return t('Insert Google Map macro.');
@@ -1079,7 +1077,7 @@ function gmap_json_query() {
   if (arg(2)=='markers') {
     drupal_set_header('Content-Type: text/javascript');
     echo drupal_to_js(array(
-      'path' => base_path() . drupal_get_path('module', 'gmap').'/markers',
+      'path' => base_path() . drupal_get_path('module', 'gmap') .'/markers',
       'markers' => gmap_get_icondata(TRUE),
     ));
     exit();
@@ -1093,7 +1091,7 @@ function gmap_json_query() {
  * Settings page.
  */
 function gmap_admin_settings() {
-  require_once(drupal_get_path('module','gmap') .'/gmap_settings_ui.inc');
+  require_once(drupal_get_path('module', 'gmap') .'/gmap_settings_ui.inc');
   return _gmap_admin_settings();
 }
 
@@ -1104,7 +1102,7 @@ function gmap_elements() {
   return array(
     'gmap' => array(
       '#input' => FALSE, // This isn't a *form* input!!
-      '#settings' => array_merge(gmap_defaults(),array(
+      '#settings' => array_merge(gmap_defaults(), array(
         'points' => array(),
         'pointsOverlays' => array(),
         'lines' => array(),
@@ -1116,15 +1114,15 @@ function gmap_elements() {
       '#cols' => 60,
       '#rows' => 5,
       '#process' => array(
-        'process_gmap_control' => array('textarea','macrotext')
+        'process_gmap_control' => array('textarea', 'macrotext'),
       ),
     ),
     'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit' => array())),
     'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address' => array())),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align' => array())),
-    'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield','latitude','gmap_coord'))),
-    'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield','longitude','gmap_coord'))),
-    'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield','latlon','gmap_coord'))),
+    'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'latitude', 'gmap_coord'))),
+    'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'longitude', 'gmap_coord'))),
+    'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'latlon', 'gmap_coord'))),
     'gmap_markerchooser' => array('#input' => TRUE, '#process' => array('process_gmap_markerchooser' => array())),
   );
 }
@@ -1143,12 +1141,12 @@ function expand_gmap($element) {
   if (!$element['#settings']) {
     $element['#settings'] = array();
   }
-  $element['#settings'] = array_merge(gmap_defaults(),array(
+  $element['#settings'] = array_merge(gmap_defaults(), array(
     'id' => $mapid,
     'points' => array(),
     'pointsOverlays' => array(),
     'lines' => array(),
-  ),$element['#settings']);
+  ), $element['#settings']);
   gmap_widget_setup($element, 'gmap');
   return $element;
 }
@@ -1156,14 +1154,14 @@ function expand_gmap($element) {
 /**
  * Generic gmap control processor
  */
-function process_gmap_control($element,$edit,$fieldtype,$control,$theme='') {
+function process_gmap_control($element, $edit, $fieldtype, $control, $theme='') {
   $element['#type'] = $fieldtype;
   gmap_widget_setup($element, $control);
   if (!empty($theme)) {
     $element['#theme'] = $theme;
   }
   else {
-    $element['#theme'] = 'gmap_'.$control;
+    $element['#theme'] = 'gmap_'. $control;
   }
   return $element;
 }
@@ -1186,7 +1184,7 @@ function process_gmap_overlay_edit($element) {
       'Circles' => t('Circles'),
     ),
   );
-  gmap_widget_setup($element['mapclicktype'],'overlayedit_mapclicktype');
+  gmap_widget_setup($element['mapclicktype'], 'overlayedit_mapclicktype');
   $element['markerclicktype'] = array(
     '#type' => 'select',
     '#title' => t('Click marker'),
@@ -1196,7 +1194,7 @@ function process_gmap_overlay_edit($element) {
       'Edit Info' => t('Edit Info'),
     ),
   );
-  gmap_widget_setup($element['markerclicktype'],'overlayedit_markerclicktype');
+  gmap_widget_setup($element['markerclicktype'], 'overlayedit_markerclicktype');
   
   $element['marker'] = array(
     '#type' => 'select',
@@ -1297,7 +1295,7 @@ function theme_gmap_overlay_edit($element) {
   drupal_add_js($path .'/js/gmap.js');
   drupal_add_js($path .'/js/gmap_shapes.js');
   drupal_add_js($path .'/js/overlay_edit.js');
-  return theme('select',$element);
+  return theme('select', $element);
 }
 
 /**
@@ -1308,36 +1306,36 @@ function gmap_map_cleanup(&$map) {
   // Google is picky about this one.
   $map['zoom'] = (int)$map['zoom'];
   // JSON query handler
-  $map['querypath'] = url('map/query',NULL,NULL,TRUE);
+  $map['querypath'] = url('map/query', NULL, NULL, TRUE);
   // Normalize latitude / longitude
   if ($map['latlong']) {
     $map['latlon'] = $map['latlong'];
     unset($map['latlong']);
   }
   if (isset($map['latlon']) && (!isset($map['latitude']) || !isset($map['longitude']))) {
-    list($map['latitude'],$map['longitude']) = explode(',',$map['latlon']);
+    list($map['latitude'], $map['longitude']) = explode(',', $map['latlon']);
   }
   unset($map['latlon']);
 }
 
 function theme_gmap_coord($element) {
   //drupal_add_js
-  return theme('textfield',$element);
+  return theme('textfield', $element);
 }
 
 function theme_gmap_macrotext($element) {
-  drupal_add_js(drupal_get_path('module','gmap') .'/js/macro.js');
-  return theme('textarea',$element);
+  drupal_add_js(drupal_get_path('module', 'gmap') .'/js/macro.js');
+  return theme('textarea', $element);
 }
 
 function theme_gmap_address($element) {
-  drupal_add_js(drupal_get_path('module','gmap') .'/js/address.js');
-  return theme('textfield',$element);
+  drupal_add_js(drupal_get_path('module', 'gmap') .'/js/address.js');
+  return theme('textfield', $element);
 }
 
 function theme_gmap_align($element) {
-  drupal_add_js(drupal_get_path('module','gmap') .'/js/align.js');
-  return theme('select',$element);
+  drupal_add_js(drupal_get_path('module', 'gmap') .'/js/align.js');
+  return theme('select', $element);
 }
 
 /**
@@ -1347,14 +1345,14 @@ function theme_gmap($element) {
   _gmap_doheader();
 
   // If the theme function is called directly, the map is not properly set up yet.
-  if(!$element['#id']) {
+  if (!$element['#id']) {
     gmap_widget_setup($element, 'gmap');
   }
   // Possible if this gmap was created manually.
   if (!$element['#settings']) {
     $element['#settings'] = array();
   }
-  $map = array_merge(gmap_defaults(),$element['#settings']);
+  $map = array_merge(gmap_defaults(), $element['#settings']);
   gmap_map_cleanup($map);
 
   switch (strtolower($map['align'])) {
@@ -1370,18 +1368,18 @@ function theme_gmap($element) {
   }
 
   $style = array();
-  $style[] = 'width: '.$map['width'];
-  $style[] = 'height: '.$map['height'];
+  $style[] = 'width: '. $map['width'];
+  $style[] = 'height: '. $map['height'];
 
-  $element['#attributes']['class'] = trim($element['#attributes']['class'] .'gmap gmap-map gmap-'.$map['id'].'-gmap');
-  $o = '<div id="'.$element['#id'].'" style="'.implode('; ',$style).';"'.drupal_attributes($element['#attributes']).'></div>';
+  $element['#attributes']['class'] = trim($element['#attributes']['class'] .'gmap gmap-map gmap-'. $map['id'] .'-gmap');
+  $o = '<div id="'. $element['#id'] .'" style="'. implode('; ', $style) .';"'. drupal_attributes($element['#attributes']) .'></div>';
 
-  module_invoke_all('gmap','pre_theme_map',$map);
+  module_invoke_all('gmap', 'pre_theme_map', $map);
 
   // Inline settings extend.
   $o .= '<script type="text/javascript">'."\n";
   $o .= "/* <![CDATA[ */\n";
-  $o .= 'Drupal.extend({ settings: '.drupal_to_js(array('gmap' => array($element['#map'] => $map)))." });\n";
+  $o .= 'Drupal.extend({ settings: '. drupal_to_js(array('gmap' => array($element['#map'] => $map))) ." });\n";
   $o .= "/* ]]> */\n";
   $o .= "</script>\n"; 
   return $o;
@@ -1412,12 +1410,12 @@ function gmap_widget_setup(&$element, $type, $map=NULL) {
       }
     }
   }
-  $element['#attributes']['class'] = trim(implode(' ',array(
+  $element['#attributes']['class'] = trim(implode(' ', array(
     $element['#attributes']['class'],
     'gmap-control',
-    'gmap-'.$type,
+    'gmap-'. $type,
   )));
-  $element['#id'] = gmap_get_id($map,$type);
+  $element['#id'] = gmap_get_id($map, $type);
   $element['#map'] = $map;
 }
 
@@ -1426,7 +1424,7 @@ function gmap_widget_setup(&$element, $type, $map=NULL) {
  * Since CSS ids have to be unique, GMap related IDs are assigned by
  * this function.
  */
-function gmap_get_id($map,$type) {
+function gmap_get_id($map, $type) {
   static $serial = array();
   if (!isset($serial[$map])) {
     $serial[$map] = array();
@@ -1435,7 +1433,7 @@ function gmap_get_id($map,$type) {
     $serial[$map][$type] = -1;
   }
   $serial[$map][$type]++;
-  return 'gmap-'.$map.'-'.$type.$serial[$map][$type];
+  return 'gmap-'. $map .'-'. $type . $serial[$map][$type];
 }
 
 /**
@@ -1450,7 +1448,7 @@ function gmap_get_auto_mapid() {
 /**
  * Get the list of marker titles.
  */
-function gmap_get_marker_titles($reset=FALSE){
+function gmap_get_marker_titles($reset = FALSE) {
   static $titles;
   if (is_array($titles) && !$reset) {
     return $titles;
@@ -1462,17 +1460,17 @@ function gmap_get_marker_titles($reset=FALSE){
   }
 
   if ($reset || !$titles) {
-    require_once(drupal_get_path('module','gmap') .'/gmap_markerinfo.inc');
+    require_once(drupal_get_path('module', 'gmap') .'/gmap_markerinfo.inc');
     $titles = _gmap_get_marker_titles();
   }
-  cache_set('gmap_marker_titles','cache',serialize($titles));
+  cache_set('gmap_marker_titles', 'cache', serialize($titles));
   return $titles;
 }
 
 /**
  * Get the JSON icon data for all the default markers.
  */
-function gmap_get_icondata($reset=FALSE){
+function gmap_get_icondata($reset=FALSE) {
   static $icons;
   if (is_array($icons) && !$reset) {
     return $icons;
@@ -1484,10 +1482,10 @@ function gmap_get_icondata($reset=FALSE){
   }
 
   if ($reset || !$icons) {
-    require_once(drupal_get_path('module','gmap') .'/gmap_markerinfo.inc');
+    require_once(drupal_get_path('module', 'gmap') .'/gmap_markerinfo.inc');
     $icons = _gmap_get_icondata();
   }
-  cache_set('gmap_icondata','cache',serialize($icons));
+  cache_set('gmap_icondata', 'cache', serialize($icons));
   return $icons;
 }
 
@@ -1508,7 +1506,7 @@ function gmap_decimal($num) {
   // Trim extra whitespace
   $num = trim($num);
   // Check if we're in an acceptable form.
-  if (preg_match('/^[+\-]?((\d+)|(\d+\.\d*)|(\d*\.\d+))(e[+\-]?\d+)?$/',$num)===1) {
+  if (preg_match('/^[+\-]?((\d+)|(\d+\.\d*)|(\d*\.\d+))(e[+\-]?\d+)?$/', $num)===1) {
     // Good, we can pass that right along.
     return $num;
   }
@@ -1525,9 +1523,9 @@ function gmap_decimal($num) {
  *  for a description of the possible status codes.
  */
 function gmap_geocode($address) {
-  $data = drupal_http_request('http://maps.google.com/maps/geo?q='.drupal_urlencode($address).'&output=csv&key='.variable_get('googlemap_api_key', ''));
+  $data = drupal_http_request('http://maps.google.com/maps/geo?q='. drupal_urlencode($address) .'&output=csv&key='. variable_get('googlemap_api_key', ''));
   if ($data->code == 200) {
-    $r = explode(',',$data->data);
+    $r = explode(',', $data->data);
     return array(
       'status' => (int)$r[0],
       'accuracy' => (int)$r[1],
@@ -1602,7 +1600,7 @@ function gmap_simple_map($latitude, $longitude, $markername = '', $info = '', $z
   }
 
   if (!empty($map)) {
-    $settings = array_merge($settings,$map);
+    $settings = array_merge($settings, $map);
   }
 
   return theme('gmap', array('#settings' => $settings));

@@ -13,9 +13,9 @@
 /**
  * Get marker icon data for constructing json object.
  */
-function _gmap_get_icondata(){
+function _gmap_get_icondata() {
   $icons = array();
-  
+
   $shortnames = array(
     'name' => 'n',
     'sequence' => 's',
@@ -43,7 +43,7 @@ function _gmap_get_icondata(){
     'printShadow',
     'transparent',
   );
-  
+
   $imagetypes = array(
     'shadow',
     'printImage',
@@ -52,7 +52,7 @@ function _gmap_get_icondata(){
     'transparent',
   );
 
-  $markerdir = variable_get('gmap_markerfiles', drupal_get_path('module', 'gmap').'/markers');
+  $markerdir = variable_get('gmap_markerfiles', drupal_get_path('module', 'gmap') .'/markers');
 
   // The following routines are designed to be easy to comprehend, not fast.
   // This whole process gets cached.
@@ -62,14 +62,14 @@ function _gmap_get_icondata(){
   // Parse the ini files and store by path
   $inis = array();
   foreach ($inifiles as $file) {
-    $path = substr($file->filename,strlen($markerdir),-strlen($file->basename));
+    $path = substr($file->filename, strlen($markerdir), -strlen($file->basename));
     if (!isset($inis[$path])) {
       $inis[$path] = array();
     }
     $inis[$path][] = parse_ini_file($file->filename, TRUE);
   }
   unset($inifiles);
-  
+
   // Per directory..
   foreach ($inis as $path => $path_inis) {
     $icons[$path] = array(
@@ -85,7 +85,7 @@ function _gmap_get_icondata(){
     foreach ($path_inis as $ini) {
       foreach ($ini as $k => $v) {
         // Is this definition for an icon? (anything with a dot is a file)
-        if (strpos($k,'.')!==FALSE) {
+        if (strpos($k, '.') !== FALSE) {
           // Add the icon name.
           $filenames[$k] = TRUE;
         }
@@ -98,7 +98,7 @@ function _gmap_get_icondata(){
           }
           // A sequence is a list of image names.
           if (isset($v['sequence'])) {
-            foreach (explode(',',$v['sequence']) as $f) {
+            foreach (explode(',', $v['sequence']) as $f) {
               $filenames[trim($f)] = TRUE;
             }
           }
@@ -139,7 +139,7 @@ function _gmap_get_icondata(){
         // Compress sequence filenames.
         if (isset($ini[$k]['sequence'])) {
           $temp = array();
-          foreach (explode(',',$ini[$k]['sequence']) as $file) {
+          foreach (explode(',', $ini[$k]['sequence']) as $file) {
             $temp[] = $icons[$path]['tempf'][$file];
           }
           $ini[$k]['sequence'] = $temp;
@@ -164,7 +164,7 @@ function _gmap_get_icondata(){
         $mv[0] = array();
       }
       foreach ($ini as $k => $v) {
-        if (strpos($k,'.')===FALSE) {
+        if (strpos($k, '.') === FALSE) {
           $mv[] = $ini[$k];
         }
         else {
@@ -192,10 +192,12 @@ function _gmap_get_icondata(){
  * are equal to the last defined value.
  */
 function _gmap_compress_icon_def($iconset) {
-  $order = array('key','name','sequence','anchorX','anchorY',
-    'infoX','infoY','shadow','printImage','mozPrintImage',
-    'printShadow','transparent',);
-  $nulls = array('','',array(),0,0,0,0,'','','','','',);
+  $order = array(
+    'key', 'name', 'sequence', 'anchorX', 'anchorY',
+    'infoX', 'infoY', 'shadow', 'printImage', 'mozPrintImage',
+    'printShadow', 'transparent',
+  );
+  $nulls = array('', '', array(), 0, 0, 0, 0, '', '', '', '', '', );
 
   $a = array();
   for ($c0=0; $c0<count($order); $c0++) {
@@ -206,7 +208,7 @@ function _gmap_compress_icon_def($iconset) {
     _gmap_compress_array($a[$c0]);
   }
   for ($c0--;$c0>=0;$c0--) {
-    if($a[$c0] === array($nulls[$c0])) {
+    if ($a[$c0] === array($nulls[$c0])) {
       unset($a[$c0]);
     }
     else {
@@ -234,7 +236,7 @@ function _gmap_compress_array(&$arr) {
 }
 
 function _gmap_get_marker_titles() {
-  $markerdir = variable_get('gmap_markerfiles', drupal_get_path('module', 'gmap').'/markers');
+  $markerdir = variable_get('gmap_markerfiles', drupal_get_path('module', 'gmap') .'/markers');
 
   // The following routines are designed to be easy to comprehend, not fast.
   // This whole process gets cached.
@@ -250,7 +252,7 @@ function _gmap_get_marker_titles() {
       unset($data['defaults']);
     }
     foreach ($data as $k => $v) {
-      if (strpos($k,'.')!==FALSE) {
+      if (strpos($k, '.') !== FALSE) {
         // Ignore files
         unset($data[$k]);
       }

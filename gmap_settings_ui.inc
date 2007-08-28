@@ -28,7 +28,7 @@ function _gmap_admin_settings() {
     '#type' => 'select',
     '#disabled' => TRUE,
     '#title' => t('Google map method'),
-    '#options'=> array('Static'=>t('Static'), 'Dynamic'=>t('Dynamic'), 'None'=>t('None')),
+    '#options' => array('Static' => t('Static'), 'Dynamic' => t('Dynamic'), 'None' => t('None')),
     '#default_value' => GMAP_LOAD_METHOD,
     '#description' => t('How is the Google Map initialization script run:<br /><strong>Static</strong> - Loaded on every page, <br /><strong>Dynamic</strong> - Initialization script runs only on pages with google maps, but all pages with the gmap filter will not be cached. <br /><strong>None</strong> - Google map initialization script must be loaded some other way.'),
   );
@@ -42,11 +42,11 @@ function _gmap_admin_settings() {
   $form['initialization']['gmap_load_zoom_plugin'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable mousewheel zooming'),
-    '#default_value' => variable_get('gmap_load_zoom_plugin',TRUE),
+    '#default_value' => variable_get('gmap_load_zoom_plugin', TRUE),
     '#description' => t('Enables the mousewheel.js jQuery plugin, which adds the ability to use the mouse wheel to zoom the map.'),
   );
-  if(!file_exists(drupal_get_path('module','gmap').'/thirdparty/mousewheel.js')) {
-    variable_set('gmap_load_zoom_plugin',FALSE);
+  if (!file_exists(drupal_get_path('module', 'gmap') .'/thirdparty/mousewheel.js')) {
+    variable_set('gmap_load_zoom_plugin', FALSE);
     $form['initialization']['gmap_load_zoom_plugin']['#default_value'] = FALSE;
     $form['initialization']['gmap_load_zoom_plugin']['#value'] = FALSE;
     $form['initialization']['gmap_load_zoom_plugin']['#disabled'] = TRUE;
@@ -111,18 +111,18 @@ function _gmap_admin_settings() {
   $form['gmap_default']['controltype'] = array(
     '#type' => 'select',
     '#title' => t('Default control type'), 
-    '#options' => array('None' => t('None'),'Small' => t('Small'),'Large' => t('Large')),
+    '#options' => array('None' => t('None'), 'Small' => t('Small'), 'Large' => t('Large')),
     '#default_value' => $defaults['controltype'],
   );
-  gmap_widget_setup($form['gmap_default']['controltype'],'controltype','settings_default_map');
+  gmap_widget_setup($form['gmap_default']['controltype'], 'controltype', 'settings_default_map');
 
   $form['gmap_default']['maptype'] = array(
     '#type' => 'select',
     '#title' => t('Default map type'),
     '#default_value' => $defaults['maptype'],
-    '#options' => array('Map' => t('Map'),'Satellite' => t('Satellite'),'Hybrid' => t('Hybrid')),
+    '#options' => array('Map' => t('Map'), 'Satellite' => t('Satellite'), 'Hybrid' => t('Hybrid')),
   );
-  gmap_widget_setup($form['gmap_default']['maptype'],'maptype','settings_default_map');
+  gmap_widget_setup($form['gmap_default']['maptype'], 'maptype', 'settings_default_map');
 
   $form['gmap_default']['behavior'] = array(
     '#type' => 'fieldset',
@@ -130,11 +130,11 @@ function _gmap_admin_settings() {
     '#tree' => TRUE,
     '#description' => t('Behavior flags modify how a map behaves. Disabled flags are for specific purposes and can only be set manually.'),
   );
-  $behaviors = module_invoke_all('gmap','behaviors');
+  $behaviors = module_invoke_all('gmap', 'behaviors');
   foreach ($behaviors as $k => $v) {
     $form['gmap_default']['behavior'][$k] = array(
       '#type' => 'checkbox',
-      '#title' => t('@name : @title',array('@name'=>$k,'@title'=>$v['title'])),
+      '#title' => t('@name : @title', array('@name' => $k, '@title' => $v['title'])),
       '#default_value' => isset($defaults['behavior'][$k]) ? $defaults['behavior'][$k] : $v['default'],
       '#description' => isset($v['help']) ? $v['help'] : '',
     );
@@ -149,7 +149,7 @@ function _gmap_admin_settings() {
     '#type' => 'radios',
     '#title' => t('Marker action'),
     '#description' => t('Perform this action when a marker is clicked.'),
-    '#options' => array(t('Do nothing'),t('Open info window'),t('Open link')),
+    '#options' => array(t('Do nothing'), t('Open info window'), t('Open link')),
     '#default_value' => isset($defaults['markermode']) ? $defaults['markermode'] : 0,
   );
 
@@ -178,7 +178,7 @@ function _gmap_admin_settings() {
     '#maxlength' => 7,
   );
 
-  $opts = variable_get('gmap_markermanager',array());
+  $opts = variable_get('gmap_markermanager', array());
   if (!is_array($opts['gmap'])) {
     $opts['gmap'] = array();
   }
@@ -191,13 +191,13 @@ function _gmap_admin_settings() {
 
   $opts['gmap'] = array_merge(array(
     // None.
-  ),$opts['gmap']);
+  ), $opts['gmap']);
 
   $opts['gmarkermanager'] = array_merge(array(
     'borderPadding' => 0,
     'maxZoom' => 4,
     'trackMarkers' => FALSE,
-  ),$opts['gmarkermanager']);
+  ), $opts['gmarkermanager']);
 
   $opts['clusterer'] = array_merge(array(
     'clusterer_file' => 'Clusterer2.js',
@@ -205,7 +205,7 @@ function _gmap_admin_settings() {
     'max_nocluster' => 150,
     'cluster_min' => 5,
     'max_lines' => 10,
-  ),$opts['clusterer']);
+  ), $opts['clusterer']);
 
   $form['gmap_markermanager'] = array(
     '#type' => 'fieldset',
@@ -262,7 +262,7 @@ function _gmap_admin_settings() {
   $form['gmap_markermanager']['clusterer'] = array(
     '#type' => 'fieldset',
     '#title' => t('Clusterer settings'),
-    '#description' => t("Clusterer is a marker manager written by Jef Poskanzer of acme.com. To use, you must place Clusterer2.js (available ".'<a href="@url">here</a>) into the "thirdparty" folder.',array('@url'=>'http://acme.com/javascript/Clusterer2.js')),
+    '#description' => t("Clusterer is a marker manager written by Jef Poskanzer of acme.com. To use, you must place Clusterer2.js (available ".'<a href="@url">here</a>) into the "thirdparty" folder.', array('@url' => 'http://acme.com/javascript/Clusterer2.js')),
   );
   $form['gmap_markermanager']['clusterer']['clusterer_file'] = array(
     '#type' => 'textfield',
@@ -312,7 +312,7 @@ function _gmap_admin_settings() {
   $form['location']['gmap_location_map'] = array(
     '#type' => 'textfield',
     '#title' => t('Default location map'),
-    '#default_value' => variable_get('gmap_location_map','[gmap|id=locmap|center=40,0|zoom=3|width=100%|height=400px]'),
+    '#default_value' => variable_get('gmap_location_map', '[gmap|id=locmap|center=40,0|zoom=3|width=100%|height=400px]'),
     '#size' => 50,
     '#description' => t('The gmap macro for the map to be used in the location.module for setting latitude and longitude.'),
   );

@@ -48,7 +48,7 @@ function gmap_views_gmap($op, $map=null) {
 function gmap_views_validate($type, $view, $form) {
   $ids = _gmap_views_find_coords_ids($view);
   if (!($ids['lat'] && $ids['lon']) && !(isset($ids['module']))) {
-    form_error($form["$type-info"][$type . '_type'],
+    form_error($form["$type-info"][$type .'_type'],
               t('GMap View requires: either "Location: Latitude" and "Location: Longitude" or a field titled "Latitude" and a field titled "Longitude"'));
   }
   return views_ui_plugin_validate_list($type, $view, $form);
@@ -67,7 +67,7 @@ function theme_views_view_gmap($view, $results) {
   if (isset($view->gmap_macro) && $view->gmap_macro) {
     $thismap = array(
       '#map' => 'view_gmap',
-      '#settings' => array_merge(gmap_defaults(),gmap_parse_macro($view->gmap_macro)),
+      '#settings' => array_merge(gmap_defaults(), gmap_parse_macro($view->gmap_macro)),
     );
     if ($thismap['#settings']['behavior']['views_autocenter']) {
       // Find the first valid location.
@@ -119,7 +119,7 @@ function theme_views_view_gmap($view, $results) {
           }
         }
         $themarker = array(
-          'markername' => variable_get('gmap_node_marker_'.$type, ''),
+          'markername' => variable_get('gmap_node_marker_'. $type, ''),
           'latitude' => $location['lat'],
           'longitude' => $location['lon'],
           'view' => array_values($data),
@@ -130,18 +130,19 @@ function theme_views_view_gmap($view, $results) {
 
         $themarker = array(
           // @@@
-          'markername' => variable_get('gmap_node_marker_'.$type, ''),
+          'markername' => variable_get('gmap_node_marker_'. $type, ''),
           'latitude' => $location['lat'],
           'longitude' => $location['lon']
         );
         // add themed infoWindow HTML to either 'tabs' or 'text'
-        if(is_array($marker_tabs)) {
-            foreach($marker_tabs as $tabi => $tabvalue) {
+        if (is_array($marker_tabs)) {
+            foreach ($marker_tabs as $tabi => $tabvalue) {
                 $marker_tabs[$tabi] = strtr($tabvalue, "'\n\r", '" ');
             }
             $themarker['tabs'] = $marker_tabs;
-        } else {
-            $themarker['text'] = strtr($marker_tabs,"'\n\r",'" ');
+        }
+        else {
+            $themarker['text'] = strtr($marker_tabs, "'\n\r", '" ');
         }
       }
       if (isset($entry->node_title)) {
@@ -153,7 +154,7 @@ function theme_views_view_gmap($view, $results) {
     }
   }
   $thismap['#settings']['markers'] = $markers;
-  $output .= theme('gmap',$thismap);
+  $output .= theme('gmap', $thismap);
   return $output;
 }
 
