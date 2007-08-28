@@ -90,7 +90,7 @@ function gmap_gmap($op, $map=null) {
       }
       break;
     case 'macro_multiple':
-      return array('points','markers','feed');
+      return array('points', 'markers', 'feed', 'circle', 'rpolygon', 'polygon', 'line');
     case 'behaviors':
       return array(
         'locpick' => array(
@@ -537,7 +537,8 @@ function gmap_sanitize(&$gmap){
 function gmap_parse_macro($instring,$ver=2) {
 
   // @@@ Figure out how to make this extensible.
-  static $multiple = array('points','markers','feed','circle','rpolygon','polygon','line');
+  $multiple = module_invoke_all('gmap', 'macro_multiple');
+//array('points','markers','feed','circle','rpolygon','polygon','line');
 
   // Remove leading and trailing tags
   if (substr(trim($instring),-1)==']') {
@@ -866,7 +867,7 @@ function gmap_parse_macro($instring,$ver=2) {
   gmap_sanitize($gmap);
   return $gmap;
 */
-
+  $m = module_invoke_all('gmap', 'parse_macro', $m);
   return $m;
 }
 
