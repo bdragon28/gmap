@@ -865,7 +865,12 @@ function gmap_parse_macro($instring, $ver=2) {
   gmap_sanitize($gmap);
   return $gmap;
 */
-  $m = module_invoke_all('gmap', 'parse_macro', $m);
+  $additions = module_invoke_all('gmap', 'parse_macro', $m);
+  if (!empty($additions)) {
+    foreach ($additions as $k => $v) {
+      $m[$k] = $v;
+    }
+  }
   return $m;
 }
 
