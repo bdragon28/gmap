@@ -721,12 +721,6 @@ function gmap_parse_macro($instring, $ver=2) {
     // Named?
     if (strpos($t, '::')) { // Single : gets handled below.
       list($markername, $t) = explode('::', $t, 2);
-      $markeropts = array();
-      $motemp = explode('/', $markername);
-      $markername = array_shift($motemp);
-      foreach ($motemp as $option) {
-        $markeropts[$option] = TRUE;
-      }
     }
     // Break down into points
     $points = explode('+', $t);
@@ -734,12 +728,19 @@ function gmap_parse_macro($instring, $ver=2) {
     foreach ($points as $point) {
       $marker = array();
       $offset++;
-      $marker['options'] = $markeropts;
+      $marker['options'] = array();
       // Labelled?
       // @@@ Gmap allows both a tooltip and a popup, how to represent?
       if (strpos($point, ':')) {
         list($point, $marker['text']) = explode(':', $point, 2);
         $marker['text'] = theme('gmap_marker_popup', $marker['text']);
+      }
+      if (strpos($point, '%')) {
+        list($point, $addons) = explode('%', $point, 2);
+        $motemp = explode('%', $addons);
+        foreach ($motemp as $option) {
+          $marker['options'][trim($option)] = true;
+        }
       }
       list($marker['latitude'], $marker['longitude']) = explode(',', $point, 2);
       // Named markers get an offset too.
