@@ -133,6 +133,9 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     if (obj.vars.behavior.overview) {
       map.addControl(new GOverviewMapControl());
     }
+    if (obj.vars.behavior.scale) {
+      map.addControl(new GScaleControl());
+    }
     if (obj.vars.behavior.nodrag) {
       map.disableDragging();
     }

@@ -139,6 +139,11 @@ function gmap_gmap($op, $map=null) {
           'default' => FALSE,
           'help' => t('Enabling this will work around some issues that can occur when maps appear inside collapsible fieldsets.'),
         ),
+        'scale' => array(
+          'title' => t('Add scale control to map.'),
+          'default' => FALSE,
+          'help' => t('Adds a scale control to the map in the default position.'),
+        ),
       );
   }
 }
