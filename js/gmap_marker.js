@@ -43,7 +43,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     /**
      * Perform a synthetic marker click on this marker on load.
      */
-    if (marker.autoclick) {
+    if (marker.autoclick || (marker.options && marker.options.autoclick)) {
       obj.deferChange('clickmarker',-1,marker);
     }
   });

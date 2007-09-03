@@ -721,6 +721,12 @@ function gmap_parse_macro($instring, $ver=2) {
     // Named?
     if (strpos($t, '::')) { // Single : gets handled below.
       list($markername, $t) = explode('::', $t, 2);
+      $markeropts = array();
+      $motemp = explode('/', $markername);
+      $markername = array_shift($motemp);
+      foreach ($motemp as $option) {
+        $markeropts[$option] = TRUE;
+      }
     }
     // Break down into points
     $points = explode('+', $t);
@@ -728,6 +734,7 @@ function gmap_parse_macro($instring, $ver=2) {
     foreach ($points as $point) {
       $marker = array();
       $offset++;
+      $marker['options'] = $markeropts;
       // Labelled?
       // @@@ Gmap allows both a tooltip and a popup, how to represent?
       if (strpos($point, ':')) {
@@ -784,40 +791,6 @@ function gmap_parse_macro($instring, $ver=2) {
         }
         break;
 
-      case 'line1':
-        $tt['color']=GMAP_LINECOLOR1;
-      case 'line2':
-        if (empty($tt['color'])){
-          $tt['color']=GMAP_LINECOLOR2;
-        }
-      case 'line3':
-        if (empty($tt['color'])){
-          $tt['color']=GMAP_LINECOLOR3;
-        }
-      case 'line':
-        if (strpos($t[1],':')) { // note: we don't care about case starting with ':'
-          list($configs,$t[1])=explode(':',$t[1],2);
-          list($tt['color'],$tt['width'],$tt['opacity'],$tt['pattern'],$tt['text'])=explode('/',$configs);
-        }
-        $tt['points'] = explode('+',$t[1]);
-        foreach ($tt['points'] as $key=>$value) {
-          $tt['points'][$key]=gmap_dopoint($value,$ver);
-        }
-
-        $tt['type'] = 'line';
-        $gmap['shape'][] = $tt;
-        break;
-
-      case 'circle':
-        if (strpos($t[1],':')) { // note: we don't care about case starting with ':'
-          list($configs,$t[1])=explode(':',$t[1],2);
-          list($tt['color'],$tt['width'],$tt['opacity'],$tt['pattern'],$tt['text'],$tt['fillcolor'],$tt['fillopacity'])=explode('/',$configs);
-        }
-        list($tt['center'],$tt['radius'],$tt['sides'])= explode('+',$t[1]);
-        $tt['type']='circle';
-        $gmap['shape'][] = $tt;
-        break;
-
       case 'rpolygon':
         if (strpos($t[1],':')) { // note: we don't care about case starting with ':'
           list($configs,$t[1])=explode(':',$t[1],2);
@@ -825,27 +798,6 @@ function gmap_parse_macro($instring, $ver=2) {
         }
         list($tt['center'],$tt['point'],$tt['sides']) = explode('+',$t[1]);
         $tt['type']='rpolygon';
-        $gmap['shape'][] = $tt;
-        break;
-
-      case 'circle':
-        if (strpos($t[1],':')) { // note: we don't care about case starting with ':'
-          list($configs,$t[1])=explode(':',$t[1],2);
-          list($tt['color'],$tt['width'],$tt['opacity'],$tt['pattern'],$tt['text'],$tt['fillcolor'],$tt['fillopacity'])=explode('/',$configs);
-        }
-        list($tt['center'],$tt['radius'],$tt['sides'])= explode('+',$t[1]);
-        $tt['type']='circle';
-        $gmap['shape'][] = $tt;
-        break;
-
-      case 'polygon':
-        $tt['color']=GMAP_LINECOLOR1;
-        if (strpos(':',$t[1])) { // note: we don't care about case starting with ':'
-          list($configs,$t[1])=explode(':',$t[1],2);
-          list($tt['color'],$tt['width'],$tt['opacity'],$tt['pattern'],$tt['text'],$tt['fillcolor'],$tt['fillopacity'])=explode('/',$configs);
-        }
-        $tt['points'] = explode('+',$t[1]);
-        $tt['type']='polygon';
         $gmap['shape'][] = $tt;
         break;
 
