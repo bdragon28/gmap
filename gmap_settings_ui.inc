@@ -314,6 +314,7 @@ function _gmap_admin_settings() {
     '#title' => t('Default location map'),
     '#default_value' => variable_get('gmap_location_map', '[gmap|id=locmap|center=40,0|zoom=3|width=100%|height=400px]'),
     '#size' => 50,
+    '#maxlength' => 500,
     '#description' => t('The gmap macro for the map to be used in the location.module for setting latitude and longitude.'),
   );
   return system_settings_form($form);
