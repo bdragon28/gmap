@@ -956,6 +956,15 @@ function gmap_todim($instring) {
   }
 }
 
+/**
+ * Ensure a textfield is a valid css dimension string.
+ */
+function gmap_dimension_validate(&$elem) {
+  if (!gmap_todim($elem['#value'])) {
+    form_error($elem, t('The specified value is not a valid CSS dimension.'));
+  }
+}
+
 function gmap_dopoint($point, $ver) {
   if ($ver == 1) {
     $lonlat = explode(',', $point, 2);
@@ -1087,6 +1096,7 @@ function gmap_elements() {
     'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'longitude', 'gmap_coord'))),
     'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'latlon', 'gmap_coord'))),
     'gmap_markerchooser' => array('#input' => TRUE, '#process' => array('process_gmap_markerchooser' => array())),
+    'gmap_dimension' => array('#input' => TRUE, '#theme' => 'textfield', '#validate' => array('gmap_dimension_validate' => array())),
   );
 }
 

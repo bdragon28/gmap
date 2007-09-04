@@ -73,7 +73,7 @@ function _gmap_admin_settings() {
   );
   
   $form['gmap_default']['width'] = array(
-    '#type' => 'textfield',
+    '#type' => 'gmap_dimension',
     '#title' => t('Default width'),
     '#default_value' => $defaults['width'],
     '#size' => 25,
@@ -82,7 +82,7 @@ function _gmap_admin_settings() {
   );
   gmap_widget_setup($form['gmap_default']['width'], 'width', 'settings_default_map');
   $form['gmap_default']['height'] = array(
-    '#type' => 'textfield',
+    '#type' => 'gmap_dimension',
     '#title' => t('Default height'),
     '#default_value' => $defaults['height'],
     '#size' => 25,
