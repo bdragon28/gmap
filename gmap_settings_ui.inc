@@ -197,6 +197,8 @@ function _gmap_admin_settings() {
     'borderPadding' => 0,
     'maxZoom' => 4,
     'trackMarkers' => FALSE,
+    'markerMinZoom' => 4,
+    'markerMaxZoom' => 0,
   ), $opts['gmarkermanager']);
 
   $opts['clusterer'] = array_merge(array(
@@ -258,7 +260,29 @@ function _gmap_admin_settings() {
     '#description' => t('If enabled, the marker manager will track marker movements. Leave off unless you need to move markers around with setPoint.'),
     '#default_value' => $opts['gmarkermanager']['trackMarkers'],
   );
-  
+  $form['gmap_markermanager']['gmarkermanager']['defaults'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Marker defaults'),
+    '#description' => t('Default marker-specific settings for GMarkerManager. Markers will appear when the current zoom level is between minZoom and maxZoom.'),
+  );
+  $form['gmap_markermanager']['gmarkermanager']['defaults']['markerMinZoom'] = array(
+    '#type' => 'select',
+    '#title' => t('Minimum zoom'),
+    '#options' => drupal_map_assoc(range(0, 17)),
+    '#description' => t('At the specified zoom level and above (i.e. zooming in,) the marker will be shown. Choose 0 to show markers at all zoom levels by default.'),
+    '#default_value' => $opts['gmarkermanager']['markerMinZoom'],
+    '#parents' => array('gmap_markermanager', 'gmarkermanager', 'markerMinZoom'),
+  );
+
+  $form['gmap_markermanager']['gmarkermanager']['defaults']['markerMaxZoom'] = array(
+    '#type' => 'select',
+    '#title' => t('Maximum zoom'),
+    '#options' => drupal_map_assoc(range(0, 17)),
+    '#description' => t('At the specified zoom level and above (i.e. zooming in,) the marker will be hidden. Choose 0 to disable by default.'),
+    '#default_value' => $opts['gmarkermanager']['markerMaxZoom'],
+    '#parents' => array('gmap_markermanager', 'gmarkermanager', 'markerMaxZoom'),
+  );
+
   $form['gmap_markermanager']['clusterer'] = array(
     '#type' => 'fieldset',
     '#title' => t('Clusterer settings'),

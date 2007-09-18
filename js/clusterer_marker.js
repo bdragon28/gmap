@@ -4,11 +4,10 @@
  */
 /* $Id$ */
 
-/**
- * GMap Markers
- * GMap API version / Base case
- */
-/* $Id$ */
+// Replace to override marker creation
+Drupal.gmap.factory.marker = function(loc,opts) {
+  return new GMarker(loc,opts);
+}
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
@@ -38,9 +37,6 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       if (marker.link) t = t.link(marker.link);
     }
     marker.marker = m;
-    GEvent.addListener(m,'click',function() {
-      obj.change('clickmarker',-1,marker);
-    });
     obj.clusterer.AddMarker(m,t);
   });
 
@@ -51,15 +47,5 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   obj.bind('clearmarkers',function() {
     // @@@ Maybe don't nuke ALL overlays?
     obj.map.clearOverlays();
-  });
-
-  // Default marker actions.
-  obj.bind('clickmarker',function(marker) {
-    if (marker.text) {
-      marker.marker.openInfoWindowHtml(marker.text);
-    }
-    else if (marker.link) {
-        open(marker.link,'_self');
-    }
   });
 });

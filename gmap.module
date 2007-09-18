@@ -70,6 +70,7 @@ function gmap_gmap($op, $map=null) {
       // Activate markers if needed
       if ($map['behavior']['dynmarkers'] || !empty($map['markers'])) {
         drupal_add_js($path .'icon.js');
+        drupal_add_js($path .'marker.js');
         drupal_add_js($path . variable_get('gmap_mm_type', 'gmap') .'_marker.js');
       }
       if ($map['behavior']['locpick']) {
@@ -164,6 +165,7 @@ function _gmap_doheader() {
     drupal_add_js($gmap_path .'/js/icon.js');
     drupal_add_js($gmap_path .'/thirdparty/Clusterer2.js');
   }
+  drupal_add_js($gmap_path .'/js/marker.js');
   drupal_add_js($gmap_path .'/js/'. $mm .'_marker.js');
   $mms = variable_get('gmap_markermanager', array());
   if (empty($mms[$mm])) {
