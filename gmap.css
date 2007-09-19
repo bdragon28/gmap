@@ -1,3 +1,7 @@
+/* IE VML Security issue fix.
+ * For more details, see:
+ * http://googlemapsapi.blogspot.com/2006/09/vml-security-issue.html
+ */
 v\:* {
   behavior:url(#default#VML);
 }
