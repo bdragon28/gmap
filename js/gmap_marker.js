@@ -19,9 +19,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   });
 
   obj.bind('addmarker',function(marker) {
-    var m = Drupal.gmap.factory.marker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
-    marker.marker = m;
-    obj.map.addOverlay(m);
+    obj.map.addOverlay(marker.marker);
     if (obj.vars.behavior.autozoom) {
       obj.bounds.extend(marker.marker.getPoint());
       obj.map.setCenter(obj.bounds.getCenter(),obj.map.getBoundsZoomLevel(obj.bounds));
