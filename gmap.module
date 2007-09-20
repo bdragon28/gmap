@@ -427,6 +427,16 @@ function gmap_parse_macro($instring, $ver=2) {
     unset($m['behavior-temp']);
   }
 
+  // Stuff that was converted to behavior flags
+  if ($m['tcontrol']) {
+    if (strtolower(trim($m['tcontrol'])) == 'on') {
+      $m['behavior']['notype'] = FALSE;
+    }
+    else {
+      $m['behavior']['notype'] = TRUE;
+    }
+  }
+
   // Markers fixup
   foreach ($m['markers-temp'] as $t) {
     unset($markername);
