@@ -30,14 +30,12 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   });
 
   obj.bind('addmarker',function(marker) {
-    var m = new GMarker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
     var t;
     if (marker.opts.title) {
       t = marker.opts.title;
       if (marker.link) t = t.link(marker.link);
     }
-    marker.marker = m;
-    obj.clusterer.AddMarker(m,t);
+    obj.clusterer.AddMarker(marker.marker,t);
   });
 
   obj.bind('delmarker',function(marker) {
