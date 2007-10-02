@@ -12,16 +12,17 @@ Drupal.gmap.factory.marker = function(loc,opts) {
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
 
-  obj.bind('init',function() {
-    if (obj.vars.behavior.autozoom) {
-      obj.bounds = new GLatLngBounds(new GLatLng(obj.vars.latitude,obj.vars.longitude),new GLatLng(obj.vars.latitude,obj.vars.longitude));
-    }
-  });
-
   obj.bind('addmarker',function(marker) {
     obj.map.addOverlay(marker.marker);
     if (obj.vars.behavior.autozoom) {
-      obj.bounds.extend(marker.marker.getPoint());
+      // Init bounds if needed.
+      // @@@ Unify bounds between markers and shapes? I really don't think this belongs here.
+      if (!obj.bounds) {
+        obj.bounds = new GLatLngBounds(marker.marker.getPoint(), marker.marker.getPoint());
+      }
+      else {
+        obj.bounds.extend(marker.marker.getPoint());
+      }
       obj.map.setCenter(obj.bounds.getCenter(),obj.map.getBoundsZoomLevel(obj.bounds));
     }
   });
@@ -35,7 +36,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     obj.map.clearOverlays();
     // Reset bounds if autozooming
     if (obj.vars.behavior.autozoom) {
-      obj.bounds = new GLatLngBounds(new GLatLng(obj.vars.latitude,obj.vars.longitude),new GLatLng(obj.vars.latitude,obj.vars.longitude));
+      obj.bounds = null;
     }
   });
 });
