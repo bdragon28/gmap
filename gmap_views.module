@@ -105,6 +105,8 @@ function theme_views_view_gmap($view, $results) {
     }
   }
 
+  $markermode = $thismap['#settings']['markermode'];
+
   foreach ($results as $entry) {
     // @@@
     $type = isset($entry->node_type) ? $entry->node_type : '';
@@ -126,29 +128,34 @@ function theme_views_view_gmap($view, $results) {
         );
       }
       else {
-        $marker_tabs = theme('gmap_views_marker_label', $view, $fields, $entry);
+        if ($markermode == 1) {
 
-        $themarker = array(
-          // @@@
-          'markername' => variable_get('gmap_node_marker_'. $type, ''),
-          'latitude' => $location['lat'],
-          'longitude' => $location['lon']
-        );
-        // add themed infoWindow HTML to either 'tabs' or 'text'
-        if (is_array($marker_tabs)) {
-            foreach ($marker_tabs as $tabi => $tabvalue) {
-                $marker_tabs[$tabi] = strtr($tabvalue, "'\n\r", '" ');
-            }
-            $themarker['tabs'] = $marker_tabs;
+          $marker_tabs = theme('gmap_views_marker_label', $view, $fields, $entry);
+
+          $themarker = array(
+            // @@@
+            'markername' => variable_get('gmap_node_marker_'. $type, ''),
+            'latitude' => $location['lat'],
+            'longitude' => $location['lon']
+          );
+          // add themed infoWindow HTML to either 'tabs' or 'text'
+          if (is_array($marker_tabs)) {
+              foreach ($marker_tabs as $tabi => $tabvalue) {
+                  $marker_tabs[$tabi] = strtr($tabvalue, "'\n\r", '" ');
+              }
+              $themarker['tabs'] = $marker_tabs;
+          }
+          else {
+              $themarker['text'] = strtr($marker_tabs, "'\n\r", '" ');
+          }
         }
-        else {
-            $themarker['text'] = strtr($marker_tabs, "'\n\r", '" ');
+        else if ($markermode == 2) {
+          $themarker['link'] = url('node/'. $entry->nid);
         }
       }
       if (isset($entry->node_title)) {
         $themarker['opts']['title'] = $entry->node_title;
       }
-      $themarker['link'] = url('node/'. $entry->nid);
 
       $markers[] = $themarker;
     }
