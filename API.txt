@@ -1,35 +1,27 @@
 GMAP API DOCUMENTATION
 
+===============NOTE!!!!===================
+This is the 4.7 documentation, and has not been properly
+updated for 5.0 yet! Most of it is misleading or wrong!
+If you run into issues, the issue queue or IRC are usually
+the best places to go for help.
+==========================================
+
+The GMap API is a simple way to create Google Maps from a macro or PHP code.
+
+CONCEPTS
+
+
+Macro
+
 The gmap API allows other modules to integrate Google Maps into their
-Drupal Site.  It can also be used by theme developers to integrate Google
+Drupal site.  It can also be used by theme developers to integrate Google
 maps into portions of their theme.
 
 It can also be used to insert a map into any block of php.
 
-INSTALLATION
-
-To install the gmap API you must install the GMap.module.
-
-1) copy the gmap directory into the modules directory
-
-2) edit the theme files to ensure that the html file has the following at
-   the top of each page (the first one  is recommended by Google, the
-   second is required for the lines overlays to work in IE:
-   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-   <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
-
-3) Get a GMap API Key at http://www.google.com/apis/maps/signup.html
-
-4) enable the 'gmap module' in drupal
-
-5) edit admin/settings/gmap to include the key you received from google and
-   change any other default setting.
-   
-If you are not using the filter built into the gmap.module and you do not
-intend to insert google maps into nodes, then you can use the "Dynamic"
-setting which will only load the google javascript on pages with Google
-maps.
-
+------- STUFF BELOW THIS POINT HAS NOT BEEN REVIEWED YET!-------
+------- PLEASE DO NOT TRUST THIS DOCUMENTATION!----------
 
 PROGRAMMING API
 
