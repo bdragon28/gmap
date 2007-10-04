@@ -91,8 +91,8 @@ The GMap Array is an associative array with the following definitions:
         'number1.png', 'number2.png' etc.  will be used. If these don't
         exist 'number.png' would be used.  If that doesn't exist then
         the default marker will be used.  (optional)
-      'label' - html text to be located in a pop-up window when you click
-        on the marker.
+      'text' - html text to be located in a pop-up window when you click
+        on the marker. (@@@ Describe array tabs trick... --Bdragon)
   shapes - an array of shape arrays.  Each shape array can have the
     following elements:
       'type' -  'line', 'circle', 'rpolygon', or 'polygon'
