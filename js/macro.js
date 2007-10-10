@@ -34,11 +34,6 @@ Drupal.gmap.addHandler('macrotext', function(elem) {
       // Collect macro pieces.
       obj.change('buildmacro',-1,add);
       elem.value = '[gmap ' + add.join(' |') + ']';
-
-      // @@@ Wouldn't it be simpler to have an arbitrary # of lines?
-//      if (obj.vars.line1 && obj.vars.line1.length >0) o += ' |line1=' + obj.vars.line1;
-//      if (obj.vars.line2 && obj.vars.line2.length >0) o += ' |line2=' + obj.vars.line2;
-//      if (obj.vars.line3 && obj.vars.line3.length >0) o += ' |line3=' + obj.vars.line3;
     }
   });
 });
