@@ -108,8 +108,7 @@ function theme_views_view_gmap($view, $results) {
   $markermode = $thismap['#settings']['markermode'];
 
   foreach ($results as $entry) {
-    // @@@
-    $type = isset($entry->node_type) ? $entry->node_type : '';
+    $type = $entry->gmap_node_type;
     $location = _gmap_views_get_lat_long_from_ids($entry, $point_ids);
 
     if (($location['lat']) && ($location['lon'])) {
@@ -128,16 +127,16 @@ function theme_views_view_gmap($view, $results) {
         );
       }
       else {
+        // Common
+        $themarker = array(
+          'markername' => variable_get('gmap_node_marker_'. $type, ''),
+          'latitude' => $location['lat'],
+          'longitude' => $location['lon']
+        );
+        // Popup
         if ($markermode == 1) {
-
           $marker_tabs = theme('gmap_views_marker_label', $view, $fields, $entry);
 
-          $themarker = array(
-            // @@@
-            'markername' => variable_get('gmap_node_marker_'. $type, ''),
-            'latitude' => $location['lat'],
-            'longitude' => $location['lon']
-          );
           // add themed infoWindow HTML to either 'tabs' or 'text'
           if (is_array($marker_tabs)) {
               foreach ($marker_tabs as $tabi => $tabvalue) {
@@ -149,6 +148,7 @@ function theme_views_view_gmap($view, $results) {
               $themarker['text'] = strtr($marker_tabs, "'\n\r", '" ');
           }
         }
+        // Link
         else if ($markermode == 2) {
           $themarker['link'] = url('node/'. $entry->nid);
         }
@@ -222,4 +222,14 @@ function _gmap_views_get_lat_long_from_ids($entry, $ids) {
   }
   // standard stuff, we can handle it
   return array('lat' => $entry->{$ids['lat']}, 'lon' => $entry->{$ids['lon']});
+}
+
+/**
+ * Implementation of hook_views_query_alter().
+ * We need to add in the node type so we can determine markers.
+ */
+function gmap_views_query_alter(&$query, &$view, $summary, $level) {
+  if ($view->page && $view->page_type == 'gmap') {
+    $query->add_field('type', 'node', 'gmap_node_type');
+  }
 }
