@@ -16,14 +16,24 @@ function _gmap_admin_settings() {
     '#title' => t('Google Map Initialize'),
     '#description' => t('Note about Drupal 5 version: Shaded out controls are controls for unfinished features that existed in the 4.7 version.'),
   );
-  $form['initialization']['googlemap_api_key'] = array(
-    '#type' => 'textfield', 
-    '#title' => t('Google map API key'),
-    '#default_value' => variable_get('googlemap_api_key', ''), 
-    '#size' => 50, 
-    '#maxlength' => 255,
-    '#description' => t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.'),
-  );
+  if (!module_exists('keys_api')) {
+    $form['initialization']['googlemap_api_key'] = array(
+      '#type' => 'textfield', 
+      '#title' => t('Google map API key'),
+      '#default_value' => variable_get('googlemap_api_key', ''), 
+      '#size' => 50, 
+      '#maxlength' => 255,
+      '#description' => t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.'),
+    );
+  }
+  else {
+    $form['initialization']['googlemap_api_key'] = array(
+      '#type' => 'item',
+      '#title' => t('Google map API key'),
+      '#description' => t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.'),
+      '#value' => t("Managed by <a href='@url'>keys api</a>.", array('@url' => url('admin/settings/keys'))),
+    );
+  }
   $form['initialization']['gmap_method'] = array(
     '#type' => 'select',
     '#disabled' => TRUE,

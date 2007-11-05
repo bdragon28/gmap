@@ -174,7 +174,11 @@ function _gmap_doheader() {
   drupal_add_js(array('gmap_markermanager' => $mms[$mm]), 'setting');
 // @@@
 drupal_add_js($gmap_path .'/js/poly.js');
-  drupal_set_html_head('<script src="http://maps.google.com/maps?file=api&amp;v='. GMAP_API_V .'&amp;key='. variable_get('googlemap_api_key', '') .'" type="text/javascript"></script>');
+  $key = variable_get('googlemap_api_key', '');
+  if (module_exists('keys_api')) {
+    $key = keys_api_get_key('gmap',$_SERVER['HTTP_HOST']);
+  }
+  drupal_set_html_head('<script src="http://maps.google.com/maps?file=api&amp;v='. GMAP_API_V .'&amp;key='. $key .'" type="text/javascript"></script>');
   $gmap_initialized = TRUE;
 }
 
@@ -1188,7 +1192,11 @@ function gmap_decimal($num) {
  *  for a description of the possible status codes.
  */
 function gmap_geocode($address) {
-  $data = drupal_http_request('http://maps.google.com/maps/geo?q='. drupal_urlencode($address) .'&output=csv&key='. variable_get('googlemap_api_key', ''));
+  $key = variable_get('googlemap_api_key', '');
+  if (module_exists('keys_api')) {
+    $key = keys_api_get_key('gmap',$_SERVER['HTTP_HOST']);
+  }
+  $data = drupal_http_request('http://maps.google.com/maps/geo?q='. drupal_urlencode($address) .'&output=csv&key='. $key);
   if ($data->code == 200) {
     $r = explode(',', $data->data);
     return array(
@@ -1269,4 +1277,16 @@ function gmap_simple_map($latitude, $longitude, $markername = '', $info = '', $z
   }
 
   return theme('gmap', array('#settings' => $settings));
+}
+
+/**
+ * Implementation of hook_keys_service(). (from the keys api)
+ */
+function gmap_keys_service() {
+  return array(
+    'gmap' => array(
+      'name' => t('Gmap'),
+      'description' => t('Google Maps API Key'),
+    ),
+  );
 }
