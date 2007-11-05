@@ -1191,12 +1191,12 @@ function gmap_decimal($num) {
  * See http://www.google.com/apis/maps/documentation/reference.html#GGeoStatusCode
  *  for a description of the possible status codes.
  */
-function gmap_geocode($address) {
+function gmap_geocode($address, $tld = 'com') {
   $key = variable_get('googlemap_api_key', '');
   if (module_exists('keys_api')) {
     $key = keys_api_get_key('gmap',$_SERVER['HTTP_HOST']);
   }
-  $data = drupal_http_request('http://maps.google.com/maps/geo?q='. drupal_urlencode($address) .'&output=csv&key='. $key);
+  $data = drupal_http_request('http://maps.google.'. $tld .'/maps/geo?q='. drupal_urlencode($address) .'&output=csv&key='. $key);
   if ($data->code == 200) {
     $r = explode(',', $data->data);
     return array(
