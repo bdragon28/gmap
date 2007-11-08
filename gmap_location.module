@@ -155,6 +155,25 @@ function gmap_location_user_page() {
 }
 
 /**
+ * AHAH callback for getting the contents of a user point popup.
+ */
+function gmap_location_user_point() {
+  $uid = arg(3);
+  if (is_numeric($uid) && $account = user_load(array('uid' => $uid))) {
+    echo theme('gmap_location_user_html', $account);
+    exit();
+  }
+}
+
+/**
+ * Theme function for displaying the user page.
+ */
+function theme_gmap_location_user_page($header, $map, $footer) {
+  $output = "<p>$header</p>\n<p>$map</p>\n<p>$footer</p>";
+  return $output;
+}
+
+/**
  * Draws a page with a google map with the node on it, or if no node is set all of the nodes on it.
  *
  * @param $nn
