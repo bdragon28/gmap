@@ -38,8 +38,8 @@ function gmap_location_update_5080() {
   variable_set('gmap_node_markers', $markers);
 
   // User location setting functionality is moving to location.module.
-  variable_del('gmap_user');
-  variable_del('gmap_user_profile_category');
+  //variable_del('gmap_user');
+  //variable_del('gmap_user_profile_category');
 
   // gmap_user_map is a single variable now.
   $temp = array(
