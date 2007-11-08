@@ -522,7 +522,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
           '#size' => 60,
           '#maxlength' => 500,
           '#description' => t('A macro to be used as a base map for the location block author.  This map will be recentered on the location, so the center is not that important.'),
-          '#default_value' => variable_get('gmap_location_author_block_macro', '[gmap |zoom=10 |width=100% |height=200px |control=Small |type=Map] '),
+          '#default_value' => variable_get('gmap_location_author_block_macro', '[gmap |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+notype] '),
         );
 
         $ntypes = node_get_types();
@@ -583,15 +583,35 @@ function _gmap_location_getlatlon($node) {
 function gmap_location_block_view($nid) {
   $block = array();
   $node = node_load($nid);
-  if (_gmap_location_getlatlon($node)) {
-    $block['subject'] = t('Location');
-    if (strlen(variable_get('gmap_location_block_macro_'. $node->type, '')) > 0) {
-      $macro = variable_get('gmap_location_block_macro_'. $node->type, '');
+  if ($node->locations) {
+    $markertypes = variable_get('gmap_node_markers', array());
+    $markers = array();
+    foreach ($node->locations as $loc) {
+      // @@@ Todo: Client side geocoding
+      if ($loc['latitude'] || $loc['longitude']) {
+        $markers[] = array(
+          'latitude' => $loc['latitude'],
+          'longitude' => $loc['longitude'],
+          'markername' => isset($markertypes[$row->type]) ? $markertypes[$row->type] : 'drupal',
+        );
+      }
     }
-    else {
-      $macro = variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map] ');
+    if (!empty($markers)) {
+      if (strlen(variable_get('gmap_location_block_macro_'. $node->type, '')) > 0) {
+        $macro = variable_get('gmap_location_block_macro_'. $node->type, '');
+      }
+      else {
+        $macro = variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+autozoom,+notype] ');
+      }
+      $map = gmap_parse_macro($macro);
+      $map['markers'] = $markers;
+      // @@@
+      $map['behavior']['autozoom'] = true;
+      $map['behavior']['notype'] = true;
+      $map['controltype'] = 'None';
+      $block['subject'] = t('Location');
+      $block['content'] = theme('gmap', array('#settings' => $map));
     }
-    $block['content'] = theme('gmap', array('#settings' => gmap_location_map_add_node(gmap_parse_macro($macro), $node)));
   }
   return $block;
 }
