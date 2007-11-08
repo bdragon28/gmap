@@ -28,14 +28,26 @@ function gmap_location_menu($may_cache) {
       'type' => MENU_NORMAL_ITEM,
       'title' => t('User locations'),
       'access' => user_access('show user map'),
-      'callback' => 'gmap_location_user_page'
+      'callback' => 'gmap_location_user_page',
+    );
+    $items[] = array(
+      'path' => 'map/user/load',
+      'type' => MENU_CALLBACK,
+      'access' => user_access('show user map'),
+      'callback' => 'gmap_location_user_point',
     );
     $items[] = array(
       'path' => 'map/node',
       'type' => MENU_NORMAL_ITEM,
       'title' => t('Node locations'),
       'access' => user_access('show node map'),
-      'callback' => 'gmap_location_node_page'
+      'callback' => 'gmap_location_node_page',
+    );
+    $items[] = array(
+      'path' => 'map/node/load',
+      'type' => MENU_CALLBACK,
+      'access' => user_access('show node map'),
+      'callback' => 'gmap_location_node_point',
     );
     $items[] = array(
       'path' => 'admin/settings/gmap_location',
@@ -270,6 +282,14 @@ function gmap_location_node_map($n, $thismap, $single = FALSE) {
     }
   }
   return $thismap;
+}
+
+/**
+ * Theme function for displaying the node page.
+ */
+function theme_gmap_location_node_page($count, $header, $map, $footer) {
+  $output = "<p>$header</p>\n<p>$map</p>\n<p>$footer</p>";
+  return $output;
 }
 
 /**
@@ -744,4 +764,24 @@ function _gmap_location_store_location($object, $type, $update = false) {
     unset($object->gmap_location_longitude);
     unset($object->gmap_location_set);
   }
+}
+
+/**
+ * Implementation of hook_node_type().
+ */
+function gmap_location_node_type($op, $info) {
+  $temp = variable_get('gmap_node_markers', array());
+  switch ($op) {
+    case 'delete':
+      unset($temp[$info->type]);
+      break;
+    case 'insert':
+      $temp[$info->type] = 'drupal';
+      break;
+    case 'update':
+      $temp[$info->type] = $temp[$info->old_type];
+      unset ($temp[$info->old_type]);
+      break;
+  }
+  variable_set('gmap_node_markers', $temp);
 }
