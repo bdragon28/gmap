@@ -731,59 +731,6 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
   }
 }
 
-/*
-function gmap_location_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
-  if(variable_get('gmap_node_'. $node->type, 0)) {
-    $object->gmap_location_latitude = $node->gmap_location_latitude;
-    $object->gmap_location_longitude = $node->gmap_location_longitude;
-    $object->eid = $node->vid;
-
-    switch ($op) {
-    case 'load':
-      $res=db_query("SELECT * FROM {location} WHERE eid=%d AND type='node'",$node->vid);
-      if ($gmap_node=db_fetch_array($res)) {
-        if ($gmap_node['latitude'] !=0) $node->gmap_location_latitude= $gmap_node['latitude'];
-        if ($gmap_node['longitude']!=0) $node->gmap_location_longitude=$gmap_node['longitude'];
-        $node->gmap_location_set=true;
-      }
-      return;
-
-    case 'validate':
-      _gmap_location_validate_form($object);
-      return;
-
-    case 'insert':
-      _gmap_location_store_location($object, 'node', false);
-      return;
-
-    case 'update':
-      _gmap_location_store_location($object, 'node', isset($node->gmap_location_set));
-      return;
-
-    case 'delete':
-      db_query ("DELETE from {location} WHERE eid=%d AND type='node'", $node->vid);
-      return;
-
-    }
-  }
-}
-*/
-
-/*
-function _gmap_location_validate_form(&$object) {
-  if (isset($object->latitude)){
-    if (!is_numeric($object->latitude) || abs($object->latitude)>90) {
-      form_set_error('gmap_location_latitude', t('Latitude must be between -90 and 90'));
-    }
-  }
-  if (isset($object->longitude)){
-    if (!is_numeric($object->longitude) || abs($object->longitude)>180) {
-      form_set_error('gmap_location_longitude', t('Longitude must be between -180 and 180'));
-    }
-  }
-}
-*/
-
 function _gmap_location_store_location($object, $type, $update = false) {
   if (isset($object->gmap_location_latitude) && isset($object->gmap_location_longitude)) {
     if ($update) {
