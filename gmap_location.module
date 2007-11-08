@@ -350,91 +350,131 @@ function gmap_location_admin_settings() {
 
   $form['user'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Location settings for users'),
+    '#title' => t('User settings'),
   );
-  $form['user']['gmap_user'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Profile map'),
-    '#default_value' => variable_get('gmap_user', TRUE),
-    '#description' => t('Let users set/edit their location in their profile.'),
-  );
-  $form['user']['gmap_user_profile_category'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Profile category title'),
-    '#default_value' => variable_get('gmap_user_profile_category', "Location map"),
-    '#size' => 50,
-    '#maxlength' => 50,
-    '#description' => t('Let users set/edit their location in their profile.'),
-  );
+
+  // gmap_user_map defaults
+  $temp = variable_get('gmap_user_map', array(
+    'macro' => '[gmap |id=usermap|center=40,0|zoom=3|width=100%|height=400px]',
+    'header' => 'This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.',
+    'footer' => '',
+  ));
+
   $form['user']['gmap_user_map'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('User Map (<em>map/users</em>)'),
+    '#tree' => TRUE,
+  );
+  $form['user']['gmap_user_map']['macro'] = array(
     '#type' => 'textfield',
-    '#title' => t('Default user map'),
-    '#default_value' => variable_get('gmap_user_map', '[gmap |id=usermap|center=40,0|zoom=3|width=100%|height=400px]'),
+    '#title' => t('Macro'),
+    '#default_value' => $temp['macro'],
     '#size' => 50,
     '#maxlength' => 500,
     '#description' => t('The gmap macro where the user information will be diplayed on.'),
   );
-  $form['user']['gmap_user_map_header'] = array(
+  $form['user']['gmap_user_map']['header'] = array(
     '#type' => 'textarea',
-    '#title' => t('Text at the top of the map/users page'),
-    '#default_value' => variable_get('gmap_user_map_header', t('This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')),
+    '#title' => t('Page header'),
+    '#description' => t('Text at the top of the user map.', array('@url' => url('map/users'))),
+    '#default_value' => $temp['header'],
     '#cols' => 50,
     '#rows' => 6,
   );
-  $form['user']['gmap_user_map_marker'] = array(
-    '#type' => 'gmap_markerchooser',
-    '#title' => t('Marker for users'),
-    '#default_value' => variable_get('gmap_user_map_marker', 'drupal'),
+  $form['user']['gmap_user_map']['footer'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Page footer'),
+    '#description' => t('Text at the bottom of the user map.'),
+    '#default_value' => $temp['footer'],
+    '#cols' => 50,
+    '#rows' => 6,
   );
 
   // Option to use a different marker for each role
-  $form['user']['roles'] = array(
+  $form['user']['gmap_role_markers'] = array(
     '#type' => 'fieldset',
     '#title' => t('Markers per role'),
-    '#description' => t('Use a different marker to denote users in the following roles.'),
+    '#description' => t('Choose a marker to represent each user role on the user map. If a user belongs to multiple roles, the marker for the highest Role ID will be used.'),
+    '#tree' => TRUE,
   );
 
   // Retrieve and sort list of roles, sans anonymous user
   $roles = user_roles(TRUE);
-  asort($roles);
+  //asort($roles);
+
+  $defaults = variable_get('gmap_role_markers', array());
 
   // Create a selection box per role
   foreach ($roles as $rid => $role) {
-    $form['user']['roles']["gmap_role_map_marker_$rid"] = array(
+    $form['user']['gmap_role_markers'][$rid] = array(
       '#type' => 'gmap_markerchooser',
-      '#title' => $role,
-      '#default_value' => variable_get("gmap_role_map_marker_$rid", variable_get('gmap_user_map_marker', 'drupal')),
+      '#title' => t('%role (Role ID: %rid)', array('%role' => $role, '%rid' => $rid)),
+      '#default_value' => isset($defaults[$rid]) ? $defaults[$rid] : 'drupal',
     );
   }
 
   $form['node'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Location settings for nodes'),
+    '#title' => t('Node settings'),
   );
+
+  // gmap_node_map defaults
+  $temp = variable_get('gmap_node_map', array(
+    'macro' => '[gmap |id=nodemap|center=40,0|zoom=3|width=100%|height=400px]',
+    'header' => 'This map illustrates the locations of the nodes on this website. Each marker indicates a node associated with a specific location.',
+    'footer' => '',
+  ));
+
   $form['node']['gmap_node_map'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Node Map (<em>map/nodes</em>)'),
+    '#tree' => TRUE,
+  );
+  $form['node']['gmap_node_map']['macro'] = array(
     '#type' => 'textfield',
-    '#title' => t('Default node map'),
-    '#default_value' => variable_get('gmap_node_map', '[gmap |id=nodemap|center=40,0|zoom=3|width=100%|height=400px]'),
+    '#title' => t('Macro'),
+    '#default_value' => $temp['macro'],
     '#size' => 50,
     '#maxlength' => 500,
-    '#description' => t('The gmap macro where the user information will be diplayed on.'),
+    '#description' => t('The gmap macro where the node information will be diplayed on.'),
   );
-  $form['node']['gmap_node_map_header'] = array(
+  $form['node']['gmap_node_map']['header'] = array(
     '#type' => 'textarea',
-    '#title' => t('Text at the top of the map/nodes page'),
-    '#default_value' => variable_get('gmap_node_map_header', t('This map illustrates the locations of the nodes on this website. Each marker indicates a node associated with a specific location.')),
+    '#title' => t('Page header'),
+    '#description' => t('Text at the top of the node map.'),
+    '#default_value' => $temp['header'],
+    '#cols' => 50,
+    '#rows' => 6,
+  );
+  $form['node']['gmap_node_map']['footer'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Page footer'),
+    '#description' => t('Text at the bottom of the node map.'),
+    '#default_value' => $temp['footer'],
     '#cols' => 50,
     '#rows' => 6,
   );
 
-  $ntypes=node_get_types();
+  // Option to use a different marker for each content type.
+  $form['node']['gmap_node_markers'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Markers per content type'),
+    '#description' => t('Choose a marker to represent each type of content on the node map.'),
+    '#tree' => TRUE,
+  );
+
+  $ntypes = node_get_types();
+
+  $defaults = variable_get('gmap_node_markers', array());
+
   foreach ($ntypes as $key => $value) {
-    if (intval(variable_get('location_maxnum_'. $key, 0)) !== 0) {
-      $form['node']['gmap_node_marker_'. $key] = array(
-        '#type' => 'gmap_markerchooser',
-        '#title' => t('Marker for '. $value->name),
-        '#default_value' => variable_get('gmap_node_marker_'. $key, ''),
-      );
+    $form['node']['gmap_node_markers'][$key] = array(
+      '#type' => 'gmap_markerchooser',
+      '#title' => t('Marker for '. $value->name),
+      '#default_value' => isset($defaults[$key]) ? $defaults[$key] : 'drupal',
+    );
+    if (intval(variable_get('location_maxnum_'. $key, 0)) === 0) {
+      $form['node']['gmap_node_markers'][$key]['#description'] = t('This content type is not currently Location enabled.');
     }
   }
   return system_settings_form($form);
