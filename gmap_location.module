@@ -158,7 +158,7 @@ function gmap_location_user_page() {
  * Draws a page with a google map with the node on it, or if no node is set all of the nodes on it.
  *
  * @param $nn
- * The node number to draw on the map.  If this is not set, or is null then all of the nodes will be drawn.
+ * The node nid to draw on the map.  If this is not set, or is null then all of the nodes will be drawn.
  */
 function gmap_location_node_page($nid = NULL) {
   if ($nid && ($n = node_load($nid))) {
@@ -192,6 +192,24 @@ function gmap_location_node_page($nid = NULL) {
   $output .= '<p>'. theme('gmap', array('#settings' => $thismap)) .'</p>';
 
   return $output;
+}
+
+/**
+ * AHAH callback for getting the contents of a node point popup.
+ */
+function gmap_location_node_point() {
+  $nid = arg(3);
+  $opt = arg(4);
+  if (is_numeric($nid) && $node = node_load($nid)) {
+    $output = '';
+    $type = strtr($node->type, '-', '_');
+    $output = theme($type .'_gmapnodelabel', $node, $opt);
+    if (empty($output)) {
+      $output = theme('gmapnodelabel', $node, $opt);
+    }
+    echo $output;
+    exit();
+  }
 }
 
 /**
