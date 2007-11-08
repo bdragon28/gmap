@@ -499,7 +499,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
           '#size' => 60,
           '#maxlength' => 500,
           '#description' => t('A macro to be used as a base map for the location block.  This map will be recentered on the location, so the center is not that important. <p>Alternate base map macros can be entered for a specific node type below.'),
-          '#default_value' => variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map] '),
+          '#default_value' => variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+notype] '),
         );
 
         $ntypes=node_get_types();
