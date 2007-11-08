@@ -403,6 +403,18 @@ function gmap_location_node_map($n, $thismap, $single = FALSE) {
 }
 
 /**
+ * For OG nodes, we are passing a nid/uid pair.
+ */
+function theme_og_gmapnodelabel($node, $opt) {
+  if (is_numeric($opt) && $account = user_load(array('uid' => $opt))) {
+    $output = theme('user_picture', $account);
+    $output .= theme('username', $account);
+    echo $output;
+    exit();
+  }
+}
+
+/**
  * Theme function for displaying the node page.
  */
 function theme_gmap_location_node_page($count, $header, $map, $footer) {
