@@ -180,37 +180,118 @@ function theme_gmap_location_user_page($header, $map, $footer) {
  * The node nid to draw on the map.  If this is not set, or is null then all of the nodes will be drawn.
  */
 function gmap_location_node_page($nid = NULL) {
-  if ($nid && ($n = node_load($nid))) {
-    if (node_access('view', $n)) {
-      $output .='<p>'. t(variable_get('gmap_node_map_header', 'This map illustrates the extent of nodes of this website. ')) ."</p>\n";
-      $thismap = array_merge(gmap_defaults(), gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=nodemap|center=30,0|zoom=2|width=100%|height=400px]')));
-      $thismap = gmap_location_node_map($n, $thismap, TRUE);
-      $output .= '<p>'. theme('gmap', array('#settings' => $thismap));
-      // @@@ Hey! Wait a second -- Where's the closing </p> ?
-      return $output;
+
+  $nodemap = variable_get('gmap_node_map', array());
+  $markertypes = variable_get('gmap_node_markers', array());
+
+  $map = array_merge(
+    gmap_defaults(),
+    gmap_parse_macro($nodemap['macro']));
+
+  $mode = $map['markermode'];
+  $map['rmtcallback'] = url('map/node/load');
+  if (!is_array($map['markers'])) {
+    $map['markers'] = array();
+  }
+
+  $add_sql = (is_numeric($nid) && $nid > 0) ? ' AND n.nid = %d' : '';
+  $result = db_query(db_rewrite_sql("
+    SELECT n.nid, n.type, n.title, l.latitude, l.longitude
+    FROM {node} n
+    INNER JOIN {location} l
+      ON n.vid = l.eid
+    WHERE
+      l.type = '%s'
+    AND
+      (l.latitude != 0 OR l.longitude != 0)
+    ". $add_sql), 'node', $nid);
+
+  $count = 0;
+  while ($row = db_fetch_object($result)) {
+    $count++;
+    $newmarker = array();
+    if ($mode == 1) {
+      // Popup
+      $newmarker['rmt'] = $row->nid;
     }
-    else {   //access denied
-      return drupal_access_denied();
+    elseif ($mode == 2) {
+      // Link
+      $newmarker['link'] = url('node/'. $row->nid);
+    }
+
+    $newmarker['latitude'] = $row->latitude;
+    $newmarker['longitude'] = $row->longitude;
+    $newmarker['markername'] = isset($markertypes[$row->type]) ? $markertypes[$row->type] : 'drupal';
+    $newmarker['opts']['title'] = $row->title;
+    $map['markers'][] = $newmarker;
+  }
+
+  // Special stuff for single marker
+  if ($count == 1) {
+    // Center map on only marker.
+    $map['latitude'] = $map['markers'][0]['latitude'];
+    $map['longitude'] = $map['markers'][0]['longitude'];
+
+    // Autoclick in single marker case.
+    if ($mode == 1) {
+      $map['markers'][0]['autoclick'] = TRUE;
     }
   }
 
-  $output .='<p>'. t(variable_get('gmap_node_map_header', 'This map illustrates the extent of nodes of this website.')) ."</p>\n";
+  // Special cases for single node view.
+  if (is_numeric($nid) && $node = node_load($nid)) {
+    if (user_access('user locations') && $node->type == 'og') {
+      // An OG is displayed as a map of the users who belong to the group.
 
-  $result = db_query(db_rewrite_sql("SELECT l.eid, l.longitude, l.latitude FROM {location} l INNER JOIN {node} n ON l.eid = n.vid WHERE (l.longitude!=0 OR l.latitude !=0) AND l.type='node' AND n.status = 1"));
-  $thismap = array_merge(gmap_defaults(), gmap_parse_macro(variable_get('gmap_node_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]')));
-  if (empty($thismap['markers'])) {
-    $thismap['markers']=array();
-  }
-  while ($locn=db_fetch_object($result)) {
-    $n = node_load(array('vid' => $locn->eid));
-    if ($n && node_access('view', $n)) {
-      $thismap = gmap_location_node_map($n, $thismap, FALSE);
+      $rolemarkers = variable_get('gmap_role_markers', array());
+
+      $map['markers'] = array(); // Reset markers.
+      $result = db_query("
+        SELECT
+          MAX(r.rid) as role, l.eid as uid, l.latitude, l.longitude
+        FROM
+          {og_uid} o
+        INNER JOIN {location} l
+          ON o.uid = l.eid
+        LEFT JOIN {users_roles} r
+          ON l.eid = r.uid
+        WHERE
+          o.nid = %d
+        AND
+          o.is_active >= 1
+        AND
+          l.type = '%s'
+        AND
+          (l.latitude != 0 OR l.longitude != 0)
+        GROUP BY
+          o.uid", $nid, 'user');
+
+      while ($row = db_fetch_object($result)) {
+        $newmarker = array();
+        $newmarker['rmt'] = $nid .'/'. $row->uid;
+
+        // Determine marker type to show.
+        $newmarker['markername'] = $markertypes[DRUPAL_AUTHENTICATED_RID];
+        if ($row->role && isset($rolemarkers[$row->role])) {
+          $newmarker['markername'] = $rolemarkers[$row->role];
+        }
+        $newmarker['latitude'] = $row->latitude;
+        $newmarker['longitude'] = $row->longitude;
+        $map['markers'][] = $newmarker;
+      }
     }
   }
+  elseif ($count == 0) {
+    // No results
+    return drupal_not_found();
+  }
 
-  $output .= '<p>'. theme('gmap', array('#settings' => $thismap)) .'</p>';
-
-  return $output;
+  return theme('gmap_location_node_page',
+    $count,
+    $nodemap['header'],
+    theme('gmap', array('#settings' => $map)),
+    $nodemap['footer']
+  );
 }
 
 /**
