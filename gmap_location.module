@@ -613,7 +613,7 @@ function gmap_location_block_view($nid) {
         $markers[] = array(
           'latitude' => $loc['latitude'],
           'longitude' => $loc['longitude'],
-          'markername' => isset($markertypes[$row->type]) ? $markertypes[$row->type] : 'drupal',
+          'markername' => isset($markertypes[$node->type]) ? $markertypes[$node->type] : 'drupal',
         );
       }
     }
