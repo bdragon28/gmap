@@ -138,7 +138,7 @@ function _gmap_admin_settings() {
     '#type' => 'fieldset',
     '#title' => t('Map Behavior flags'),
     '#tree' => TRUE,
-    '#description' => t('Behavior flags modify how a map behaves. Disabled flags are for specific purposes and can only be set manually.'),
+    '#description' => t('Behavior flags modify how a map behaves. Grayed out flags are not settable here, but may be set on a map by map basis via code or a macro.'),
   );
   $behaviors = module_invoke_all('gmap', 'behaviors');
   foreach ($behaviors as $k => $v) {
