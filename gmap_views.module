@@ -106,6 +106,7 @@ function theme_views_view_gmap($view, $results) {
   }
 
   $markermode = $thismap['#settings']['markermode'];
+  $markertypes = variable_get('gmap_node_markers', array());
 
   foreach ($results as $entry) {
     $type = $entry->gmap_node_type;
@@ -120,7 +121,7 @@ function theme_views_view_gmap($view, $results) {
           }
         }
         $themarker = array(
-          'markername' => variable_get('gmap_node_marker_'. $type, ''),
+          'markername' => $markertypes[$type],
           'latitude' => $location['lat'],
           'longitude' => $location['lon'],
           'view' => array_values($data),
@@ -129,7 +130,7 @@ function theme_views_view_gmap($view, $results) {
       else {
         // Common
         $themarker = array(
-          'markername' => variable_get('gmap_node_marker_'. $type, ''),
+          'markername' => $markertypes[$type],
           'latitude' => $location['lat'],
           'longitude' => $location['lon']
         );
