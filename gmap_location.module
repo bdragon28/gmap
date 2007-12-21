@@ -842,7 +842,7 @@ function gmap_location_node_type($op, $info) {
       break;
     case 'update':
       $temp[$info->type] = $temp[$info->old_type];
-      unset ($temp[$info->old_type]);
+      unset($temp[$info->old_type]);
       break;
   }
   variable_set('gmap_node_markers', $temp);

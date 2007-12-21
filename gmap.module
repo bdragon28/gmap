@@ -176,7 +176,7 @@ function _gmap_doheader() {
 drupal_add_js($gmap_path .'/js/poly.js');
   $key = variable_get('googlemap_api_key', '');
   if (module_exists('keys_api')) {
-    $key = keys_api_get_key('gmap',$_SERVER['HTTP_HOST']);
+    $key = keys_api_get_key('gmap', $_SERVER['HTTP_HOST']);
   }
   drupal_set_html_head('<script src="http://maps.google.com/maps?file=api&amp;v='. GMAP_API_V .'&amp;key='. $key .'" type="text/javascript"></script>');
   $gmap_initialized = TRUE;
@@ -1196,7 +1196,7 @@ function gmap_decimal($num) {
 function gmap_geocode($address, $tld = 'com') {
   $key = variable_get('googlemap_api_key', '');
   if (module_exists('keys_api')) {
-    $key = keys_api_get_key('gmap',$_SERVER['HTTP_HOST']);
+    $key = keys_api_get_key('gmap', $_SERVER['HTTP_HOST']);
   }
   $data = drupal_http_request('http://maps.google.'. $tld .'/maps/geo?q='. drupal_urlencode($address) .'&output=csv&key='. $key);
   if ($data->code == 200) {
