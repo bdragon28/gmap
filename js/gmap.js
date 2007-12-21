@@ -376,20 +376,6 @@ Drupal.gmap.addHandler('controltype', function(elem) {
   });
 });
 
-////////////////////////////////////////
-//           Map ID widget            //
-////////////////////////////////////////
-Drupal.gmap.addHandler('mapid', function(elem) {
-  var obj = this;
-  // Respond to incoming map id changes.
-  var binding = obj.bind("idchange",function(){elem.value = obj.vars.id});
-  // Send out outgoing map id changes.
-  $(elem).change(function() {
-    obj.vars.id = elem.value;
-    obj.change("idchange",binding);
-  });
-});
-
 if (Drupal.jsEnabled) {
   $(document).ready(Drupal.gmap.setup)
     .unload(function() {

@@ -994,6 +994,8 @@ function theme_gmap_coord($element) {
 
 function theme_gmap_macrotext($element) {
   drupal_add_js(drupal_get_path('module', 'gmap') .'/js/macro.js');
+  // @@@
+  drupal_add_js(drupal_get_path('module', 'gmap') .'/js/macrobuilder.js');
   return theme('textarea', $element);
 }
 

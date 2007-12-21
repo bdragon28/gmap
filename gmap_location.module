@@ -283,7 +283,7 @@ function gmap_location_node_page($nid = NULL) {
   }
   elseif ($count == 0) {
     // No results
-    return drupal_not_found();
+    return drupal_not_found(); // @@@ This should be an "empty" page instead...
   }
 
   return theme('gmap_location_node_page',

@@ -80,7 +80,8 @@ function gmap_macro_builder_form($settings = array(), $hide = array()) {
   $form['macroform']['mapid'] = array(
     '#type' => 'textfield',
     '#title' => t('Map id attribute'),
-    '#default_value' => variable_get('gmap_default_mapid', 'map'),
+    '#description' => t('If you need to access this map from a script, you can assign a map ID here.'),
+    '#default_value' => '',
   );
   gmap_widget_setup($form['macroform']['mapid'], 'mapid', 'macro_map');
 

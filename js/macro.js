@@ -20,7 +20,9 @@ Drupal.gmap.addHandler('macrotext', function(elem) {
     add.push('center='+obj.vars.latitude+','+obj.vars.longitude);
     add.push('width='+obj.macrostorage.width);
     add.push('height='+obj.macrostorage.height);
-    add.push('id='+obj.vars.id);
+    if (obj.vars.macro_mapid && obj.vars.macro_mapid != '') {
+      add.push('id='+obj.vars.macro_mapid);
+    }
     add.push('control='+obj.vars.controltype);
     // @@@ Use maptype instead, accept old and new.
     add.push('type='+obj.vars.maptype);
