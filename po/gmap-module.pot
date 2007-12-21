@@ -4,23 +4,23 @@
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
 #  gmap.php,v 1.1.2.1 2007/06/24 19:29:33 bdragon
-#  gmap.module,v 1.51.2.104 2007/11/05 21:41:58 bdragon
+#  gmap.module,v 1.51.2.105 2007/12/21 18:06:01 bdragon
 #  gmap_settings_ui.inc,v 1.1.2.18 2007/11/05 21:36:37 bdragon
 #  gmap.info,v 1.1.2.3 2007/06/18 23:06:44 dww
 #  gmap_location.module,v 1.26.2.34 2007/08/28 20:59:22 bdragon
-#  gmap_location.module,v 1.26.2.45 2007/11/08 22:22:11 bdragon
+#  gmap_location.module,v 1.26.2.48 2007/12/21 22:18:08 bdragon
 #  gmap_location.info,v 1.1.2.3 2007/06/18 23:06:44 dww
 #  gmap_macro_builder.info,v 1.1.2.2 2007/06/18 23:06:44 dww
 #  gmap_views.info,v 1.1.2.2 2007/06/18 23:06:44 dww
-#  gmap_views.module,v 1.1.2.19 2007/10/22 15:42:38 bdragon
-#  gmap_macro_builder.module,v 1.1.2.8 2007/08/28 20:59:23 bdragon
+#  gmap_views.module,v 1.1.2.20 2007/12/21 22:02:45 bdragon
+#  gmap_macro_builder.module,v 1.1.2.9 2007/12/21 18:06:01 bdragon
 #  gmap_location.install,v 1.1.2.4 2007/11/08 22:17:45 bdragon
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2007-11-30 20:36-0600\n"
+"POT-Creation-Date: 2007-12-21 16:42-0600\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -521,11 +521,11 @@ msgstr ""
 msgid "Fill opacity"
 msgstr ""
 
-#: gmap.module:1288
+#: gmap.module:1290
 msgid "Gmap"
 msgstr ""
 
-#: gmap.module:1289
+#: gmap.module:1291
 msgid "Google Maps API Key"
 msgstr ""
 
@@ -653,23 +653,23 @@ msgstr ""
 msgid "Author Location"
 msgstr ""
 
-#: gmap_location-cvs.module:597 gmap_location.module:738
+#: gmap_location-cvs.module:597 gmap_location.module:732
 msgid "location map"
 msgstr ""
 
-#: gmap_location-cvs.module:631 gmap_location.module:772
+#: gmap_location-cvs.module:631 gmap_location.module:766
 msgid "Coordinates"
 msgstr ""
 
-#: gmap_location-cvs.module:642 gmap_location.module:783 gmap_views.module:191
+#: gmap_location-cvs.module:642 gmap_location.module:777 gmap_views.module:192
 msgid "Latitude"
 msgstr ""
 
-#: gmap_location-cvs.module:650 gmap_location.module:791 gmap_views.module:195
+#: gmap_location-cvs.module:650 gmap_location.module:785 gmap_views.module:196
 msgid "Longitude"
 msgstr ""
 
-#: gmap_location-cvs.module:654 gmap_location.module:795
+#: gmap_location-cvs.module:654 gmap_location.module:789
 msgid "The latitude and longitude will be entered here when you click on a location in the interactive map above. You can also fill in the values manually."
 msgstr ""
 
@@ -785,47 +785,51 @@ msgstr ""
 msgid "Map id attribute"
 msgstr ""
 
-#: gmap_macro_builder.module:89
+#: gmap_macro_builder.module:83
+msgid "If you need to access this map from a script, you can assign a map ID here."
+msgstr ""
+
+#: gmap_macro_builder.module:90
 msgid "Map type"
 msgstr ""
 
-#: gmap_macro_builder.module:98
+#: gmap_macro_builder.module:99
 msgid "Controls"
 msgstr ""
 
-#: gmap_macro_builder.module:108
+#: gmap_macro_builder.module:109
 msgid "Address"
 msgstr ""
 
-#: gmap_macro_builder.module:114
+#: gmap_macro_builder.module:115
 msgid "The Latitude and Longitude of the centre of the map"
 msgstr ""
 
-#: gmap_macro_builder.module:120
+#: gmap_macro_builder.module:121
 msgid "Map width"
 msgstr ""
 
-#: gmap_macro_builder.module:124
+#: gmap_macro_builder.module:125
 msgid "The map width, as a CSS length or percentage. Examples: <em>50px</em>, <em>5em</em>, <em>2.5in</em>, <em>95%</em>"
 msgstr ""
 
-#: gmap_macro_builder.module:130
+#: gmap_macro_builder.module:131
 msgid "Map height"
 msgstr ""
 
-#: gmap_macro_builder.module:134
+#: gmap_macro_builder.module:135
 msgid "The map height, as a CSS length or percentage. Examples: <em>50px</em>, <em>5em</em>, <em>2.5in</em>, <em>95%</em>"
 msgstr ""
 
-#: gmap_macro_builder.module:141
+#: gmap_macro_builder.module:142
 msgid "Alignment"
 msgstr ""
 
-#: gmap_macro_builder.module:146
+#: gmap_macro_builder.module:147
 msgid "The current magnification of the map"
 msgstr ""
 
-#: gmap_macro_builder.module:156
+#: gmap_macro_builder.module:157
 msgid "Macro text"
 msgstr ""
 
