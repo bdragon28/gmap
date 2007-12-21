@@ -690,12 +690,6 @@ function gmap_location_map_add_node($basemap, $node, $label='') {
 //by creating a mytheme_nodetype_gmapnodelabel or could simply create a default
 //node type by creating a mytheme_gmapnodelabel
 
-function theme_acidfree_gmapnodelabel($n) {
-  $out = strtr(theme_acidfree_print_thumb_photo($n), "'\n", '" ');                   //<table><tr><td> </td></tr></table>
-  $width=120;
-  return $out;
-}
-
 function theme_image_gmapnodelabel($n) {
   $out = '<a href="'. url('node/'. $n->nid) .'">'. check_plain($n->title) .'</a> <br>';
   $out .= image_display($n, 'thumbnail');
