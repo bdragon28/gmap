@@ -24,6 +24,7 @@ function _gmap_location_user_map_defaults(){
     'macro' => '[gmap |id=usermap|center=40,0|zoom=3|width=100%|height=400px]',
     'header' => 'This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.',
     'footer' => '',
+    'markermode' => 1,
   );
 }
 
@@ -35,6 +36,7 @@ function _gmap_location_node_map_defaults() {
     'macro' => '[gmap |id=nodemap|center=40,0|zoom=3|width=100%|height=400px]',
     'header' => 'This map illustrates the locations of the nodes on this website. Each marker indicates a node associated with a specific location.',
     'footer' => '',
+    'markermode' => 1,
   );
 }
 
@@ -91,8 +93,9 @@ function gmap_location_user_page() {
   $markertypes = variable_get('gmap_role_markers', array(DRUPAL_AUTHENTICATED_RID => 'drupal'));
   $usermap = variable_get('gmap_user_map', _gmap_location_user_map_defaults());
   $map = array_merge(gmap_defaults(), gmap_parse_macro($usermap['macro']));
-  $mode = $map['markermode'];
+  $mode = $usermap['markermode'];
   $map['rmtcallback'] = url('map/user/load');
+  $map['markermode'] = $usermap['markermode'];
 
   // Find the highest rid, if available, for each user with a location.
   $result = db_query("
@@ -219,8 +222,10 @@ function gmap_location_node_page($nid = NULL) {
     gmap_defaults(),
     gmap_parse_macro($nodemap['macro']));
 
-  $mode = $map['markermode'];
+  $mode = $nodemap['markermode'];
   $map['rmtcallback'] = url('map/node/load');
+  $map['markermode'] = $nodemap['markermode'];
+
   if (!is_array($map['markers'])) {
     $map['markers'] = array();
   }
@@ -437,6 +442,14 @@ function gmap_location_admin_settings() {
     '#cols' => 50,
     '#rows' => 6,
   );
+  $form['user']['gmap_user_map']['markermode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Marker action'),
+    '#description' => t('Perform this action when a marker is clicked.'),
+    '#options' => array(t('Do nothing'), t('Open info window'), t('Open link')),
+    '#default_value' => $temp['markermode'],
+  );
+
 
   // Option to use a different marker for each role
   $form['user']['gmap_role_markers'] = array(
@@ -497,6 +510,13 @@ function gmap_location_admin_settings() {
     '#default_value' => $temp['footer'],
     '#cols' => 50,
     '#rows' => 6,
+  );
+  $form['node']['gmap_node_map']['markermode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Marker action'),
+    '#description' => t('Perform this action when a marker is clicked.'),
+    '#options' => array(t('Do nothing'), t('Open info window'), t('Open link')),
+    '#default_value' => $temp['markermode'],
   );
 
   // Option to use a different marker for each content type.
