@@ -88,64 +88,62 @@ function gmap_location_menu($may_cache) {
  * Draws a page with a google map that has all of the site users.
  */
 function gmap_location_user_page() {
-  global $user;
-  $locationbyuser = array();
+  $markertypes = variable_get('gmap_role_markers', array(DRUPAL_AUTHENTICATED_RID => 'drupal'));
+  $usermap = variable_get('gmap_user_map', _gmap_location_user_map_defaults());
+  $map = array_merge(gmap_defaults(), gmap_parse_macro($usermap['macro']));
+  $mode = $map['markermode'];
+  $map['rmtcallback'] = url('map/user/load');
 
-  $usermapopts = variable_get('gmap_user_map', _gmap_location_user_map_defaults());
+  // Find the highest rid, if available, for each user with a location.
+  $result = db_query("
+    SELECT
+      u.name, MAX(r.rid) as role, l.eid as uid, l.latitude, l.longitude
+    FROM
+      {users} u
+    INNER JOIN
+      {location} l
+      ON
+        u.uid = l.eid
+    LEFT JOIN
+      {users_roles} r
+      ON
+        l.eid = r.uid
+    WHERE
+      l.type = '%s'
+      AND
+      (l.latitude != 0 OR l.longitude != 0)
+    GROUP BY
+      l.eid", 'user');
 
-  $output ='<p>'. $usermapopts['header'] ."</p>\n";
-
-  // Find default marker
-  $default_marker = variable_get('gmap_user_map_marker', 'drupal');
-
-  // Determine if any roles override default setting
-  $roles = user_roles(TRUE);
-  $roles_override = array();
-  foreach ($roles as $rid => $role) {
-    if (variable_get("gmap_role_map_marker_$rid", $default_marker) != $default_marker) {
-      $roles_override[$rid] = $role;
+  while ($row = db_fetch_object($result)) {
+    // Determine marker type to show.
+    $marker = $markertypes[DRUPAL_AUTHENTICATED_RID];
+    if ($row->role && isset($markertypes[$row->role])) {
+      $marker = $markertypes[$row->role];
     }
-  }
 
-  $thismap = array_merge(
-    gmap_defaults(),
-    gmap_parse_macro($usermapopts['macro'])
-  );
-  $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
-
-  $mode = $thismap['markermode'];
-
-  while ($u=db_fetch_object($result)) {
-    $account = user_load(array('uid' => $u->eid));
-    $dupes = array_intersect($account->roles, $roles_override);
-    if (empty($dupes)) {
-      $marker = $default_marker;
-    }
-    else {
-      $key = key($dupes);
-      $marker = variable_get("gmap_role_map_marker_$key", $default_marker);
-    }
     if (user_access('user locations')) {
-      if ($mode==1) {
-        $newmarker['text'] = theme('gmap_location_user_html', $account);
+      if ($mode == 1) {
+        $newmarker['rmt'] = $row->uid;
       }
       else if ($mode == 2) {
-        $newmarker['link'] = url('user/'. $account->uid);
+        $newmarker['link'] = url('user/'. $row->uid);
       }
-      $newmarker['latitude'] = $u->latitude;
-      $newmarker['longitude'] = $u->longitude;
+      $newmarker['latitude'] = $row->latitude;
+      $newmarker['longitude'] = $row->longitude;
       $newmarker['markername'] = $marker;
-      $newmarker['opts']['title'] = check_plain($account->name);
-      $locationbyuser[$u->eid] = array('latitude' => $u->latitude, 'longitude' => $u->longitude);
+      $newmarker['opts']['title'] = check_plain($row->name);
     }
     else {
-      $newmarker['latitude']= $u->latitude;
-      $newmarker['longitude']= $u->longitude;
+      $newmarker['latitude']= $row->latitude;
+      $newmarker['longitude']= $row->longitude;
       $newmarker['markername'] = $marker;
     }
-    $thismap['markers'][]=$newmarker;
+    $map['markers'][]=$newmarker;
   }
 
+// @@@ Move to gmap_addons.
+/*
   if (user_access('user locations') && function_exists('buddylist_get_buddies') && count($locationbyuser)>0) {
     //create lines for buddies
     if (!isset($thismap['shapes'])) {
@@ -164,6 +162,7 @@ function gmap_location_user_page() {
       }
     }
   }
+*/
 
   $element = array(
     '#type' => 'gmap',
@@ -172,10 +171,11 @@ function gmap_location_user_page() {
   );
   $output .= theme('gmap', $element);
 
-  if ($user->uid > 0) {
-    $output .= '<p>'. t('To add/change your location to the user map, <a href="@url">edit your location</a>.', array('@url' => url('user/'. $user->uid .'/edit/gmap_user'))) .'</p>';
-  }
-  return $output;
+  return theme('gmap_location_user_page',
+    $usermap['header'],
+    theme('gmap', array('#settings' => $map)),
+    $usermap['footer']
+  );
 }
 
 /**
@@ -193,7 +193,14 @@ function gmap_location_user_point() {
  * Theme function for displaying the user page.
  */
 function theme_gmap_location_user_page($header, $map, $footer) {
+  global $user;
+
   $output = "<p>$header</p>\n<p>$map</p>\n<p>$footer</p>";
+
+  if ($user->uid > 0) {
+    $output .= '<p>'. t('To add/change your location to the user map, <a href="@url">edit your location</a>.', array('@url' => url('user/'. $user->uid .'/edit/gmap_user'))) .'</p>';
+  }
+
   return $output;
 }
 
