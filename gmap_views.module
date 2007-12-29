@@ -121,7 +121,7 @@ function theme_views_view_gmap($view, $results) {
           }
         }
         $themarker = array(
-          'markername' => $markertypes[$type],
+          'markername' => isset($markertypes[$type]) ? $markertypes[$type] : 'drupal',
           'latitude' => $location['lat'],
           'longitude' => $location['lon'],
           'view' => array_values($data),
@@ -130,7 +130,7 @@ function theme_views_view_gmap($view, $results) {
       else {
         // Common
         $themarker = array(
-          'markername' => $markertypes[$type],
+          'markername' => isset($markertypes[$type]) ? $markertypes[$type] : 'drupal',
           'latitude' => $location['lat'],
           'longitude' => $location['lon']
         );
