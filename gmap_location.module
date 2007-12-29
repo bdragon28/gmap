@@ -17,6 +17,28 @@ function gmap_location_perm() {
 }
 
 /**
+ * Get the user map variable defaults.
+ */
+function _gmap_location_user_map_defaults(){
+  return array(
+    'macro' => '[gmap |id=usermap|center=40,0|zoom=3|width=100%|height=400px]',
+    'header' => 'This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.',
+    'footer' => '',
+  );
+}
+
+/**
+ * Get the node map variable defaults.
+ */
+function _gmap_location_node_map_defaults() {
+  return array(
+    'macro' => '[gmap |id=nodemap|center=40,0|zoom=3|width=100%|height=400px]',
+    'header' => 'This map illustrates the locations of the nodes on this website. Each marker indicates a node associated with a specific location.',
+    'footer' => '',
+  );
+}
+
+/**
  * Implementation of hook_menu().
  */
 function gmap_location_menu($may_cache) {
@@ -69,7 +91,9 @@ function gmap_location_user_page() {
   global $user;
   $locationbyuser = array();
 
-  $output ='<p>'. t(variable_get('gmap_user_map_header', 'This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.')) ."</p>\n";
+  $usermapopts = variable_get('gmap_user_map', _gmap_location_user_map_defaults());
+
+  $output ='<p>'. $usermapopts['header'] ."</p>\n";
 
   // Find default marker
   $default_marker = variable_get('gmap_user_map_marker', 'drupal');
@@ -85,7 +109,7 @@ function gmap_location_user_page() {
 
   $thismap = array_merge(
     gmap_defaults(),
-    gmap_parse_macro(variable_get('gmap_user_map', '[gmap|id=usermap|center=30,0|zoom=2|width=100%|height=400px]'))
+    gmap_parse_macro($usermapopts['macro'])
   );
   $result=db_query("SELECT * FROM {location} WHERE (longitude !=0 OR latitude !=0) AND type='user'");
 
@@ -181,7 +205,7 @@ function theme_gmap_location_user_page($header, $map, $footer) {
  */
 function gmap_location_node_page($nid = NULL) {
 
-  $nodemap = variable_get('gmap_node_map', array());
+  $nodemap = variable_get('gmap_node_map', _gmap_location_node_map_defaults());
   $markertypes = variable_get('gmap_node_markers', array());
 
   $map = array_merge(
@@ -375,11 +399,7 @@ function gmap_location_admin_settings() {
   );
 
   // gmap_user_map defaults
-  $temp = variable_get('gmap_user_map', array(
-    'macro' => '[gmap |id=usermap|center=40,0|zoom=3|width=100%|height=400px]',
-    'header' => 'This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.',
-    'footer' => '',
-  ));
+  $temp = variable_get('gmap_user_map', _gmap_location_user_map_defaults());
 
   $form['user']['gmap_user_map'] = array(
     '#type' => 'fieldset',
@@ -440,11 +460,7 @@ function gmap_location_admin_settings() {
   );
 
   // gmap_node_map defaults
-  $temp = variable_get('gmap_node_map', array(
-    'macro' => '[gmap |id=nodemap|center=40,0|zoom=3|width=100%|height=400px]',
-    'header' => 'This map illustrates the locations of the nodes on this website. Each marker indicates a node associated with a specific location.',
-    'footer' => '',
-  ));
+  $temp = variable_get('gmap_node_map', _gmap_location_node_map_defaults());
 
   $form['node']['gmap_node_map'] = array(
     '#type' => 'fieldset',
@@ -789,10 +805,10 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
             '#description' => t('The latitude and longitude will be entered here when you click on a location in the interactive map above. You can also fill in the values manually.'),
           );
 
-          // @@@
-          $map_macro = variable_get('gmap_user_map', '[gmap |id=usermap |center=0,30 |zoom=16 |width=100% |height=400px]');
+          // @@@ Why is this based off the user map?
+          $tmp = variable_get('gmap_user_map', _gmap_location_user_map_defaults());
 
-          $form['coordinates']['gmap_node']['#value'] = gmap_set_location($map_macro, $form['coordinates'], array('latitude' => 'gmap_location_latitude', 'longitude' => 'gmap_location_longitude'));
+          $form['coordinates']['gmap_node']['#value'] = gmap_set_location($tmp['macro'], $form['coordinates'], array('latitude' => 'gmap_location_latitude', 'longitude' => 'gmap_location_longitude'));
 
 /*
           if (variable_get('gmap_geocode', 1)) {
