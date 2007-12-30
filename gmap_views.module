@@ -126,6 +126,9 @@ function theme_views_view_gmap($view, $results) {
           'longitude' => $location['lon'],
           'view' => array_values($data),
         );
+        if (isset($entry->gmap_taxonomy_marker) && !empty($entry->gmap_taxonomy_marker)) {
+          $themarker['markername'] = $entry->gmap_taxonomy_marker;
+        }
       }
       else {
         // Common
@@ -134,6 +137,9 @@ function theme_views_view_gmap($view, $results) {
           'latitude' => $location['lat'],
           'longitude' => $location['lon']
         );
+        if (isset($entry->gmap_taxonomy_marker) && !empty($entry->gmap_taxonomy_marker)) {
+          $themarker['markername'] = $entry->gmap_taxonomy_marker;
+        }
         // Popup
         if ($markermode == 1) {
           $marker_tabs = theme('gmap_views_marker_label', $view, $fields, $entry);
@@ -232,5 +238,9 @@ function _gmap_views_get_lat_long_from_ids($entry, $ids) {
 function gmap_views_query_alter(&$query, &$view, $summary, $level) {
   if ($view->page && $view->page_type == 'gmap') {
     $query->add_field('type', 'node', 'gmap_node_type');
+    if (module_exists('gmap_taxonomy')) {
+      $query->ensure_table('gmap_taxonomy_node');
+      $query->add_field('marker', 'gmap_taxonomy_node', 'gmap_taxonomy_marker');
+    }
   }
 }

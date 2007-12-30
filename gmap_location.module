@@ -664,10 +664,18 @@ function gmap_location_block_view($nid) {
     foreach ($node->locations as $loc) {
       // @@@ Todo: Client side geocoding
       if ($loc['latitude'] || $loc['longitude']) {
+        $markername = isset($markertypes[$node->type]) ? $markertypes[$node->type] : 'drupal';
+        if (module_exists('gmap_taxonomy')) {
+          $t = db_result(db_query('SELECT marker FROM {gmap_taxonomy_node} WHERE vid = %d', $node->vid));
+          if (!empty($t)) {
+            $markername = $t;
+          }
+        }
+
         $markers[] = array(
           'latitude' => $loc['latitude'],
           'longitude' => $loc['longitude'],
-          'markername' => isset($markertypes[$node->type]) ? $markertypes[$node->type] : 'drupal',
+          'markername' => $markername,
         );
       }
     }

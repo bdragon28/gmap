@@ -129,3 +129,28 @@ function gmap_taxonomy_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       break;
   }
 }
+
+/**
+ * Implementation of hook_views_tables().
+ */
+function gmap_taxonomy_views_tables() {
+  $tables['gmap_taxonomy_node'] = array(
+    'fields' => array(
+      'marker' => array(
+        'name' => t('GMap Taxonomy: Marker'),
+        'help' => t('Displays the marker name GMap Taxonomy associates with this node.'),
+      ),
+    ),
+
+    'join' => array(
+      'left' => array(
+        'table' => 'node',
+        'field' => 'vid',
+      ),
+      'right' => array(
+        'field' => 'vid',
+      ),
+    ),
+  );
+  return $tables;
+}
