@@ -16,6 +16,7 @@ function gmap_taxonomy_install() {
       db_query("CREATE TABLE {gmap_taxonomy_node} (
         nid int(10) unsigned NOT NULL default '0',
         vid int(10) unsigned NOT NULL default '0',
+        tid int(10) unsigned NOT NULL default '0',
         marker varchar(32),
         PRIMARY KEY vid(vid),
         INDEX nid(nid)
@@ -33,4 +34,26 @@ function gmap_taxonomy_install() {
 function gmap_taxonomy_uninstall() {
   db_query('DROP TABLE {gmap_taxonomy_node}');
   db_query('DROP TABLE {gmap_taxonomy_term}');
+}
+
+/**
+ * Track the tid that caused the association, so we can
+ * do fixups faster.
+ */
+function gmap_taxonomy_update_5001() {
+  $ret = array();
+  // Add the new column.
+  switch($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $ret[] = update_sql("ALTER TABLE {gmap_taxonomy_node} ADD tid int(10) unsigned NOT NULL default '0' AFTER vid");
+      $ret[] = update_sql('TRUNCATE {gmap_taxonomy_node}');
+      // Useful for repopulating in bulk... Copy to hook_enable()?
+      $ret[] = update_sql("INSERT INTO {gmap_taxonomy_node} (nid, vid, tid, marker) (SELECT n.nid, n.vid, t.tid, g.marker FROM {node_revisions} n INNER JOIN {term_node} t ON n.nid = t.nid INNER JOIN {gmap_taxonomy_term} g ON t.tid = g.tid GROUP BY n.vid ORDER BY NULL)");
+      break;
+    case 'pgsql':
+      // This update will never be needed for pgsql, as it predates pgsql support.
+      break;
+  }
+  return $ret;
 }

@@ -84,6 +84,10 @@ function gmap_taxonomy_taxonomy($op, $type, $array = NULL) {
         if (isset($array['gmap_taxonomy_marker']) && !empty($array['gmap_taxonomy_marker'])) {
           db_query('DELETE FROM {gmap_taxonomy_term} WHERE tid = %d', $array['tid']);
           db_query("INSERT INTO {gmap_taxonomy_term} (tid, marker) VALUES (%d, '%s')", $array['tid'], $array['gmap_taxonomy_marker']);
+
+          // Be a helpful module and make the change retroactive.
+          db_query('DELETE FROM {gmap_taxonomy_node} WHERE tid = %d', $array['tid']);
+          db_query('INSERT INTO {gmap_taxonomy_node} (nid, vid, tid, marker) (SELECT n.nid, n.vid, t.tid, g.marker FROM {node_revisions} n INNER JOIN {term_node} t ON n.nid = t.nid INNER JOIN {gmap_taxonomy_term} g ON t.tid = g.tid WHERE t.tid = %d)', $array['tid']);
         }
         break;
       case 'delete':
@@ -101,23 +105,26 @@ function gmap_taxonomy_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     case 'update':
       $status = variable_get('gmap_taxonomy_vocabs', array());
       $marker = '';
-      foreach ($node->taxonomy as $voc => $terms) {
-        if (isset($status[$voc]) && $status[$voc]) {
-          $t = $terms;
-          if (!is_array($t)) {
-            $t = array($t);
-          }
-          foreach ($t as $term) {
-            $m = db_result(db_query('SELECT marker FROM {gmap_taxonomy_term} WHERE tid = %d', $term));
-            if (!empty($m)) {
-              $marker = $m;
+      if (isset($node->taxonomy) && is_array($node->taxonomy)) {
+        foreach ($node->taxonomy as $voc => $terms) {
+          if (isset($status[$voc]) && $status[$voc]) {
+            $t = $terms;
+            if (!is_array($t)) {
+              $t = array($t);
+            }
+            foreach ($t as $term) {
+              $result = db_query('SELECT marker, tid FROM {gmap_taxonomy_term} WHERE tid = %d', $term);
+              if ($m = db_fetch_object($result)) {
+                $marker = $m->marker;
+                $markertid = $m->tid;
+              }
             }
           }
         }
-      }
-      if (!empty($marker)) {
-        db_query('DELETE FROM {gmap_taxonomy_node} WHERE vid = %d', $node->vid);
-        db_query("INSERT INTO {gmap_taxonomy_node} (nid, vid, marker) VALUES (%d, %d, '%s')", $node->nid, $node->vid, $marker);
+        if (!empty($marker)) {
+          db_query('DELETE FROM {gmap_taxonomy_node} WHERE vid = %d', $node->vid);
+          db_query("INSERT INTO {gmap_taxonomy_node} (nid, vid, tid, marker) VALUES (%d, %d, %d, '%s')", $node->nid, $node->vid, $markertid, $marker);
+        }
       }
       break;
 
