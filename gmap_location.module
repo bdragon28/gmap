@@ -238,17 +238,33 @@ function gmap_location_node_page($nid = NULL) {
   }
 
   $add_sql = (is_numeric($nid) && $nid > 0) ? ' AND n.nid = %d' : '';
-  $result = db_query(db_rewrite_sql("
-    SELECT n.nid, n.type, n.title, l.latitude, l.longitude $marker_sql1
-    FROM {node} n
-    INNER JOIN {location} l
-      ON n.vid = l.eid
-    $marker_sql2
-    WHERE
-      l.type = '%s'
-    AND
-      (l.latitude != 0 OR l.longitude != 0)
-    ". $add_sql), 'node', $nid);
+  // Location 3.x on Drupal 5.
+  if (function_exists('location_newapi')) {
+    $result = db_query(db_rewrite_sql("
+      SELECT n.nid, n.type, n.title, l.latitude, l.longitude $marker_sql1
+      FROM {node} n
+      INNER JOIN {location_instance} i
+        ON n.vid = i.vid
+      INNER JOIN {location} l
+        ON l.lid = l.lid
+      $marker_sql2
+      WHERE
+        (l.latitude != 0 OR l.longitude != 0)
+      ". $add_sql), 'node', $nid);
+  }
+  else {
+    $result = db_query(db_rewrite_sql("
+      SELECT n.nid, n.type, n.title, l.latitude, l.longitude $marker_sql1
+      FROM {node} n
+      INNER JOIN {location} l
+        ON n.vid = l.eid
+      $marker_sql2
+      WHERE
+        l.type = '%s'
+      AND
+        (l.latitude != 0 OR l.longitude != 0)
+      ". $add_sql), 'node', $nid);
+  }
 
   $count = 0;
   while ($row = db_fetch_object($result)) {
@@ -776,6 +792,11 @@ function theme_gmap_location_user_html($account) {
 }
 
 function gmap_location_user($op, &$edit, &$user, $category = NULL) {
+  if (function_exists('location_newapi')) {
+    // Location 3.x handles the whole process.
+    return;
+  }
+
   if (variable_get('gmap_user', 0) && user_access('set user location')) {
     switch ($op) {
       case 'load':
@@ -868,25 +889,6 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
         }
         return $form;
     }
-  }
-}
-
-function _gmap_location_store_location($object, $type, $update = false) {
-  if (isset($object->gmap_location_latitude) && isset($object->gmap_location_longitude)) {
-    if ($update) {
-      db_query("UPDATE {location} SET latitude='%f', longitude='%f', source='%d' WHERE eid='%d' AND type='%s'",
-        $object->gmap_location_latitude, $object->gmap_location_longitude, 1, $object->eid, $type);
-
-    }
-    else {
-      $lid = db_next_id('{location}_lid');
-      // based on location.module LOCATION_LATLON_USER_SUBMITTED=1
-      db_query("INSERT INTO {location} (eid, lid, type, latitude, longitude, source) VALUES (%d, %d, '%s', '%f', '%f', '%d')",
-        $object->eid, $lid, $type, $object->gmap_location_latitude, $object->gmap_location_longitude, 1);
-    }
-    unset($object->gmap_location_latitude);
-    unset($object->gmap_location_longitude);
-    unset($object->gmap_location_set);
   }
 }
 
