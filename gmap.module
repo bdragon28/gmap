@@ -22,8 +22,11 @@ define('GMAP_LINECOLOR3', '#0000ff');
 
 define('GMAP_WMS', variable_get('gmap_wms', 0));
 
-// Minimum is currently V. 2.69 (which implements the new GPolygon stuff)
-define('GMAP_API_V', '2');
+// 2.s will use the most recent stable version. See:
+// http://groups.google.com/group/Google-Maps-API/web/api-version-changes
+// for details on using other version numbers.
+define('GMAP_API_V', '2.s');
+
 
 /**
  * Get the defaults for a gmap.
