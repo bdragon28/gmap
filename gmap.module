@@ -25,7 +25,7 @@ define('GMAP_WMS', variable_get('gmap_wms', 0));
 // 2.s will use the most recent stable version. See:
 // http://groups.google.com/group/Google-Maps-API/web/api-version-changes
 // for details on using other version numbers.
-define('GMAP_API_V', '2.s');
+define('GMAP_API_VERSION', '2.s');
 
 
 /**
@@ -181,7 +181,7 @@ drupal_add_js($gmap_path .'/js/poly.js');
   if (module_exists('keys_api')) {
     $key = keys_api_get_key('gmap', $_SERVER['HTTP_HOST']);
   }
-  drupal_set_html_head('<script src="http://maps.google.com/maps?file=api&amp;v='. GMAP_API_V .'&amp;key='. $key .'" type="text/javascript"></script>');
+  drupal_set_html_head('<script src="'. check_url('http://maps.google.com/maps?file=api&v='. variable_get('gmap_api_version', GMAP_API_VERSION) .'&key='. $key) .'" type="text/javascript"></script>');
   $gmap_initialized = TRUE;
 }
 
@@ -492,7 +492,7 @@ function gmap_parse_macro($instring, $ver=2) {
         $tt['filename'] =$t[1];
         $gmap['tracks'][] = $tt;
         break;
-        
+
       case 'feed':
         if (strpos($t[1],'::')) { // note: we don't care about case starting with ':'
           list($markername,$t[1])=explode('::',$t[1],2);
@@ -867,7 +867,7 @@ function process_gmap_overlay_edit($element) {
     ),
   );
   gmap_widget_setup($element['markerclicktype'], 'overlayedit_markerclicktype');
-  
+
   $element['marker'] = array(
     '#type' => 'select',
     '#map' => $element['#map'],
@@ -1055,7 +1055,7 @@ function theme_gmap($element) {
   $o .= "/* <![CDATA[ */\n";
   $o .= 'Drupal.extend({ settings: '. drupal_to_js(array('gmap' => array($element['#map'] => $map))) ." });\n";
   $o .= "/* ]]> */\n";
-  $o .= "</script>\n"; 
+  $o .= "</script>\n";
   return $o;
 }
 
@@ -1127,7 +1127,7 @@ function gmap_get_marker_titles($reset = FALSE) {
   if (is_array($titles) && !$reset) {
     return $titles;
   }
-  
+
   $titles = cache_get('gmap_marker_titles');
   if ($titles) {
     $titles = unserialize($titles->data);
