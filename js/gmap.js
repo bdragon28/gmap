@@ -147,7 +147,10 @@ Drupal.gmap.addHandler('gmap',function(elem) {
       // is clicked. This may not necessarily be the correct thing to do in all themes,
       // hence it being a behavior.
       setTimeout(function(){
-        var r = function() { map.checkResize() };
+        var r = function() {
+          map.checkResize();
+          map.setCenter(new GLatLng(obj.vars.latitude,obj.vars.longitude), obj.vars.zoom);
+        };
         $(elem).parents('fieldset.collapsible').children('legend').children('a').click(r);
         // Would be nice, but doesn't work.
         //$(elem).parents('fieldset.collapsible').children('.fieldset-wrapper').scroll(r);
