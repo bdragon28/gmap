@@ -11,8 +11,12 @@ Drupal.gmap.addHandler('macrotext', function(elem) {
   var obj = this;
   obj.macrostorage = {};
 
-  obj.bind("widthchange",function(w){obj.macrostorage.width = w});
-  obj.bind("heightchange",function(h){obj.macrostorage.height = h});
+  obj.bind("widthchange", function(w){
+    obj.macrostorage.width = w;
+  });
+  obj.bind("heightchange", function(h){
+    obj.macrostorage.height = h;
+  });
 
   // Basic macros.
   obj.bind('buildmacro',function(add) {
@@ -32,7 +36,7 @@ Drupal.gmap.addHandler('macrotext', function(elem) {
   // Update macro every time something happens.
   obj.bind('all',function(name){
     if (name != 'buildmacro') {
-      var add = new Array();
+      var add = [];
       // Collect macro pieces.
       obj.change('buildmacro',-1,add);
       elem.value = '[gmap ' + add.join(' |') + ']';
@@ -48,4 +52,4 @@ Drupal.gmap.map.prototype.parse = function(m) {
   if (m.substr(0,5)=='[gmap') {
     m = m.slice(6,-1);
   }
-}
+};

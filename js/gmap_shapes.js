@@ -1,8 +1,9 @@
+/* $Id$ */
+
 /**
  * GMap Shapes
  * GMap API version / Base case
  */
-/* $Id$ */
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
@@ -14,6 +15,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   });
 */
   obj.bind('prepareshape',function(shape) {
+    var i, pa, pp, cargs;
     //var m = new GMarker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
     pa = []; // point array (array of GLatLng-objects)
     if (shape.type == 'circle') {
@@ -42,20 +44,20 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     $.each(shape.style, function(i,n){
       cargs.push(n);
     });
-    var pg = function(args) {
+    var Pg = function(args) {
       GPolygon.apply(this,args);
-    }
-    pg.prototype = new GPolygon();
-    var pl = function(args) {
+    };
+    Pg.prototype = new GPolygon();
+    var Pl = function(args) {
       GPolyline.apply(this,args);
-    }
-    pl.prototype = new GPolyline();
+    };
+    Pl.prototype = new GPolyline();
     switch (shape.type) {
       case 'circle':
-        shape.shape = new pg(cargs);
+        shape.shape = new Pg(cargs);
         break;
       case 'line':
-        shape.shape = new pl(cargs);
+        shape.shape = new Pl(cargs);
         break;
     }
   });

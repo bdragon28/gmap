@@ -1,7 +1,8 @@
+/* $Id$ */
+
 /**
  * Common marker routines.
  */
-// $Id$
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
@@ -43,7 +44,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     }
     else if (marker.tabs) {
       var infoWinTabs = [];
-      for (m in marker.tabs) {
+      for (var m in marker.tabs) {
         infoWinTabs.push(new GInfoWindowTab(m,marker.tabs[m]));
       }
       marker.marker.openInfoWindowTabsHtml(infoWinTabs);

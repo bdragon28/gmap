@@ -1,13 +1,14 @@
+/* $Id$ */
+
 /**
  * GMap Markers
  * GMap API version -- No manager
  */
-/* $Id$ */
 
 // Replace to override marker creation
 Drupal.gmap.factory.marker = function(loc,opts) {
   return new GMarker(loc,opts);
-}
+};
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;

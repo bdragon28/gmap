@@ -1,10 +1,11 @@
+/* $Id$ */
+
 /**
  * GMap Shape Loader
  * Static Shapes.
  * This is a simple marker loader to read markers from the map settings array.
  * Commonly used with macros.
  */
-/* $Id */
 
 // Add a gmap handler
 Drupal.gmap.addHandler('gmap', function(elem) {
@@ -19,7 +20,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       var s = obj.vars.shapes;
       obj.vars.shapes = [];
       $.each(s, function(i,shape) {
-        if (!shape.opts) shape.opts = {};
+        if (!shape.opts) {shape.opts = {};}
         // TODO: style props?
         // And add it.
         obj.change('prepareshape',-1,shape);

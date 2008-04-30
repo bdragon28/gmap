@@ -1,7 +1,8 @@
 /* $Id$ */
+
 /**
  * GPolyLine / GPolygon manager
- * 
+ *
  */
 
 Drupal.gmap.map.prototype.poly = {};
@@ -11,7 +12,7 @@ Drupal.gmap.map.prototype.poly = {};
  */
 Drupal.gmap.map.prototype.poly.distance = function(point1,point2) {
   return Math.sqrt(Math.pow(point2.x - point1.x,2)+Math.pow(point2.y - point1.y,2));
-}
+};
 
 /**
  * Circle -- Following projection.
@@ -20,7 +21,7 @@ Drupal.gmap.map.prototype.poly.computeCircle = function(obj,center,point2) {
   var numSides = 36;
   var sideInc = 10; // 360 / 20 = 18 degrees
   var convFactor = Math.PI/180;
-  var points = Array();
+  var points = [];
   var radius = obj.poly.distance(center,point2);
   // 36 sided poly ~= circle
   for (var i = 0; i <= numSides; i++) {
@@ -34,15 +35,15 @@ Drupal.gmap.map.prototype.poly.computeCircle = function(obj,center,point2) {
 };
 
 Drupal.gmap.map.prototype.poly.calcPolyPoints = function(center, radM, numPoints, sAngle) {
-  if(!numPoints) numPoints = 32;
-  if(!sAngle) sAngle = 0;
+  if(!numPoints) {numPoints = 32;}
+  if(!sAngle) {sAngle = 0;}
 
   var d2r = Math.PI / 180.0;
   var r2d = 180.0 / Math.PI;
   var angleRad = sAngle * d2r;
   // earth semi major axis is about 6378137 m
   var latScale = radM / 6378137 * r2d;
-  var lngScale = latScale / Math.cos(center.lngRadians())
+  var lngScale = latScale / Math.cos(center.lngRadians());
 
   var angInc = 2 * Math.PI / numPoints;
   var points = [];
@@ -56,10 +57,9 @@ Drupal.gmap.map.prototype.poly.calcPolyPoints = function(center, radM, numPoints
   // close the shape and return it
   points.push(points[0]);
   return points;
-}
+};
 
 /**
  * Circle -- on screen.
  */
 //Drupal.gmap.map.prototype.
-

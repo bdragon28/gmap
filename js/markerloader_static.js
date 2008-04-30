@@ -1,10 +1,11 @@
+/* $Id$ */
+
 /**
  * GMap Marker Loader
  * Static markers.
  * This is a simple marker loader to read markers from the map settings array.
  * Commonly used with macros.
  */
-/* $Id */
 
 // Add a gmap handler
 Drupal.gmap.addHandler('gmap', function(elem) {
@@ -15,7 +16,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     obj.bind('iconsready',function() {
       for (i=0; i<obj.vars.markers.length; i++) {
         marker = obj.vars.markers[i];
-        if (!marker.opts) marker.opts = {};
+        if (!marker.opts) {marker.opts = {};}
         // Pass around the object, bindings can change it if necessary.
         obj.change('preparemarker',-1,marker);
         // And add it.

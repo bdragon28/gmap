@@ -11,7 +11,9 @@
 Drupal.gmap.addHandler('align', function(elem) {
   var obj = this;
   // Respond to incoming alignment changes.
-  var binding = obj.bind("alignchange",function(){elem.value = obj.vars.align});
+  var binding = obj.bind("alignchange", function(){
+    elem.value = obj.vars.align;
+  });
   // Send out outgoing alignment changes.
   $(elem).change(function() {
     obj.vars.align = elem.value;
@@ -22,15 +24,15 @@ Drupal.gmap.addHandler('align', function(elem) {
 Drupal.gmap.addHandler('gmap',function(elem) {
   var obj = this;
   // Respond to incoming alignment changes.
-  binding = obj.bind("alignchange",function() {
+  var binding = obj.bind("alignchange", function() {
     var cont = obj.map.getContainer();
     $(cont)
       .removeClass('gmap-left')
       .removeClass('gmap-center')
       .removeClass('gmap-right');
-    if (obj.vars.align=='Left')   $(cont).addClass('gmap-left');
-    if (obj.vars.align=='Center') $(cont).addClass('gmap-center');
-    if (obj.vars.align=='Right')  $(cont).addClass('gmap-right');
+    if (obj.vars.align=='Left') {$(cont).addClass('gmap-left');}
+    if (obj.vars.align=='Center') {$(cont).addClass('gmap-center');}
+    if (obj.vars.align=='Right') {$(cont).addClass('gmap-right');}
   });
   // Send out outgoing alignment changes.
   // N/A

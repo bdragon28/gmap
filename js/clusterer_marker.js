@@ -1,13 +1,14 @@
+/* $Id$ */
+
 /**
  * GMap Markers
  * Jef Poskanzer's Clusterer.js API version
  */
-/* $Id$ */
 
 // Replace to override marker creation
 Drupal.gmap.factory.marker = function(loc,opts) {
   return new GMarker(loc,opts);
-}
+};
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
@@ -33,7 +34,9 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     var t;
     if (marker.opts.title) {
       t = marker.opts.title;
-      if (marker.link) t = t.link(marker.link);
+      if (marker.link) {
+        t = t.link(marker.link);
+      }
     }
     obj.clusterer.AddMarker(marker.marker,t);
   });

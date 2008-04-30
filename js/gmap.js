@@ -1,5 +1,9 @@
 /* $Id$ */
 
+/**
+ * Drupal to Google Maps API bridge.
+ */
+
 // GMap overseer singleton
 Drupal.gmap = new function() {
   var _handlers = {};
@@ -18,7 +22,7 @@ Drupal.gmap = new function() {
 
   this.addHandler = function(handler,callback) {
     if (!_handlers[handler]) {
-      _handlers[handler] = new Array();
+      _handlers[handler] = [];
     }
     _handlers[handler].push(callback);
   };
@@ -31,7 +35,7 @@ Drupal.gmap = new function() {
 
   this.setup = function() {
     if (Drupal.settings && Drupal.settings.gmap) {
-      for (mapid in Drupal.settings.gmap) {
+      for (var mapid in Drupal.settings.gmap) {
         _maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
 
         // Pick up the query path for json requests.
@@ -39,7 +43,7 @@ Drupal.gmap = new function() {
           Drupal.gmap.querypath = Drupal.settings.gmap[mapid].querypath;
         }
 
-        for (control in _handlers) {
+        for (var control in _handlers) {
           var s = 0;
           do {
             var o = $('#gmap-'+mapid+'-'+control+s);
@@ -82,7 +86,7 @@ Drupal.gmap.map = function(v) {
    */
   this.bind = function(name,callback) {
     if (!_bindings[name]) {
-      _bindings[name] = new Array();
+      _bindings[name] = [];
     }
     return _bindings[name].push(callback) - 1;
   };
@@ -160,7 +164,7 @@ Drupal.gmap.addHandler('gmap',function(elem) {
       },0);
     }
     map.setCenter(new GLatLng(obj.vars.latitude,obj.vars.longitude), obj.vars.zoom);
-    if (jQuery.fn.mousewheel && !obj.vars.behavior.nomousezoom) {
+    if ($.fn.mousewheel && !obj.vars.behavior.nomousezoom) {
       $(elem).mousewheel(function(event, delta) {
         var zoom = map.getZoom();
         if (delta > 0) {
@@ -339,6 +343,7 @@ Drupal.gmap.addHandler('maptype', function(elem) {
 (function() { // BEGIN CLOSURE
   var re = /([0-9.]+)\s*(em|ex|px|in|cm|mm|pt|pc|%)/;
   var normalize = function(str) {
+    var ar;
     if ((ar = re.exec(str.toLowerCase()))) {
       return ar[1] + ar[2];
     }

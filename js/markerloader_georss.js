@@ -1,9 +1,10 @@
+/* $Id$ */
+
 /**
  * GMap Marker Loader
  * GeoRSS markers.
  * This doesn't work at the moment.
  */
-/* $Id$ */
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
@@ -72,7 +73,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
               obj.change('preparemarker',-1,marker);
               // And add it.
               obj.change('addmarker',-1,marker);
-            };
+            }
           };
         };
         // This sucks, but jQuery and IE don't get along here.

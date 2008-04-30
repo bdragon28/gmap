@@ -1,7 +1,8 @@
+/* $Id$ */
+
 /**
  * Gmap Overlay Editor
  */
-/* $Id$ */
 
 Drupal.gmap.addHandler('overlayedit_mapclicktype',function(elem) {
   var obj = this;

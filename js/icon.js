@@ -1,9 +1,10 @@
+/* $Id$ */
+
 /**
  * GIcon manager for GMap.
  *
  * Required for markers to operate properly.
  */
-/* $Id$ */
 
 /**
  * Get the GIcon corresponding to a setname / sequence.
@@ -85,8 +86,8 @@ Drupal.gmap.iconSetup = function(json) {
     delete filew;
     delete fileh;
 
-    for (ini in json.markers[path].i) {
-      jQuery.extend(Drupal.gmap.icons,Drupal.gmap.expandIconDef(json.markers[path].i[ini],path,files));
+    for (var ini in json.markers[path].i) {
+      $.extend(Drupal.gmap.icons,Drupal.gmap.expandIconDef(json.markers[path].i[ini],path,files));
     }
   }
   // Tell everyone marker icons are ready
