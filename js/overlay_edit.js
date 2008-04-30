@@ -63,7 +63,7 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   obj.statusdiv = status[0];
 
   obj.bind('buildmacro',function(add) {
-    var temp;
+    var temp, i, q;
     if (obj.vars.shapes) {
       var circles  = [];
       var lines = [];
@@ -89,23 +89,25 @@ Drupal.gmap.addHandler('gmap',function(elem) {
       });
     }
     if (obj.vars.points) {
-      for (var i in obj.vars.points) {
-        temp = [];
-        for (var j = 0 ; j < obj.vars.points[i].length ; j++) {
-          var data = obj.vars.points[i][j].gmapMarkerData();
-          temp.push(''+ data.point.lat() + ',' + data.point.lng());
-        }
-        if (temp.length > 0) {
-          add.push('markers='+i+'::' + temp.join(' + '));
+      for (i in obj.vars.points) {
+        if (i) {
+          temp = [];
+          for (var j = 0 ; j < obj.vars.points[i].length ; j++) {
+            var data = obj.vars.points[i][j].gmapMarkerData();
+            temp.push(''+ data.point.lat() + ',' + data.point.lng());
+          }
+          if (temp.length > 0) {
+            add.push('markers='+i+'::' + temp.join(' + '));
+          }
         }
       }
     }
-    for (var q=0; q<3 ; q++) {
+    for (q = 0; q<3 ; q++) {
       temp = [];
       if (obj.vars.lines && obj.vars.lines[q] && obj.vars.lines[q].points) {
         // Lines have at least 2 points.
         if (obj.vars.lines[q].points.length > 1) {
-          for(var i=0;i<obj.vars.lines[q].points.length;i++) {
+          for(i = 0; i < obj.vars.lines[q].points.length; i++) {
             temp[i] = '' + obj.vars.lines[q].points[i].lat() + ',' + obj.vars.lines[q].points[i].lng();
           }
           add.push('line' + (q+1) + '=' + temp.join(' + '));
