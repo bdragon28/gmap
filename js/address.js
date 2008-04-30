@@ -2,7 +2,7 @@
 
 /**
  * Address widget and GMap geocoder routines.
- * 
+ *
  */
 
 ////////////////////////////////////////
@@ -19,7 +19,7 @@ Drupal.gmap.geocoder = function() {
     theGeocoder = new GClientGeocoder();
   }
   return theGeocoder;
-}
+};
 
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
@@ -38,9 +38,9 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   });
 
   obj.bind('geocode_panzoom', function(addr) {
-    Drupal.gmap.geocoder().getLocations(addr,function(response) {
+    Drupal.gmap.geocoder().getLocations(addr, function(response) {
       if (response && response.Status.code == 200) {
-        place = response.Placemark[0];
+        var place = response.Placemark[0];
         obj.vars.latitude = place.Point.coordinates[1];
         obj.vars.longitude = place.Point.coordinates[0];
 
@@ -94,13 +94,15 @@ Drupal.gmap.addHandler('address', function(elem) {
 
   // Respond to incoming movements.
   // Clear the box when the coords change...
-  var binding = obj.bind("move",function(){elem.value = 'Enter an address'});
+  var binding = obj.bind("move", function(){
+    elem.value = 'Enter an address';
+  });
   // Send out outgoing movements.
   // This happens ASYNC!!!
   $(elem).change(function() {
-    if(elem.value.length > 0) {
-      Drupal.gmap.geocoder().getLatLng(elem.value,function(point) {
-        if(point) {
+    if (elem.value.length > 0) {
+      Drupal.gmap.geocoder().getLatLng(elem.value, function(point) {
+        if (point) {
           obj.vars.latitude = point.lat();
           obj.vars.longitude = point.lng();
           obj.change("move",binding);
@@ -132,13 +134,15 @@ Drupal.gmap.addHandler('locpick_address', function(elem) {
 
   // Respond to incoming movements.
   // Clear the box when the coords change...
-  var binding = obj.bind("locpickchange",function(){elem.value = 'Enter an address'});
+  var binding = obj.bind("locpickchange", function(){
+    elem.value = 'Enter an address';
+  });
   // Send out outgoing movements.
   // This happens ASYNC!!!
   $(elem).change(function() {
-    if(elem.value.length > 0) {
+    if (elem.value.length > 0) {
       Drupal.gmap.geocoder().getLatLng(elem.value,function(point) {
-        if(point) {
+        if (point) {
           obj.locpick_coord = point;
           obj.change("locpickchange",binding);
         }
@@ -154,4 +158,3 @@ Drupal.gmap.addHandler('locpick_address', function(elem) {
     }
   });
 });
-

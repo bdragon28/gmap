@@ -25,51 +25,45 @@ Drupal.gmap = new function() {
 
   this.globalChange = function(name,userdata) {
     for (var mapid in Drupal.settings.gmap) {
-      if (mapid) {
-        _maps[mapid].change(name,-1,userdata);
-      }
+      _maps[mapid].change(name,-1,userdata);
     }
   };
 
   this.setup = function() {
     if (Drupal.settings && Drupal.settings.gmap) {
       for (mapid in Drupal.settings.gmap) {
-        if (mapid) {
-          _maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
+        _maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
 
-          // Pick up the query path for json requests.
-          if (!Drupal.gmap.querypath) {
-            Drupal.gmap.querypath = Drupal.settings.gmap[mapid].querypath;
-          }
-
-          for (control in _handlers) {
-            if (control) {
-              var s = 0;
-              do {
-                var o = $('#gmap-'+mapid+'-'+control+s);
-                o.each(function() {
-                    for (var i=0; i<_handlers[control].length; i++) {
-                      _handlers[control][i].call(_maps[mapid],this);
-                    }
-                });
-                s++;
-              }
-              while (o.length>0);
-            }
-          }
-
-          _maps[mapid].change("init",-1);
-
-          // Send some changed events to fire up the rest of the initial settings..
-          _maps[mapid].change("maptypechange",-1);
-          _maps[mapid].change("controltypechange",-1);
-          _maps[mapid].change("alignchange",-1);
-
-          // Set ready to put the event system into action.
-          _maps[mapid].ready = true;
-          _maps[mapid].change("ready",-1);
-
+        // Pick up the query path for json requests.
+        if (!Drupal.gmap.querypath) {
+          Drupal.gmap.querypath = Drupal.settings.gmap[mapid].querypath;
         }
+
+        for (control in _handlers) {
+          var s = 0;
+          do {
+            var o = $('#gmap-'+mapid+'-'+control+s);
+            o.each(function() {
+                for (var i=0; i<_handlers[control].length; i++) {
+                  _handlers[control][i].call(_maps[mapid],this);
+                }
+            });
+            s++;
+          }
+          while (o.length>0);
+        }
+
+        _maps[mapid].change("init",-1);
+
+        // Send some changed events to fire up the rest of the initial settings..
+        _maps[mapid].change("maptypechange",-1);
+        _maps[mapid].change("controltypechange",-1);
+        _maps[mapid].change("alignchange",-1);
+
+        // Set ready to put the event system into action.
+        _maps[mapid].ready = true;
+        _maps[mapid].change("ready",-1);
+
       }
     }
   };

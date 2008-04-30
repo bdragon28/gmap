@@ -90,15 +90,13 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     }
     if (obj.vars.points) {
       for (i in obj.vars.points) {
-        if (i) {
-          temp = [];
-          for (var j = 0 ; j < obj.vars.points[i].length ; j++) {
-            var data = obj.vars.points[i][j].gmapMarkerData();
-            temp.push(''+ data.point.lat() + ',' + data.point.lng());
-          }
-          if (temp.length > 0) {
-            add.push('markers='+i+'::' + temp.join(' + '));
-          }
+        temp = [];
+        for (var j = 0 ; j < obj.vars.points[i].length ; j++) {
+          var data = obj.vars.points[i][j].gmapMarkerData();
+          temp.push(''+ data.point.lat() + ',' + data.point.lng());
+        }
+        if (temp.length > 0) {
+          add.push('markers='+i+'::' + temp.join(' + '));
         }
       }
     }
