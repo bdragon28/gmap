@@ -100,7 +100,7 @@ function gmap_taxonomy_taxonomy($op, $type, $array = NULL) {
  * Implementation of hook_nodeapi().
  */
 function gmap_taxonomy_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  switch($op) {
+  switch ($op) {
     case 'insert':
     case 'update':
       $status = variable_get('gmap_taxonomy_vocabs', array());

@@ -19,7 +19,7 @@ function gmap_location_perm() {
 /**
  * Get the user map variable defaults.
  */
-function _gmap_location_user_map_defaults(){
+function _gmap_location_user_map_defaults() {
   return array(
     'macro' => '[gmap |id=usermap|center=40,0|zoom=3|width=100%|height=400px]',
     'header' => 'This map illustrates the extent of users of this website. Each marker indicates a user that has entered their locations.',
