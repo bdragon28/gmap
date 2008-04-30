@@ -25,49 +25,55 @@ Drupal.gmap = new function() {
 
   this.globalChange = function(name,userdata) {
     for (var mapid in Drupal.settings.gmap) {
-      _maps[mapid].change(name,-1,userdata);
+      if (mapid) {
+        _maps[mapid].change(name,-1,userdata);
+      }
     }
-  }
+  };
 
   this.setup = function() {
     if (Drupal.settings && Drupal.settings.gmap) {
       for (mapid in Drupal.settings.gmap) {
-        _maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
-        
-        // Pick up the query path for json requests.
-        if (!Drupal.gmap.querypath) {
-          Drupal.gmap.querypath = Drupal.settings.gmap[mapid].querypath;
-        }
+        if (mapid) {
+          _maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
 
-        for (control in _handlers) {
-          var s = 0;
-          do {
-            var o = $('#gmap-'+mapid+'-'+control+s);
-            o.each(function() {
-                for (var i=0; i<_handlers[control].length; i++) {
-                  _handlers[control][i].call(_maps[mapid],this);
-                }
-            });
-            s++;
+          // Pick up the query path for json requests.
+          if (!Drupal.gmap.querypath) {
+            Drupal.gmap.querypath = Drupal.settings.gmap[mapid].querypath;
           }
-          while (o.length>0);
+
+          for (control in _handlers) {
+            if (control) {
+              var s = 0;
+              do {
+                var o = $('#gmap-'+mapid+'-'+control+s);
+                o.each(function() {
+                    for (var i=0; i<_handlers[control].length; i++) {
+                      _handlers[control][i].call(_maps[mapid],this);
+                    }
+                });
+                s++;
+              }
+              while (o.length>0);
+            }
+          }
+
+          _maps[mapid].change("init",-1);
+
+          // Send some changed events to fire up the rest of the initial settings..
+          _maps[mapid].change("maptypechange",-1);
+          _maps[mapid].change("controltypechange",-1);
+          _maps[mapid].change("alignchange",-1);
+
+          // Set ready to put the event system into action.
+          _maps[mapid].ready = true;
+          _maps[mapid].change("ready",-1);
+
         }
-
-        _maps[mapid].change("init",-1);
-
-        // Send some changed events to fire up the rest of the initial settings..
-        _maps[mapid].change("maptypechange",-1);
-        _maps[mapid].change("controltypechange",-1);
-        _maps[mapid].change("alignchange",-1);
-
-        // Set ready to put the event system into action.
-        _maps[mapid].ready = true;
-        _maps[mapid].change("ready",-1);
-
       }
     }
-  }
-}
+  };
+};
 
 Drupal.gmap.factory = {};
 
@@ -94,9 +100,10 @@ Drupal.gmap.map = function(v) {
   this.change = function(name,id,userdata) {
     var c;
     if (_bindings[name]) {
-      for (c=0; c<_bindings[name].length; c++) {
-        if (c==id) continue;
-        (_bindings[name][c])(userdata);
+      for (c = 0; c < _bindings[name].length; c++) {
+        if (c != id) {
+          (_bindings[name][c])(userdata);
+        }
       }
     }
     if (name != 'all') {
@@ -111,7 +118,9 @@ Drupal.gmap.map = function(v) {
   this.deferChange = function(name,id,userdata) {
     var obj = this;
     // This will move the function call to the end of the event loop.
-    setTimeout(function(){obj.change(name,id,userdata)},0);
+    setTimeout(function(){
+      obj.change(name,id,userdata);
+    }, 0);
   };
 };
 
@@ -140,7 +149,7 @@ Drupal.gmap.addHandler('gmap',function(elem) {
       map.disableDragging();
     }
     else if (!obj.vars.behavior.nokeyboard) {
-      new GKeyboardHandler(map);
+      obj._kbdhandler = new GKeyboardHandler(map);
     }
     if (obj.vars.behavior.collapsehack) {
       // Modify collapsable fieldsets to make maps check dom state when the resize handle
@@ -174,7 +183,9 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   });
 
   // Respond to incoming zooms
-  var binding = obj.bind("zoom",function(){map.setZoom(obj.vars.zoom)});
+  var binding = obj.bind("zoom",function(){
+    map.setZoom(obj.vars.zoom);
+  });
   // Send out outgoing zooms
   GEvent.addListener(map, "zoomend", function(oldzoom,newzoom) {
     obj.vars.zoom = newzoom;
@@ -191,7 +202,9 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   });
 
   // Respond to incoming moves
-  binding = obj.bind("move",function(){map.panTo(new GLatLng(obj.vars.latitude,obj.vars.longitude))});
+  binding = obj.bind("move", function(){
+    map.panTo(new GLatLng(obj.vars.latitude,obj.vars.longitude));
+  });
   // Send out outgoing moves
   GEvent.addListener(map,"moveend",function() {
     var coord = map.getCenter();
@@ -203,9 +216,9 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   // Respond to incoming map type changes
   binding = obj.bind("maptypechange",function(){
     var type;
-    if(obj.vars.maptype=='Map') type = G_NORMAL_MAP;
-    if(obj.vars.maptype=='Hybrid') type = G_HYBRID_MAP;
-    if(obj.vars.maptype=='Satellite') type = G_SATELLITE_MAP;
+    if(obj.vars.maptype=='Map') {type = G_NORMAL_MAP;}
+    if(obj.vars.maptype=='Hybrid') {type = G_HYBRID_MAP;}
+    if(obj.vars.maptype=='Satellite') {type = G_SATELLITE_MAP;}
     map.setMapType(type);
   });
   // Send out outgoing map type changes.
@@ -213,9 +226,9 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     // If the map isn't ready yet, ignore it.
     if (map.ready) {
       var type = map.getCurrentMapType();
-      if(type==G_NORMAL_MAP) obj.vars.maptype = 'Map';
-      if(type==G_HYBRID_MAP) obj.vars.maptype = 'Hybrid';
-      if(type==G_SATELLITE_MAP) obj.vars.maptype = 'Satellite';
+      if(type==G_NORMAL_MAP) {obj.vars.maptype = 'Map';}
+      if(type==G_HYBRID_MAP) {obj.vars.maptype = 'Hybrid';}
+      if(type==G_SATELLITE_MAP) {obj.vars.maptype = 'Satellite';}
       obj.change("maptypechange",binding);
     }
   });
@@ -240,8 +253,8 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     if(obj.currentcontrol) {
       map.removeControl(obj.currentcontrol);
     }
-    if (obj.vars.controltype=='Small') map.addControl(obj.currentcontrol = new GSmallMapControl());
-    if (obj.vars.controltype=='Large') map.addControl(obj.currentcontrol = new GLargeMapControl());
+    if (obj.vars.controltype=='Small') {map.addControl(obj.currentcontrol = new GSmallMapControl());}
+    if (obj.vars.controltype=='Large') {map.addControl(obj.currentcontrol = new GLargeMapControl());}
   });
   // Send out outgoing control type changes.
   // N/A
@@ -253,11 +266,13 @@ Drupal.gmap.addHandler('gmap',function(elem) {
 Drupal.gmap.addHandler('zoom', function(elem) {
   var obj = this;
   // Respond to incoming zooms
-  var binding = obj.bind("zoom",function(){elem.value = obj.vars.zoom});
+  var binding = obj.bind("zoom", function(){
+    elem.value = obj.vars.zoom;
+  });
   // Send out outgoing zooms
   $(elem).change(function() {
-    obj.vars.zoom = parseInt(elem.value);
-    obj.change("zoom",binding);
+    obj.vars.zoom = parseInt(elem.value, 10);
+    obj.change("zoom", binding);
   });
 });
 
@@ -267,11 +282,13 @@ Drupal.gmap.addHandler('zoom', function(elem) {
 Drupal.gmap.addHandler('latitude', function(elem) {
   var obj = this;
   // Respond to incoming movements.
-  var binding = obj.bind("move",function(){elem.value = ''+obj.vars.latitude});
+  var binding = obj.bind("move", function(){
+    elem.value = '' + obj.vars.latitude;
+  });
   // Send out outgoing movements.
   $(elem).change(function() {
     obj.vars.latitude = this.value;
-    obj.change("move",binding);
+    obj.change("move", binding);
   });
 });
 
@@ -281,11 +298,13 @@ Drupal.gmap.addHandler('latitude', function(elem) {
 Drupal.gmap.addHandler('longitude', function(elem) {
   var obj = this;
   // Respond to incoming movements.
-  var binding = obj.bind("move",function(){elem.value = ''+obj.vars.longitude});
+  var binding = obj.bind("move", function(){
+    elem.value = '' + obj.vars.longitude;
+  });
   // Send out outgoing movements.
   $(elem).change(function() {
     obj.vars.longitude = this.value;
-    obj.change("move",binding);
+    obj.change("move", binding);
   });
 });
 
@@ -295,13 +314,15 @@ Drupal.gmap.addHandler('longitude', function(elem) {
 Drupal.gmap.addHandler('latlon', function(elem) {
   var obj = this;
   // Respond to incoming movements.
-  var binding = obj.bind("move",function(){elem.value = ''+obj.vars.latitude+','+obj.vars.longitude});
+  var binding = obj.bind("move", function(){
+    elem.value = '' + obj.vars.latitude + ',' + obj.vars.longitude;
+  });
   // Send out outgoing movements.
   $(elem).change(function() {
     var t = this.value.split(',');
     obj.vars.latitude = t[0];
     obj.vars.longitude = t[1];
-    obj.change("move",binding);
+    obj.change("move", binding);
   });
 });
 
@@ -311,11 +332,13 @@ Drupal.gmap.addHandler('latlon', function(elem) {
 Drupal.gmap.addHandler('maptype', function(elem) {
   var obj = this;
   // Respond to incoming movements.
-  var binding = obj.bind("maptypechange",function(){elem.value = obj.vars.maptype});
+  var binding = obj.bind("maptypechange", function(){
+    elem.value = obj.vars.maptype;
+  });
   // Send out outgoing movements.
   $(elem).change(function() {
     obj.vars.maptype = elem.value;
-    obj.change("maptypechange",binding);
+    obj.change("maptypechange", binding);
   });
 });
 
@@ -333,7 +356,9 @@ Drupal.gmap.addHandler('maptype', function(elem) {
 Drupal.gmap.addHandler('width', function(elem) {
   var obj = this;
   // Respond to incoming width changes.
-  var binding = obj.bind("widthchange",function(w){elem.value = normalize(w)});
+  var binding = obj.bind("widthchange", function(w){
+    elem.value = normalize(w);
+  });
   // Send out outgoing width changes.
   $(elem).change(function() {
     var n;
@@ -342,7 +367,9 @@ Drupal.gmap.addHandler('width', function(elem) {
       obj.change('widthchange', binding, n);
     }
   });
-  obj.bind('init',function(){$(elem).change()});
+  obj.bind('init',function(){
+    $(elem).change();
+  });
 });
 
 ////////////////////////////////////////
@@ -351,7 +378,9 @@ Drupal.gmap.addHandler('width', function(elem) {
 Drupal.gmap.addHandler('height', function(elem) {
   var obj = this;
   // Respond to incoming height changes.
-  var binding = obj.bind("heightchange",function(h){elem.value = normalize(h)});
+  var binding = obj.bind("heightchange",function(h){
+    elem.value = normalize(h);
+  });
   // Send out outgoing height changes.
   $(elem).change(function() {
     var n;
@@ -360,7 +389,9 @@ Drupal.gmap.addHandler('height', function(elem) {
       obj.change('heightchange', binding, n);
     }
   });
-  obj.bind('init',function(){$(elem).change()});
+  obj.bind('init',function(){
+    $(elem).change();
+  });
 });
 
 })(); // END CLOSURE
@@ -371,17 +402,18 @@ Drupal.gmap.addHandler('height', function(elem) {
 Drupal.gmap.addHandler('controltype', function(elem) {
   var obj = this;
   // Respond to incoming height changes.
-  var binding = obj.bind("controltypechange",function(){elem.value = obj.vars.controltype});
+  var binding = obj.bind("controltypechange", function(){
+    elem.value = obj.vars.controltype;
+  });
   // Send out outgoing height changes.
   $(elem).change(function() {
     obj.vars.controltype = elem.value;
-    obj.change("controltypechange",binding);
+    obj.change("controltypechange", binding);
   });
 });
 
 if (Drupal.jsEnabled) {
-  $(document).ready(Drupal.gmap.setup)
-    .unload(function() {
+  $(document).ready(Drupal.gmap.setup).unload(function() {
       //Google cleanup.
       GUnload();
     });
