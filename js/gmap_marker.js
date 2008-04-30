@@ -23,7 +23,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       else {
         obj.bounds.extend(marker.marker.getPoint());
       }
-      obj.map.setCenter(obj.bounds.getCenter(),obj.map.getBoundsZoomLevel(obj.bounds));
+      obj.map.setCenter(obj.bounds.getCenter(), Math.min(obj.map.getBoundsZoomLevel(obj.bounds), obj.vars.maxzoom));
     }
   });
 

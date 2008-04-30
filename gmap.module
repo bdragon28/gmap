@@ -36,6 +36,7 @@ function gmap_defaults() {
     'width' => '300px',
     'height' => '200px',
     'zoom' => 3,
+    'maxzoom' => 14,
     'controltype' => 'Small',
     'align' => 'None',
     'latlong' => '40,0',

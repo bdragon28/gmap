@@ -117,6 +117,14 @@ function _gmap_admin_settings() {
     '#description' => t('The default zoom level of a Google map.'),
   );
   gmap_widget_setup($form['gmap_default']['zoom'], 'zoom', 'settings_default_map');
+  $form['gmap_default']['maxzoom'] = array(
+    '#type' => 'select',
+    '#title' => t('Maximum initial zoom'),
+    '#default_value' => $defaults['maxzoom'],
+    '#options' => drupal_map_assoc(range(0, 17)),
+    '#description' => t('The maximum initial zoom (affects things such as the zoom of the node location block.)'),
+  );
+  // This one isn't a gmap widget.
 
   $form['gmap_default']['controltype'] = array(
     '#type' => 'select',
