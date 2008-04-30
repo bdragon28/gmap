@@ -56,8 +56,6 @@ Drupal.gmap.addHandler('overlayedit_fopac',function(elem) {
   });
 });
 
-
-
 Drupal.gmap.addHandler('gmap',function(elem) {
   var obj = this;
   // Add status bar
@@ -71,11 +69,11 @@ Drupal.gmap.addHandler('gmap',function(elem) {
       var lines = [];
       $.each(obj.vars.shapes,function(i,n){
         if (n.type == 'circle') {
-          if (!n.style) n.style = [];
+          if (!n.style) {n.style = [];}
           circles.push(n.style.join('/') +':'+ n.center.join(' , ') +' + '+ n.radius);
         }
         else if (n.type == 'line') {
-          if (!n.style) n.style = [];
+          if (!n.style) {n.style = [];}
           var tmp = [];
           $.each(n.points, function(idx,pt) {
             tmp.push(''+ pt[0] +' , '+ pt[1]);
@@ -132,7 +130,7 @@ GMarker.prototype.gmapMarkerData = function(data) {
     this._gmapdata = data;
   }
   return this._gmapdata;
-}
+};
 
 /************* Overlay edit widget ******************/
 Drupal.gmap.addHandler('overlayedit',function(elem) {
@@ -154,9 +152,9 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
     var edit_text_elem;
 
     if(obj.map) {
-      obj.vars.pointsOverlays = new Array();
+      obj.vars.pointsOverlays = [];
       obj.vars.points = {};
-      
+
       GEvent.addListener(obj.map, 'click', function(overlay, point) {
         if (overlay) {
           switch (obj.vars.overlay_del_mode) {
@@ -187,9 +185,9 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
             // I've got the feeling that some of the following logic could be trimmed
             case 'Points':
               if (!obj.vars.points[elem.value]) {
-                obj.vars.points[elem.value] = new Array();
+                obj.vars.points[elem.value] = [];
               }
-              marker=new GMarker(point,{icon:Drupal.gmap.getIcon(elem.value,obj.vars.points[elem.value].length)});
+              marker = new GMarker(point,{icon:Drupal.gmap.getIcon(elem.value,obj.vars.points[elem.value].length)});
               marker.gmapMarkerData({type: elem.value, idx: obj.vars.points[elem.value].length, point: point});
               obj.vars.points[elem.value].push(marker);
               obj.map.addOverlay(marker);
@@ -249,7 +247,7 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
           switch (obj.vars.overlay_add_mode) {
             case 'Lines':
               obj.temp_point.pop(); // Remove the second of two click events that happens before the dblclick...
-              if (obj.temp_point.length < 2) return; // If the user started by double clicking...
+              if (obj.temp_point.length < 2) {return;} // If the user started by double clicking...
               var points = obj.temp_point;
               delete obj.temp_point;
               obj.status("Placed "+ points.length +"-segment line.");
@@ -278,4 +276,3 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
     }
   });
 });
-
