@@ -1048,7 +1048,10 @@ function theme_gmap($element) {
   $element['#attributes']['class'] = trim($element['#attributes']['class'] .'gmap gmap-map gmap-'. $map['id'] .'-gmap');
   $o = '<div id="'. $element['#id'] .'" style="'. implode('; ', $style) .';"'. drupal_attributes($element['#attributes']) .'></div>';
 
-  module_invoke_all('gmap', 'pre_theme_map', $map);
+  // $map can be manipulated by reference.
+  foreach (module_implements('gmap') as $module) {
+    call_user_func($module .'_gmap', 'pre_theme_map', $map);
+  }
 
   // Inline settings extend.
   $o .= '<script type="text/javascript">'."\n";
