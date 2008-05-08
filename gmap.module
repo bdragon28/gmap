@@ -1051,7 +1051,7 @@ function theme_gmap($element) {
 
   // $map can be manipulated by reference.
   foreach (module_implements('gmap') as $module) {
-    call_user_func($module .'_gmap', 'pre_theme_map', $map);
+    call_user_func_array($module .'_gmap', array('pre_theme_map', &$map));
   }
 
   // Inline settings extend.
