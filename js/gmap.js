@@ -71,7 +71,7 @@ Drupal.gmap = new function() {
       }
     }
   };
-};
+}();
 
 Drupal.gmap.factory = {};
 
@@ -100,7 +100,7 @@ Drupal.gmap.map = function(v) {
     if (_bindings[name]) {
       for (c = 0; c < _bindings[name].length; c++) {
         if (c != id) {
-          (_bindings[name][c])(userdata);
+          _bindings[name][c](userdata);
         }
       }
     }
