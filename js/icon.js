@@ -42,7 +42,7 @@ Drupal.gmap.getIcon = function(setname, sequence) {
       var t = new GIcon();
       var p = Drupal.gmap.iconpath + q.path;
       t.image = p + q.sequence[i].f;
-      if ((typeof(q.shadow)!='string') && (q.shadow.f != '')) {
+      if (q.shadow.f != '') {
         t.shadow = p + q.shadow.f;
         t.shadowSize = new GSize(q.shadow.w, q.shadow.h);
       }
