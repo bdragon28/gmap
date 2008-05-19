@@ -119,7 +119,7 @@ Drupal.gmap.expandArray = function(arr,len) {
 Drupal.gmap.expandIconDef = function(c,path,files) {
   var decomp = ['key','name','sequence','anchorX','anchorY','infoX','infoY','shadow',
     'printImage','mozPrintImage','printShadow','transparent'];
-  var fallback = ['','',[],0,0,0,0,'','','','',''];
+  var fallback = ['','',[],0,0,0,0,{f: '', h: 0, w: 0},'','','',''];
   var imagerep = ['shadow','printImage','mozPrintImage','printShadow','transparent'];
   var defaults = {};
   var sets = [];
