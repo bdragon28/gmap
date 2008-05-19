@@ -742,7 +742,7 @@ function gmap_menu($may_cache) {
     $items[] = array(
       'path' => 'map/query',
       'type' => MENU_CALLBACK,
-      'access' => TRUE, //@@@
+      'access' => user_access('access content'),
       'callback' => 'gmap_json_query',
     );
     return $items;
