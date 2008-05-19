@@ -13,25 +13,28 @@
  * @@@ TODO: Move this directly into the preparemarker event binding.
  */
 Drupal.gmap.getIcon = function(setname, sequence) {
-  var sequences = [];
-  var gicons;
   var othimg = ['printImage','mozPrintImage','printShadow','transparent'];
   // If no setname, return google's default icon.
   if (!setname) {
     return G_DEFAULT_ICON;
   }
-  // If no sequence, synthesise one.
-  if (!sequence) {
-    if (!sequences[setname]) {
-      sequences[setname] = -1;
-    }
-    sequences[setname]++;
-    sequence = sequences[setname];
-  }
-
   if (!this.gicons) {
     this.gicons = {};
   }
+
+  // If no sequence, synthesise one.
+  if (!sequence) {
+    // @TODO make this per-map.
+    if (!this.sequences) {
+      this.sequences = {};
+    }
+    if (!this.sequences[setname]) {
+      this.sequences[setname] = -1;
+    }
+    this.sequences[setname]++;
+    sequence = this.sequences[setname];
+  }
+
   if (!this.gicons[setname]) {
     if (!Drupal.gmap.icons[setname]) {
       alert('Request for invalid marker set '+setname+'!');
