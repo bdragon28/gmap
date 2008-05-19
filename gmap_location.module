@@ -411,18 +411,6 @@ function gmap_location_node_point() {
 }
 
 /**
- * For OG nodes, we are passing a nid/uid pair.
- */
-function theme_og_gmapnodelabel($node, $opt) {
-  if (is_numeric($opt) && $account = user_load(array('uid' => $opt))) {
-    $output = theme('user_picture', $account);
-    $output .= theme('username', $account);
-    echo $output;
-    exit();
-  }
-}
-
-/**
  * Theme function for displaying the node page.
  */
 function theme_gmap_location_node_page($count, $header, $map, $footer) {
@@ -802,13 +790,29 @@ function gmap_location_map_add_node($basemap, $node, $label='') {
 //creating a function theme_hook_gmapnodelabel a theme could then further specify it
 //by creating a mytheme_nodetype_gmapnodelabel or could simply create a default
 //node type by creating a mytheme_gmapnodelabel
-
 function theme_image_gmapnodelabel($n) {
   $out = '<a href="'. url('node/'. $n->nid) .'">'. check_plain($n->title) .'</a> <br>';
   $out .= image_display($n, 'thumbnail');
   return $out;
 }
 
+// @@@ This is not thoroughly tested for 5.x yet!
+/**
+ * Theme an Organic Groups node info window.
+ */
+function theme_og_gmapnodelabel($node, $opt) {
+  if (is_numeric($opt) && $account = user_load(array('uid' => $opt))) {
+    $output = theme('user_picture', $account);
+    $output .= theme('username', $account);
+    echo $output;
+    exit();
+  }
+}
+
+/**
+ * Theme a node info window.
+ * @ingroup themable
+ */
 function theme_gmapnodelabel($n) {
   // Allow a module (where the module name matches the node type name)
   // to define a custom display for the google map label.
