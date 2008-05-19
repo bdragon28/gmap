@@ -169,11 +169,11 @@ function gmap_location_user_page() {
       $newmarker['opts']['title'] = check_plain($row->name);
     }
     else {
-      $newmarker['latitude']= $row->latitude;
-      $newmarker['longitude']= $row->longitude;
+      $newmarker['latitude'] = $row->latitude;
+      $newmarker['longitude'] = $row->longitude;
       $newmarker['markername'] = $marker;
     }
-    $map['markers'][]=$newmarker;
+    $map['markers'][] = $newmarker;
   }
 
 // @@@ Move to gmap_addons.
@@ -197,13 +197,6 @@ function gmap_location_user_page() {
     }
   }
 */
-
-  $element = array(
-    '#type' => 'gmap',
-    '#map' => $thismap['id'],
-    '#settings' => $thismap,
-  );
-  $output .= theme('gmap', $element);
 
   return theme('gmap_location_user_page',
     $usermap['header'],
