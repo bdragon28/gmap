@@ -98,25 +98,56 @@ function gmap_location_user_page() {
   $map['markermode'] = $usermap['markermode'];
 
   // Find the highest rid, if available, for each user with a location.
-  $result = db_query("
-    SELECT
-      u.name, MAX(r.rid) as role, l.eid as uid, l.latitude, l.longitude
-    FROM
-      {users} u
-    INNER JOIN
-      {location} l
-      ON
-        u.uid = l.eid
-    LEFT JOIN
-      {users_roles} r
-      ON
-        l.eid = r.uid
-    WHERE
-      l.type = '%s'
+
+  // Location 3.x on Drupal 5.
+  if (function_exists('location_newapi')) {
+    $result = db_query("
+      SELECT
+        u.name, MAX(r.rid) as role, i.uid, l.latitude, l.longitude
+      FROM
+        {users} u
+      INNER JOIN
+        {location_instance} i
+        ON
+          u.uid = i.uid
+      INNER JOIN
+        {location} l
+        ON
+          i.lid = l.lid
+      LEFT JOIN
+        {users_roles} r
+        ON
+          i.uid = r.uid
+      WHERE
+        u.status = 1
       AND
-      (l.latitude != 0 OR l.longitude != 0)
-    GROUP BY
-      l.eid", 'user');
+        (l.latitude != 0 OR l.longitude != 0)
+      GROUP BY
+        i.uid");
+  }
+  else {
+    $result = db_query("
+      SELECT
+        u.name, MAX(r.rid) as role, l.eid as uid, l.latitude, l.longitude
+      FROM
+        {users} u
+      INNER JOIN
+        {location} l
+        ON
+          u.uid = l.eid
+      LEFT JOIN
+        {users_roles} r
+        ON
+          l.eid = r.uid
+      WHERE
+        l.type = '%s'
+      AND
+        u.status = 1
+      AND
+        (l.latitude != 0 OR l.longitude != 0)
+      GROUP BY
+        l.eid", 'user');
+  }
 
   while ($row = db_fetch_object($result)) {
     // Determine marker type to show.
