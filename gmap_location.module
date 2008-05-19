@@ -246,9 +246,11 @@ function gmap_location_node_page($nid = NULL) {
       INNER JOIN {location_instance} i
         ON n.vid = i.vid
       INNER JOIN {location} l
-        ON l.lid = l.lid
+        ON l.lid = i.lid
       $marker_sql2
       WHERE
+        n.status = 1
+      AND
         (l.latitude != 0 OR l.longitude != 0)
       ". $add_sql), 'node', $nid);
   }
@@ -261,6 +263,8 @@ function gmap_location_node_page($nid = NULL) {
       $marker_sql2
       WHERE
         l.type = '%s'
+      AND
+        n.status = 1
       AND
         (l.latitude != 0 OR l.longitude != 0)
       ". $add_sql), 'node', $nid);
