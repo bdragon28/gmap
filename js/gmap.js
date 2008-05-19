@@ -8,7 +8,6 @@
 Drupal.gmap = new function() {
   var _handlers = {};
   var _maps = {};
-  var querypath;
 
   /**
    * Retrieve a map object for use by a non-widget.
@@ -37,11 +36,6 @@ Drupal.gmap = new function() {
     if (Drupal.settings && Drupal.settings.gmap) {
       for (var mapid in Drupal.settings.gmap) {
         _maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
-
-        // Pick up the query path for json requests.
-        if (!Drupal.gmap.querypath) {
-          Drupal.gmap.querypath = Drupal.settings.gmap[mapid].querypath;
-        }
 
         for (var control in _handlers) {
           var s = 0;

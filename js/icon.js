@@ -190,7 +190,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       this.attached = true;
       // We'll start our query in the background during init.
       obj.bind("init", function() {
-        $.getJSON(Drupal.gmap.querypath + '/markers', Drupal.gmap.iconSetup);
+        $.getJSON(Drupal.settings.gmap_init.querypath + '/markers', Drupal.gmap.iconSetup);
       });
     }
   }

@@ -183,6 +183,13 @@ drupal_add_js($gmap_path .'/js/poly.js');
     $key = keys_api_get_key('gmap', $_SERVER['HTTP_HOST']);
   }
   drupal_set_html_head('<script src="'. check_url('http://maps.google.com/maps?file=api&v='. variable_get('gmap_api_version', GMAP_API_VERSION) .'&key='. $key) .'" type="text/javascript"></script>');
+
+  drupal_add_js(array(
+    'gmap_init' => array(
+      'querypath' => base_path() .'map/query',
+    ),
+  ), 'setting');
+
   $gmap_initialized = TRUE;
 }
 
@@ -978,8 +985,6 @@ function theme_gmap_overlay_edit($element) {
 function gmap_map_cleanup(&$map) {
   // Google is picky about this one.
   $map['zoom'] = (int)$map['zoom'];
-  // JSON query handler
-  $map['querypath'] = url('map/query', NULL, NULL, TRUE);
   // Normalize latitude / longitude
   if ($map['latlong']) {
     $map['latlon'] = $map['latlong'];
