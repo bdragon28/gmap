@@ -2,7 +2,6 @@
 
 /**
  * GPolyLine / GPolygon manager
- *
  */
 
 Drupal.gmap.map.prototype.poly = {};
@@ -58,8 +57,3 @@ Drupal.gmap.map.prototype.poly.calcPolyPoints = function(center, radM, numPoints
   points.push(points[0]);
   return points;
 };
-
-/**
- * Circle -- on screen.
- */
-//Drupal.gmap.map.prototype.

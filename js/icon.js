@@ -201,5 +201,4 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       marker.opts.icon = Drupal.gmap.getIcon(marker.markername,marker.offset);
     });
   }
-
 });

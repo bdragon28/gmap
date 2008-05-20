@@ -42,5 +42,4 @@ Drupal.gmap.addHandler('gmap',function(elem) {
       add.push('align='+obj.vars.align);
     }
   });
-
 });

@@ -405,9 +405,10 @@ Drupal.gmap.addHandler('controltype', function(elem) {
   });
 });
 
+// Map setup / teardown.
 if (Drupal.jsEnabled) {
   $(document).ready(Drupal.gmap.setup).unload(function() {
-      //Google cleanup.
-      GUnload();
-    });
+    //Google cleanup.
+    GUnload();
+  });
 }

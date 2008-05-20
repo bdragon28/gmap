@@ -2,7 +2,6 @@
 
 /**
  * Address widget and GMap geocoder routines.
- *
  */
 
 ////////////////////////////////////////
