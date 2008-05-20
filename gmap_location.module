@@ -426,26 +426,27 @@ function gmap_location_admin_settings() {
     '#options' => array(1 => 'Enabled', 0 => 'Disabled'),
   );
 
-  /////////////// @@@ User location stuff to move later
-  $form['userloc'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Location settings for users'),
-  );
-  $form['userloc']['gmap_user'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Profile map'),
-    '#default_value' => variable_get('gmap_user', TRUE),
-    '#description' => t('Let users set/edit their location in their profile.'),
-  );
-  $form['userloc']['gmap_user_profile_category'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Profile category title'),
-    '#default_value' => variable_get('gmap_user_profile_category', "Location map"),
-    '#size' => 50,
-    '#maxlength' => 50,
-    '#description' => t('Let users set/edit their location in their profile.'),
-  );
-  /////////////// @@@ END User location stuff to move later
+  // Location 3.x manages user settings by itself.
+  if (!function_exists('location_newapi')) {
+    $form['userloc'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Location settings for users'),
+    );
+    $form['userloc']['gmap_user'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Profile map'),
+      '#default_value' => variable_get('gmap_user', TRUE),
+      '#description' => t('Let users set/edit their location in their profile.'),
+    );
+    $form['userloc']['gmap_user_profile_category'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Profile category title'),
+      '#default_value' => variable_get('gmap_user_profile_category', "Location map"),
+      '#size' => 50,
+      '#maxlength' => 50,
+      '#description' => t('Let users set/edit their location in their profile.'),
+    );
+  }
 
   $form['user'] = array(
     '#type' => 'fieldset',
@@ -679,13 +680,6 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
   }
 }
 
-function _gmap_location_getlatlon($node) {
-  if (isset($node->location['latitude']) && isset($node->location['longitude'])) {
-    return $node->location;
-  }
-  return false;
-}
-
 function gmap_location_block_view($nid) {
   $block = array();
   $node = node_load($nid);
@@ -761,21 +755,6 @@ function gmap_location_author_block_view($nid) {
     $block['content'] = theme('gmap', $map);
   }
   return $block;
-}
-
-function gmap_location_map_add_node($basemap, $node, $label='') {
-  $location = _gmap_location_getlatlon($node);
-  if (empty($basemap['markers'])) {
-    $thismap['markers']=array();
-  }
-  $newmarker['latitude'] = $location['latitude'];
-  $newmarker['longitude'] = $location['longitude'];
-  $newmarker['markername'] = variable_get('gmap_node_marker_'. $node->type, '');
-  $newmarker['label'] = $label;
-  $basemap['markers'][] = $newmarker;
-  $basemap['latitude'] = $location['latitude'];
-  $basemap['longitude'] = $location['longitude'];
-  return $basemap;
 }
 
 //Any module can create a default theme for the display of nodes of the node type by
