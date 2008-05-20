@@ -194,34 +194,6 @@ drupal_add_js($gmap_path .'/js/poly.js');
 }
 
 /**
- * Cleans the gmap variables to prevent javascript interjection.
- *
- * @param $gmap
- * A Gmap variable
- *
- * @return
- * A GMap variable with any dangerous text removed.
- *
- * This does not really do much of anything right now.
- */
-function gmap_sanitize(&$gmap) {
-  //sanitizes the gmap variables to reduce the possibility of javascript inserts
-  foreach ($gmap as $key => $value) {
-    if ($key=='id') {
-      $out = array();
-      preg_match('([a-zA-Z0-9_-]*)', $value, $out);
-      if (strlen($out[0])==0)  {
-        $out[0]='map';
-      }
-      $gmap[$key]=$out[0];
-    }
-    else {
-      $gmap[$key]=str_replace(';', '', $value);
-    }
-  }
-}
-
-/**
  *
  * Returns a variable based on .
  *
