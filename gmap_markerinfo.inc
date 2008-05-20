@@ -1,6 +1,5 @@
 <?php
-/* $Id$ */
-// vim:set ft=php:
+// $Id$
 
 /**
  * @file
@@ -79,7 +78,7 @@ function _gmap_get_icondata() {
       'h' => array(),
       'i' => array(), // Sets of sets
     );
-    
+
     // Part 1: Collect image names
     $filenames = array();
     foreach ($path_inis as $ini) {
@@ -108,7 +107,7 @@ function _gmap_get_icondata() {
     $icons[$path]['tempf'] = $filenames;
   }
   unset($filenames);
-  
+
   // Part 2: Assign ids, get width and height
   foreach ($icons as $path => $v) {
     $counter = 0;
@@ -128,7 +127,7 @@ function _gmap_get_icondata() {
     _gmap_compress_array($icons[$path]['w']);
     _gmap_compress_array($icons[$path]['h']);
   }
-  
+
   // Part 3: Main ini parsing
   // Per directory...
   foreach ($inis as $path => $path_inis) {
@@ -153,7 +152,7 @@ function _gmap_get_icondata() {
         // Setup key for compression
         $ini[$k]['key'] = $k;
       }
-      
+
       $mv = array();
       $iv = array();
       if (isset($ini['defaults'])) {
@@ -176,7 +175,7 @@ function _gmap_get_icondata() {
         _gmap_compress_icon_def($mv),
         _gmap_compress_icon_def($iv),
       );
-      
+
     }
   }
   foreach ($icons as $path => $v) {
@@ -260,7 +259,7 @@ function _gmap_get_marker_titles() {
     $inis[] = $data;
   }
   unset($inifiles);
-  
+
   $titles = array();
   foreach ($inis as $ini => $inidata) {
     foreach ($inidata as $k => $v) {

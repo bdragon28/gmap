@@ -1,6 +1,5 @@
 <?php
-/* $Id$ */
-// vim:set ft=php:
+// $Id$
 
 /**
  * @file
@@ -18,10 +17,10 @@ function _gmap_admin_settings() {
   );
   if (!module_exists('keys_api')) {
     $form['initialization']['googlemap_api_key'] = array(
-      '#type' => 'textfield', 
-      '#title' => t('Google map API key'),
-      '#default_value' => variable_get('googlemap_api_key', ''), 
-      '#size' => 50, 
+      '#type' => 'textfield',
+      '#title' => t('Google Maps API Key'),
+      '#default_value' => variable_get('googlemap_api_key', ''),
+      '#size' => 50,
       '#maxlength' => 255,
       '#description' => t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.'),
     );
@@ -29,7 +28,7 @@ function _gmap_admin_settings() {
   else {
     $form['initialization']['googlemap_api_key'] = array(
       '#type' => 'item',
-      '#title' => t('Google map API key'),
+      '#title' => t('Google Maps API Key'),
       '#description' => t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.'),
       '#value' => t("Managed by <a href='@url'>keys api</a>.", array('@url' => url('admin/settings/keys'))),
     );
@@ -81,7 +80,7 @@ function _gmap_admin_settings() {
       ),
     ),
   );
-  
+
   $form['gmap_default']['width'] = array(
     '#type' => 'gmap_dimension',
     '#title' => t('Default width'),
@@ -128,7 +127,7 @@ function _gmap_admin_settings() {
 
   $form['gmap_default']['controltype'] = array(
     '#type' => 'select',
-    '#title' => t('Default control type'), 
+    '#title' => t('Default control type'),
     '#options' => array('None' => t('None'), 'Small' => t('Small'), 'Large' => t('Large')),
     '#default_value' => $defaults['controltype'],
   );
@@ -237,7 +236,7 @@ function _gmap_admin_settings() {
     '#tree' => FALSE,
     '#required' => TRUE,
     '#options' => array(
-      'gmap' => t('No manager (use addOverlay directly)'),
+      'gmap' => t('No manager (use GMap API directly)'),
       'gmarkermanager' => t("Google's GMarkerManager"),
       'clusterer' => t("Jef Poskanzer's Clusterer"),
     ),

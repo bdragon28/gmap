@@ -1,6 +1,9 @@
 <?php
-/* $Id$ */
+// $Id$
 
+/**
+ * Implementation of hook_install().
+ */
 function gmap_location_install() {
   // Gmap no longer provides the location table.
 }

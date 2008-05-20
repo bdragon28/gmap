@@ -1,6 +1,5 @@
 <?php
-/* $Id$ */
-// vim:set ft=php:
+// $Id$
 
 /**
  * @file
@@ -86,18 +85,18 @@ function gmap_macro_builder_form($settings = array(), $hide = array()) {
   gmap_widget_setup($form['macroform']['mapid'], 'mapid', 'macro_map');
 
   $form['macroform']['maptype'] = array(
-    '#type' => 'select', 
-    '#title' => t('Map type'), 
-    '#options' => drupal_map_assoc(array('Map', 'Satellite', 'Hybrid')), 
+    '#type' => 'select',
+    '#title' => t('Map type'),
+    '#options' => drupal_map_assoc(array('Map', 'Satellite', 'Hybrid')),
     '#default_value' => $defaults['maptype'],
     '#required' => FALSE,
   );
   gmap_widget_setup($form['macroform']['maptype'], 'maptype', 'macro_map');
 
   $form['macroform']['controltype'] = array(
-    '#type' => 'select', 
-    '#title' => t('Controls'), 
-    '#options' => drupal_map_assoc(array('None', 'Small', 'Large')), 
+    '#type' => 'select',
+    '#title' => t('Controls'),
+    '#options' => drupal_map_assoc(array('None', 'Small', 'Large')),
     '#required' => FALSE,
     '#default_value' => $defaults['controltype'],
   );
