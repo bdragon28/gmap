@@ -383,7 +383,7 @@ function gmap_parse_macro($instring, $ver=2) {
   }
 
   // Version 1 -> 2 conversion
-  if ($ver==1) {
+  if ($ver == 1) {
     // Zoom is flipped
     if ($m['zoom']) {
       $m['zoom'] = 18 - $m['zoom'];
@@ -462,7 +462,9 @@ function gmap_parse_macro($instring, $ver=2) {
   unset($m['markers-temp']);
 
 
-/*      case 'track':
+/*
+  gmap_dopoint: flips lat/lon based on google maps api version.
+case 'track':
         $tt['color']=GMAP_LINECOLOR1;
         if (strpos($t[1],':')) { // note: we don't care about case starting with ':'
           list($configs,$t[1])=explode(':',$t[1],2);
@@ -470,17 +472,6 @@ function gmap_parse_macro($instring, $ver=2) {
         }
         $tt['filename'] =$t[1];
         $gmap['tracks'][] = $tt;
-        break;
-
-      case 'feed':
-        if (strpos($t[1],'::')) { // note: we don't care about case starting with ':'
-          list($markername,$t[1])=explode('::',$t[1],2);
-        }
-        $tt['url'] =$t[1];
-        if (isset($markername)){
-          $tt['markername']=$markername;
-        }
-        $gmap['feeds'][] = $tt;
         break;
 
       case 'wmss':
@@ -553,6 +544,7 @@ function theme_gmap_marker_popup($label) {
 }
 
 /**
+ * Location chooser utility function.
  *
  * Creates a map that can be interactively used to fill a form with a
  * location (latitude, longitude and zoom level)
@@ -640,17 +632,6 @@ function gmap_todim($instring) {
 function gmap_dimension_validate(&$elem) {
   if (!gmap_todim($elem['#value'])) {
     form_error($elem, t('The specified value is not a valid CSS dimension.'));
-  }
-}
-
-function gmap_dopoint($point, $ver) {
-  if ($ver == 1) {
-    $lonlat = explode(',', $point, 2);
-    return array('latitude' => $lonlat[1], 'longitude' => $lonlat[0]);
-  }
-  else {
-    $lonlat = explode(',', $point, 2);
-    return array('latitude' => $lonlat[0], 'longitude' => $lonlat[1]);
   }
 }
 

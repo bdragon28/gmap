@@ -33,14 +33,6 @@ function _gmap_admin_settings() {
       '#value' => t("Managed by <a href='@url'>keys api</a>.", array('@url' => url('admin/settings/keys'))),
     );
   }
-  $form['initialization']['gmap_method'] = array(
-    '#type' => 'select',
-    '#disabled' => TRUE,
-    '#title' => t('Google map method'),
-    '#options' => array('Static' => t('Static'), 'Dynamic' => t('Dynamic'), 'None' => t('None')),
-    '#default_value' => GMAP_LOAD_METHOD,
-    '#description' => t('How is the Google Map initialization script run:<br /><strong>Static</strong> - Loaded on every page, <br /><strong>Dynamic</strong> - Initialization script runs only on pages with google maps, but all pages with the gmap filter will not be cached. <br /><strong>None</strong> - Google map initialization script must be loaded some other way.'),
-  );
   $form['initialization']['gmap_wms'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable wms features'),
