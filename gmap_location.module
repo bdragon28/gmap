@@ -155,6 +155,8 @@ function gmap_location_user_page() {
       $marker = $markertypes[$row->role];
     }
 
+    // Users with the 'user locations' permission are allowed to see who
+    // each marker represents.
     if (user_access('user locations')) {
       if ($mode == 1) {
         $newmarker['rmt'] = $row->uid;

@@ -10,8 +10,6 @@
  * html and javascript code required to insert a google map.
  */
 
-define('GMAP_LOAD_METHOD', variable_get('gmap_method', 'Static'));
-
 // @@@ Remove these and generalize lines. @@@
 // These are now stored in the map defaults, but not all the code uses it yet.
 define('GMAP_LINECOLOR1', '#00cc00');
@@ -25,7 +23,6 @@ define('GMAP_WMS', variable_get('gmap_wms', 0));
 // http://groups.google.com/group/Google-Maps-API/web/api-version-changes
 // for details on using other version numbers.
 define('GMAP_API_VERSION', '2.s');
-
 
 /**
  * Get the defaults for a gmap.
@@ -463,7 +460,8 @@ function gmap_parse_macro($instring, $ver=2) {
 
 
 /*
-  gmap_dopoint: flips lat/lon based on google maps api version.
+  porting note: gmap_dopoint() flips lat/lon based on google maps api version.
+
 case 'track':
         $tt['color']=GMAP_LINECOLOR1;
         if (strpos($t[1],':')) { // note: we don't care about case starting with ':'
