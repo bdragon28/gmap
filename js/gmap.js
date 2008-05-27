@@ -51,6 +51,10 @@ Drupal.gmap = new function() {
           while (o.length>0);
         }
 
+        _maps[mapid].change("bootstrap_options",-1);
+
+        _maps[mapid].change("boot",-1);
+
         _maps[mapid].change("init",-1);
 
         // Send some changed events to fire up the rest of the initial settings..
@@ -121,16 +125,49 @@ Drupal.gmap.map = function(v) {
 ////////////////////////////////////////
 Drupal.gmap.addHandler('gmap',function(elem) {
   var obj = this;
-  // Make it a gmap.
-  var map = new GMap2(elem);
 
-  // Hide away a reference to the map
-  obj.map = map;
+  obj.bind("bootstrap_options", function() {
+    // Bootup options.
+    var opts = {}; // Object literal GMapOptions
+    obj.opts = opts;
+
+    // Null out the enabled types.
+    opts.mapTypes = [];
+
+    // Load google map types.
+    if (obj.vars.baselayers['Map']) {
+      opts.mapTypes.push(G_NORMAL_MAP);
+    }
+    if (obj.vars.baselayers['Satellite']) {
+      opts.mapTypes.push(G_SATELLITE_MAP);
+    }
+    if (obj.vars.baselayers['Hybrid']) {
+      opts.mapTypes.push(G_HYBRID_MAP);
+    }
+    if (obj.vars.baselayers['Physical']) {
+      opts.mapTypes.push(G_PHYSICAL_MAP);
+    }
+
+  });
+
+  obj.bind("boot", function() {
+    obj.map = new GMap2(elem, obj.opts);
+  });
 
   obj.bind("init",function() {
-    if (!obj.vars.behavior.notype) {
+    var map = obj.map;
+
+    // Map type control
+    if (obj.vars.mtc == 'standard') {
       map.addControl(new GMapTypeControl());
     }
+    else if (obj.vars.mtc == 'hier') {
+      map.addControl(new GHierarchicalMapTypeControl());
+    }
+    else if (obj.vars.mtc == 'menu') {
+      map.addControl(new GMenuMapTypeControl());
+    }
+
     if (obj.vars.behavior.overview) {
       map.addControl(new GOverviewMapControl());
     }
@@ -172,70 +209,78 @@ Drupal.gmap.addHandler('gmap',function(elem) {
         return false;
       });
     }
+
+    // Send out outgoing zooms
+    GEvent.addListener(obj.map, "zoomend", function(oldzoom,newzoom) {
+      obj.vars.zoom = newzoom;
+      obj.change("zoom",binding);
+    });
+
+    // Sync zoom if different after move.
+    // Partial workaround for a zoom + move bug.
+    // Full solution will involve listening to movestart and forbidding zooms
+    // until complete.
+    GEvent.addListener(map, "moveend", function() {
+      if (map.getZoom() != obj.vars.zoom) {
+        obj.change("zoom");
+      }
+    });
+
+    // Send out outgoing moves
+    GEvent.addListener(map,"moveend",function() {
+      var coord = map.getCenter();
+      obj.vars.latitude = coord.lat();
+      obj.vars.longitude = coord.lng();
+      obj.change("move",binding);
+    });
+
+    // Send out outgoing map type changes.
+    GEvent.addListener(map,"maptypechanged",function() {
+      // If the map isn't ready yet, ignore it.
+      if (map.ready) {
+        var type = map.getCurrentMapType();
+        if(type==G_NORMAL_MAP) {obj.vars.maptype = 'Map';}
+        if(type==G_HYBRID_MAP) {obj.vars.maptype = 'Hybrid';}
+        if(type==G_SATELLITE_MAP) {obj.vars.maptype = 'Satellite';}
+        obj.change("maptypechange",binding);
+      }
+    });
+
   });
 
   // Respond to incoming zooms
   var binding = obj.bind("zoom",function(){
-    map.setZoom(obj.vars.zoom);
-  });
-  // Send out outgoing zooms
-  GEvent.addListener(map, "zoomend", function(oldzoom,newzoom) {
-    obj.vars.zoom = newzoom;
-    obj.change("zoom",binding);
-  });
-  // Sync zoom if different after move.
-  // Partial workaround for a zoom + move bug.
-  // Full solution will involve listening to movestart and forbidding zooms
-  // until complete.
-  GEvent.addListener(map, "moveend", function() {
-    if (map.getZoom() != obj.vars.zoom) {
-      obj.change("zoom");
-    }
+    obj.map.setZoom(obj.vars.zoom);
   });
 
   // Respond to incoming moves
   binding = obj.bind("move", function(){
-    map.panTo(new GLatLng(obj.vars.latitude,obj.vars.longitude));
-  });
-  // Send out outgoing moves
-  GEvent.addListener(map,"moveend",function() {
-    var coord = map.getCenter();
-    obj.vars.latitude = coord.lat();
-    obj.vars.longitude = coord.lng();
-    obj.change("move",binding);
+    obj.map.panTo(new GLatLng(obj.vars.latitude,obj.vars.longitude));
   });
 
   // Respond to incoming map type changes
   binding = obj.bind("maptypechange",function(){
-    var type;
+    var type = false;
     if(obj.vars.maptype=='Map') {type = G_NORMAL_MAP;}
     if(obj.vars.maptype=='Hybrid') {type = G_HYBRID_MAP;}
     if(obj.vars.maptype=='Satellite') {type = G_SATELLITE_MAP;}
-    map.setMapType(type);
-  });
-  // Send out outgoing map type changes.
-  GEvent.addListener(map,"maptypechanged",function() {
-    // If the map isn't ready yet, ignore it.
-    if (map.ready) {
-      var type = map.getCurrentMapType();
-      if(type==G_NORMAL_MAP) {obj.vars.maptype = 'Map';}
-      if(type==G_HYBRID_MAP) {obj.vars.maptype = 'Hybrid';}
-      if(type==G_SATELLITE_MAP) {obj.vars.maptype = 'Satellite';}
-      obj.change("maptypechange",binding);
+    if(obj.vars.maptype=='Physical') {type = G_PHYSICAL_MAP;}
+    if (type) {
+      obj.map.setMapType(type);
     }
   });
 
   // Respond to incoming width changes.
   binding = obj.bind("widthchange",function(w){
-    map.getContainer().style.width = w;
-    map.checkResize();
+    obj.map.getContainer().style.width = w;
+    obj.map.checkResize();
   });
   // Send out outgoing width changes.
   // N/A
   // Respond to incoming height changes.
   binding = obj.bind("heightchange",function(h){
-    map.getContainer().style.height = h;
-    map.checkResize();
+    obj.map.getContainer().style.height = h;
+    obj.map.checkResize();
   });
   // Send out outgoing height changes.
   // N/A
@@ -243,10 +288,10 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   // Respond to incoming control type changes.
   binding = obj.bind("controltypechange",function() {
     if(obj.currentcontrol) {
-      map.removeControl(obj.currentcontrol);
+      obj.map.removeControl(obj.currentcontrol);
     }
-    if (obj.vars.controltype=='Small') {map.addControl(obj.currentcontrol = new GSmallMapControl());}
-    if (obj.vars.controltype=='Large') {map.addControl(obj.currentcontrol = new GLargeMapControl());}
+    if (obj.vars.controltype=='Small') {obj.map.addControl(obj.currentcontrol = new GSmallMapControl());}
+    if (obj.vars.controltype=='Large') {obj.map.addControl(obj.currentcontrol = new GLargeMapControl());}
   });
   // Send out outgoing control type changes.
   // N/A

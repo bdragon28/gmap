@@ -37,6 +37,8 @@ function gmap_defaults() {
     'align' => 'None',
     'latlong' => '40,0',
     'maptype' => 'Map',
+    'mtc' => 'standard',
+    'baselayers' => array('Map', 'Satellite', 'Hybrid'),
     'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
   );
   $defaults['behavior'] = array();
@@ -51,7 +53,7 @@ function gmap_defaults() {
 /**
  * Implementation of hook_gmap().
  */
-function gmap_gmap($op, $map=null) {
+function gmap_gmap($op, &$map = null) {
   switch ($op) {
     case 'macro':
       return array(
@@ -129,12 +131,14 @@ function gmap_gmap($op, $map=null) {
           'title' => t('Enable Overview Map'),
           'default' => FALSE,
           'help' => t('Enable the "overview map" in the bottom right corner.'),
+          'previewable' => TRUE,
         ),
-        'notype' => array(
+/*        'notype' => array(
           'title' => t('Disable map type control'),
           'default' => FALSE,
           'help' => t('Removes the map type control from the upper right corner. Recommended for very narrow maps.'),
-        ),
+          'previewable' => TRUE,
+        ), */
         'collapsehack' => array(
           'title' => t('Work around bugs when maps appear in collapsible fieldsets'),
           'default' => FALSE,
@@ -144,8 +148,33 @@ function gmap_gmap($op, $map=null) {
           'title' => t('Add scale control to map.'),
           'default' => FALSE,
           'help' => t('Adds a scale control to the map in the default position.'),
+          'previewable' => TRUE,
         ),
       );
+      break;
+
+    case 'baselayers':
+      $map['Google']['Map'] = array(
+        'title' => t('Map: Standard street map.'),
+        'default' => TRUE,
+        'help' => t('The standard default street map. Internal name: G_NORMAL_MAP'),
+      );
+      $map['Google']['Satellite'] = array(
+        'title' => t('Satellite: Standard satellite map.'),
+        'default' => TRUE,
+        'help' => t('Satellite view without street overlay. Internal name: G_SATELLITE_MAP'),
+      );
+      $map['Google']['Hybrid'] = array(
+        'title' => t('Hybrid: Hybrid satellite map.'),
+        'default' => TRUE,
+        'help' => t('Satellite view with street overlay. Internal name: G_HYBRID_MAP'),
+      );
+      $map['Google']['Physical'] = array(
+        'title' => t('Terrain: Physical feature map.'),
+        'default' => FALSE,
+        'help' => t('Map with physical data (terrain, vegetation.) Internal name: G_PHYSICAL_MAP'),
+      );
+      break;
   }
 }
 
@@ -944,6 +973,12 @@ function gmap_map_cleanup(&$map) {
     list($map['latitude'], $map['longitude']) = explode(',', $map['latlon']);
   }
   unset($map['latlon']);
+
+  foreach($map['baselayers'] as $k => $v) {
+    if (!$v) {
+      unset($map['baselayers'][$k]);
+    }
+  }
 }
 
 function theme_gmap_coord($element) {

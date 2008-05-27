@@ -73,6 +73,14 @@ function _gmap_admin_settings() {
     ),
   );
 
+  // Allow previewable behaviors to affect the preview map.
+  $behaviors = module_invoke_all('gmap', 'behaviors');
+  foreach ($behaviors as $k => $v) {
+    if (isset($v['previewable']) && $v['previewable']) {
+      $form['gmap_default']['map']['#settings']['behavior'][$k] = $defaults['behavior'][$k];
+    }
+  }
+
   $form['gmap_default']['width'] = array(
     '#type' => 'gmap_dimension',
     '#title' => t('Default width'),
@@ -125,6 +133,18 @@ function _gmap_admin_settings() {
   );
   gmap_widget_setup($form['gmap_default']['controltype'], 'controltype', 'settings_default_map');
 
+  $form['gmap_default']['mtc'] = array(
+    '#type' => 'select',
+    '#title' => t('Map Type Control'),
+    '#options' => array(
+      'none' => t('None'),
+      'standard' => t('Standard (GMapTypeControl)'),
+      'hier' => t('Hierarchical (GHierarchicalMapTypeControl)'),
+      'menu' => t('Dropdown (GMenuMapTypeControl)'),
+    ),
+    '#default_value' => $defaults['mtc'],
+  );
+
   $form['gmap_default']['maptype'] = array(
     '#type' => 'select',
     '#title' => t('Default map type'),
@@ -133,11 +153,40 @@ function _gmap_admin_settings() {
   );
   gmap_widget_setup($form['gmap_default']['maptype'], 'maptype', 'settings_default_map');
 
+  $form['gmap_default']['baselayers'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Enabled map types ("base layers")'),
+  );
+
+  $baselayers = array();
+
+  foreach (module_implements('gmap') as $module) {
+    call_user_func_array($module .'_gmap', array('baselayers', &$baselayers));
+  }
+
+  foreach ($baselayers as $name => $layers) {
+    $form['gmap_default']['baselayers'][$name] = array(
+      '#type' => 'fieldset',
+      '#title' => $name,
+    );
+    foreach ($layers as $key => $layer) {
+      $form['gmap_default']['baselayers'][$name][$key] = array(
+        '#type' => 'checkbox',
+        '#title' => $layer['title'],
+        '#parents' => array('gmap_default', 'baselayers', $key),
+
+        '#description' => $layer['help'],
+        '#default_value' => isset($defaults['baselayers'][$key]) ? $defaults['baselayers'][$key] : $layer['default'],
+      );
+    }
+  }
+
+
   $form['gmap_default']['behavior'] = array(
     '#type' => 'fieldset',
     '#title' => t('Map Behavior flags'),
     '#tree' => TRUE,
-    '#description' => t('Behavior flags modify how a map behaves. Grayed out flags are not settable here, but may be set on a map by map basis via code or a macro.'),
+    '#description' => t('Behavior flags modify how a map behaves. Grayed out flags are not settable here, but may be set on a map by map basis via code or a macro. Changes to behaviors will not affect the preview map shown above until changes are saved.'),
   );
   $behaviors = module_invoke_all('gmap', 'behaviors');
   foreach ($behaviors as $k => $v) {
