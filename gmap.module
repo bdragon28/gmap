@@ -22,7 +22,7 @@ define('GMAP_WMS', variable_get('gmap_wms', 0));
 // 2.s will use the most recent stable version. See:
 // http://groups.google.com/group/Google-Maps-API/web/api-version-changes
 // for details on using other version numbers.
-define('GMAP_API_VERSION', '2.s');
+define('GMAP_API_VERSION', '2.111');
 
 /**
  * Get the defaults for a gmap.

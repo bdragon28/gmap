@@ -145,14 +145,6 @@ function _gmap_admin_settings() {
     '#default_value' => $defaults['mtc'],
   );
 
-  $form['gmap_default']['maptype'] = array(
-    '#type' => 'select',
-    '#title' => t('Default map type'),
-    '#default_value' => $defaults['maptype'],
-    '#options' => array('Map' => t('Map'), 'Satellite' => t('Satellite'), 'Hybrid' => t('Hybrid')),
-  );
-  gmap_widget_setup($form['gmap_default']['maptype'], 'maptype', 'settings_default_map');
-
   $form['gmap_default']['baselayers'] = array(
     '#type' => 'fieldset',
     '#title' => t('Enabled map types ("base layers")'),
@@ -163,6 +155,23 @@ function _gmap_admin_settings() {
   foreach (module_implements('gmap') as $module) {
     call_user_func_array($module .'_gmap', array('baselayers', &$baselayers));
   }
+
+  $options = array();
+  foreach ($baselayers as $name => $layers) {
+    $options[$name] = array();
+    foreach ($layers as $k => $v){
+      // @@@TODO: Only show the enabled ones?
+      $options[$name][$k] = $v['title'];
+    }
+  }
+
+  $form['gmap_default']['baselayers']['maptype'] = array(
+    '#type' => 'select',
+    '#title' => t('Default map type'),
+    '#default_value' => $defaults['maptype'],
+    '#options' => $options,
+  );
+  gmap_widget_setup($form['gmap_default']['baselayers']['maptype'], 'maptype', 'settings_default_map');
 
   foreach ($baselayers as $name => $layers) {
     $form['gmap_default']['baselayers'][$name] = array(
@@ -180,7 +189,6 @@ function _gmap_admin_settings() {
       );
     }
   }
-
 
   $form['gmap_default']['behavior'] = array(
     '#type' => 'fieldset',
