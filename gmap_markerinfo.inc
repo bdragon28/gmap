@@ -15,34 +15,6 @@
 function _gmap_get_icondata() {
   $icons = array();
 
-  $shortnames = array(
-    'name' => 'n',
-    'sequence' => 's',
-    'anchorX' => 'ax',
-    'anchorY' => 'ay',
-    'infoX' => 'ix',
-    'infoY' => 'iy',
-    'shadow' => 'si',
-    'printImage' => 'pi',
-    'mozPrintImage' => 'mpi',
-    'printShadow' => 'ps',
-    'transparent' => 'tr',
-  );
-
-  $order = array(
-    'name',
-    'sequence',
-    'anchorX',
-    'anchorY',
-    'infoX',
-    'infoY',
-    'shadow',
-    'printImage',
-    'mozPrintImage',
-    'printShadow',
-    'transparent',
-  );
-
   $imagetypes = array(
     'shadow',
     'printImage',
