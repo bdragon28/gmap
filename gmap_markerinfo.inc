@@ -168,13 +168,19 @@ function _gmap_compress_icon_def($iconset) {
     'infoX', 'infoY', 'shadow', 'printImage', 'mozPrintImage',
     'printShadow', 'transparent',
   );
+  $ints = array(3 => TRUE, 4 => TRUE, 5 => TRUE, 6 => TRUE);
   $nulls = array('', '', array(), 0, 0, 0, 0, '', '', '', '', '', );
 
   $a = array();
-  for ($c0=0; $c0<count($order); $c0++) {
+  for ($c0 = 0; $c0<count($order); $c0++) {
     $a[$c0] = array();
     for ($c1=0; $c1<count($iconset); $c1++) {
-      $a[$c0][$c1] = isset($iconset[$c1][$order[$c0]]) ? $iconset[$c1][$order[$c0]] : $nulls[$c0];
+      $temp = isset($iconset[$c1][$order[$c0]]) ? $iconset[$c1][$order[$c0]] : $nulls[$c0];
+      // Ensure that numeric quantities are encoded as ints, not strings.
+      if ($ints[$c0]) {
+        $temp = (int)$temp;
+      }
+      $a[$c0][$c1] = $temp;
     }
     _gmap_compress_array($a[$c0]);
   }
