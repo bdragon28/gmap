@@ -23,7 +23,7 @@ function gmap_views_views_style_plugins() {
 /**
  * Implementation of hook_gmap().
  */
-function gmap_views_gmap($op, $map=null) {
+function gmap_views_gmap($op, &$map = null) {
   switch ($op) {
     case 'behaviors':
       return array(
@@ -34,6 +34,10 @@ function gmap_views_gmap($op, $map=null) {
           'internal' => TRUE,
         ),
       );
+    case 'pre_theme_map':
+      // Don't pass the gmap_view settings to the client.
+      unset($map['settings']['gmap_view']);
+      break;
   }
 }
 
@@ -81,7 +85,9 @@ function theme_views_view_gmap($view, $results) {
         }
       }
     }
-
+  }
+  else if (!empty($view->gmap_map)) {
+    $thismap = $view->gmap_map;
   }
   else {
     $thismap = array(

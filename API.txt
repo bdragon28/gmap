@@ -59,12 +59,12 @@ The following shape types require XMaps:  (xmaps is not currently functioning)
 
 For a more detailed explanation on how to make complicated macros see:
   http://webgeer.com/gmapdemo
-  
+
 You can convert a macro into a gmap array with the function
 gmap_parse_macro($instring,$ver=2) $ver is only required if you need to
 use a macro generated with an old version of gmap where the format was
 longitude, latitude (set to 1 in that case).
-  
+
 Gmap Array
 
 The GMap Array is an associative array with the following definitions:
@@ -185,7 +185,7 @@ $mymap=array('id' => 'mymap',
              'type' => 'Satellite',
              'shapes' => $shapes,
              'markers' => $mymarkers);
-              
+
 gmap_draw_map($mymap);
 
 GMAP VIEWS API
@@ -199,8 +199,8 @@ You can tell gmap which column contains the geographic information it
 needs to plot the nodes on the map.
 
 There are two phases to the hook, 'discovery' and 'process'. During the
-discovery phase, your hook will be called once for each field in the 
-view. If your module can transform this field into latitude and 
+discovery phase, your hook will be called once for each field in the
+view. If your module can transform this field into latitude and
 longitude coordinates, you should return a value. This value will be
 store and returned to you during the 'process' phase. This can be use-
 ful in caching information, such has how to process the data, etc.
@@ -216,7 +216,76 @@ you returned during the 'discovery' phase.
 - 'entry' => the views "entry" containing all the fields returned from
 the database/
 
-From this data you should return an array with keys "lat" and "lon". 
+From this data you should return an array with keys "lat" and "lon".
 Gmap_views will use this array to plot the node on the map.
 
+------- STUFF ABOVE THIS POINT HAS NOT BEEN REVIEWED YET!-------
+------- PLEASE DO NOT TRUST THIS DOCUMENTATION!----------
 
+(Misc. documentation, up to date from this point down.)
+
+hook_gmap()
+===========
+
+$op = macro
+$op = pre_theme_map
+$op = macro_multiple
+$op = behaviors
+
+
+Gmap_views extensions
+=====================
+
+In Views 1.x, you need to use the "argument handling code" box to apply settings to a map view.
+
+You can set a custom macro with $view->gmap_macro.
+
+$view->gmap_macro = '[gmap |behavior=+autozoom]';
+
+(note, added post alpha) You can set the map object directly with $view->gmap_map.
+$view->gmap_map = $map;
+
+Extensions to core map object:
+
+$map = array(
+  '#settings' => array(
+    'behavior' => array(
+      // Fatmarkers is used to pass the raw views data in as markers.
+      // This is useful if you are doing custom processing on the javascript side.
+      'fatmarkers' => FALSE,
+    ),
+    'gmap_views' => array( // @@@ TODO: Actually *implement* this functionality!
+      // Set all markers to the same thing.
+      'forcemarkername' => 'drupal',
+
+      // Lookup table for marker names.
+      // Use in combination with markername.
+      'markername_map' => array(
+        'blog' => 'blue',
+        'story' => 'green',
+        'page' => 'pink',
+      ),
+      // OR
+      //
+      'markername_map' => 'my_custom_map_function',
+
+      // Views fields
+      // ============
+
+      // The field to use to determine the marker name.
+      // Use in combination with markername_map if the field doesn't contain
+      // marker names.
+      'markername' => 'my_custom_field',
+
+      // The field to use to determine the marker offset.
+      // If not set, it will be automatically tracked.
+      'markeroffset' => 'my_custom_field',
+
+      // Latitude and longitude.
+      'lat' => 'my_custom_field',
+      'lon' => 'my_custom_field',
+
+      'popup_theme' => 'my_custom_popup',
+    ),
+  ),
+);
