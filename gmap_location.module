@@ -730,8 +730,18 @@ function gmap_location_author_block_view($nid) {
   $block = array();
   $node = node_load($nid);
   if (variable_get('gmap_location_author_block_'. $node->type, FALSE)) {
-    $result = db_fetch_array(db_query("SELECT latitude, longitude FROM {location} WHERE eid = %d AND type = 'user'", $node->uid));
+    if (function_exists('location_newapi')) {
+      $result = db_fetch_array(db_query("SELECT latitude, longitude FROM {location} l INNER JOIN {location_instance} i ON l.lid = i.lid WHERE i.uid = %d", $node->uid));
+    }
+    else {
+      $result = db_fetch_array(db_query("SELECT latitude, longitude FROM {location} WHERE eid = %d AND type = 'user'", $node->uid));
+    }
     if (!$result) {
+      // Location not set at all.
+      return;
+    }
+    if (empty($result['latitude']) && empty($result['longitude'])) {
+      // Coordinates not set.
       return;
     }
     $macro = variable_get('gmap_location_block_macro_'. $node->type, FALSE);
