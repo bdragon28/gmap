@@ -19,8 +19,11 @@ define('GMAP_LINECOLOR3', '#0000ff');
 
 define('GMAP_WMS', variable_get('gmap_wms', 0));
 
-// 2.s will use the most recent stable version. See:
-// http://groups.google.com/group/Google-Maps-API/web/api-version-changes
+// Current minimum version: 2.111
+// Minimum version last changed on: May 27 2008
+// Reason: New built in editing tools. http://googlemapsapi.blogspot.com/2008/05/love-my-maps-use-its-line-and-shape.html
+//
+// See http://groups.google.com/group/Google-Maps-API/web/api-version-changes
 // for details on using other version numbers.
 define('GMAP_API_VERSION', '2.111');
 
@@ -500,24 +503,6 @@ case 'track':
         $tt['filename'] =$t[1];
         $gmap['tracks'][] = $tt;
         break;
-
-      case 'wmss':
-        unset($ttt);
-        $ttt = explode('+',$t[1]);
-        for ($i =0; $i<count($ttt); $i++) {
-          unset($tt);
-          list($tt['name'],$tt['url'],$tt['format'],$tt['layers'],$tt['minresolution'],$tt['maxresolution'],$tt['copyrights'],$tt['overlaywith'],$tt['merczoomlevel'],$tt['opacity'])=explode('::',$ttt[$i]);
-          $crr = explode('/',$tt['copyrights']);
-          unset($tt['copyrights']);
-          for ($k =0; $k<count($crr); $k++) {
-            unset($cr);
-            list($cr['minzoom'],$cr['bounds'],$cr['text'])=explode(':',$crr[$k]);
-            $tt['copyrights'][]=$cr;
-          }
-          $gmap['wmss'][]=$tt;
-        }
-        break;
-
 */
   $additions = module_invoke_all('gmap', 'parse_macro', $m);
   if (!empty($additions)) {
