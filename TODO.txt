@@ -2,8 +2,6 @@ $Id$
 
 Drupal 5 todo:
 
-* WMS support
-
 * Lots more documentation
 
 * QA triage
@@ -27,4 +25,3 @@ Legacy 4.7 todo:
 - Create setting to suppress the option of changing some of the settings in
   the macro creation page.  This could be used so that all maps generated
   are the same size, or the same magnification.
-
