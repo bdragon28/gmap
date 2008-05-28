@@ -13,7 +13,6 @@ function _gmap_admin_settings() {
   $form['initialization'] = array(
     '#type' => 'fieldset',
     '#title' => t('Google Map Initialize'),
-    '#description' => t('Note about Drupal 5 version: Shaded out controls are controls for unfinished features that existed in the 4.7 version.'),
   );
   if (!module_exists('keys_api')) {
     $form['initialization']['googlemap_api_key'] = array(
@@ -33,13 +32,6 @@ function _gmap_admin_settings() {
       '#value' => t("Managed by <a href='@url'>keys api</a>.", array('@url' => url('admin/settings/keys'))),
     );
   }
-  $form['initialization']['gmap_wms'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Enable wms features'),
-    '#disabled' => TRUE, //@@@
-    '#default_value' => GMAP_WMS,
-    '#description' => t('Enables the wms features.  This allows you to use overlays that are defined using wms.  The wms-gs.js (or other acceptable version) must be installed in the gmap directory.'),
-  );
   $form['initialization']['gmap_load_zoom_plugin'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable mousewheel zooming'),
