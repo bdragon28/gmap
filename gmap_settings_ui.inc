@@ -151,7 +151,7 @@ function _gmap_admin_settings() {
   $options = array();
   foreach ($baselayers as $name => $layers) {
     $options[$name] = array();
-    foreach ($layers as $k => $v){
+    foreach ($layers as $k => $v) {
       // @@@TODO: Only show the enabled ones?
       $options[$name][$k] = $v['title'];
     }

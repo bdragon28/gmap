@@ -959,7 +959,7 @@ function gmap_map_cleanup(&$map) {
   }
   unset($map['latlon']);
 
-  foreach($map['baselayers'] as $k => $v) {
+  foreach ($map['baselayers'] as $k => $v) {
     if (!$v) {
       unset($map['baselayers'][$k]);
     }
