@@ -466,10 +466,4 @@ if (Drupal.jsEnabled) {
     //Google cleanup.
     GUnload();
   });
-
-  $(window).load(function() {
-    // Attempt to work around problems with map divs being resized during
-    // document reflow. (Should fix location2 weirdness inside <table> tags.)
-    Drupal.gmap.globalChange('widthchange');
-  });
 }
