@@ -611,7 +611,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
           '#default_value' => variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+notype] '),
         );
 
-        $ntypes=node_get_types();
+        $ntypes = node_get_types();
         foreach ($ntypes as $key => $value) {
           if (variable_get('location_maxnum_'. $key, 0)) {
             $form['gmap_location_block_macro_'. $key] = array(

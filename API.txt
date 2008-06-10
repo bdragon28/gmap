@@ -47,7 +47,6 @@ an "=" to define that variable.  Possible parameters are:
   points/markers - a string of points to mark on the map with + between
         each point
   line - the line is defined by a set of points separated by a +
-  track - Draws a line based on the points in the .plt file
   feed - the RSS feed with geo:lat information to be parsed by js
 
 The following shape types require XMaps:  (xmaps is not currently functioning)
@@ -105,11 +104,6 @@ The GMap Array is an associative array with the following definitions:
       'text' - the text used in the line (xmaps only)
       'fillcolor' - the fill color for filled objects (xmaps objects only)
       'fillopacity' - the opacity of the filled objects (xmaps object only)
-  tracks - an array of track arrays.  Each track array can have the
-    following elements:
-      'filename' - a filename for the track (.plt) file.  Should be
-         relative to the drupal base url.
-      'type', 'color', etc... same as the shape line.
   feeds - an array of feed arrays.  Each feed array can have the
     following elements:
       'url' - the url of the feed.
@@ -342,11 +336,6 @@ $map = array(
       'text' - the text used in the line (xmaps only)
       'fillcolor' - the fill color for filled objects (xmaps objects only)
       'fillopacity' - the opacity of the filled objects (xmaps object only)
-  tracks - an array of track arrays.  Each track array can have the
-    following elements:
-      'filename' - a filename for the track (.plt) file.  Should be
-         relative to the drupal base url.
-      'type', 'color', etc... same as the shape line.
   feeds - an array of feed arrays.  Each feed array can have the
     following elements:
       'url' - the url of the feed.
