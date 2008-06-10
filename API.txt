@@ -224,6 +224,196 @@ Gmap_views will use this array to plot the node on the map.
 
 (Misc. documentation, up to date from this point down.)
 
+<?php
+$map = array(
+  // The identifier used to tell the map apart from other maps on the page.
+  // Any controls that are to be synced with the map use the same map id.
+  // Usually required.
+  'id' => 'example',
+
+  // Choose the default baselayer.
+  // Core options: 'Map', 'Satellite', 'Hybrid', 'Physical'.
+  // Additional options are available with gmap_extrabaselayers.module
+  // and other addon modules.
+  // Legacy names: 'type'.
+  'maptype' => 'Terrain',
+
+  // Width of the map as a CSS dimension.
+  'width' => '400px',
+
+  // Height of the map as a CSS dimension.
+  'height' => '400px',
+
+  // The initial center point of the map.
+  'latitude' => 12.345,
+  'longitude' => 12.345,
+
+  // The initial zoom of the map.
+  'zoom' => 4,
+
+  // Map div alignment.
+  // Options: 'left', 'right', 'center'.
+  'align' => 'left',
+
+  // Pan/zoom control type.
+  // Options: 'None', 'Small', 'Large'.
+  // Legacy names: 'control'.
+  'controltype' => 'Small',
+
+  // Map Type control. (aka layer selector)
+  // Options: 'none', 'standard', 'hier', 'menu'.
+  // Replaces and extends the old 'tcontrol' param.
+  'mtc' => 'standard',
+
+  // Behavior flags.
+  // Flags set to TRUE are forced on.
+  // Flags set to FALSE are forced off.
+  // Missing flags inherit from the defaults.
+  'behavior' => array(
+    // Sets the map up for being used to select a coordinate.
+    // Use in combination with latitude, longitude, or latlon fields.
+    'locpick' => FALSE,
+
+    // Disable dragging. If dragging is disabled, keyboard shortcuts will
+    // also be disabled.
+    // FALSE: Allow dragging as usual.
+    // TRUE: Inhibit dragging.
+    // Replaces the old 'drag' param.
+    'nodrag' => FALSE,
+
+    // Disable keyboard shortcuts.
+    // FALSE: Allow keyboard shortcuts.
+    // TRUE: Inhibit keyboard shortcuts.
+    'nokeyboard' => TRUE,
+
+    // nomousezoom
+
+    // autozoom
+
+    // dynmarkers
+
+    // Enable overview map control in the bottom right corner.
+    'overview' => TRUE,
+
+    // collapsehack
+
+    // Map scale indicator visibility.
+    // FALSE: Hide map scale.
+    // TRUE: Show map scale.
+    // Replaces the old 'scontrol' param.
+    'scale' => TRUE,
+
+    // fatmarkers
+
+  ),
+
+  // Static markers.
+  // 'markers' is an array of marker arrays.
+  // The contents of a marker array are specified seperately below for clarity.
+  'markers' => array(),
+
+  // Static shapes.
+  // 'shapes' is an array of shape arrays.
+  // The contents of a shape array are specified seperately below for clarity.
+  'shapes' => array(),
+
+  'feeds' => array(),
+
+  markers - an array of marker arrays.  Each marker array is an associative
+    array with the following elements:
+      'latitude' - the latitude of the marker
+      'longitude' - the longitude of the marker
+      'markername' - the marker icon to use. For example if it is set
+        to 'number', then the icons in the marker directory named
+        'number1.png', 'number2.png' etc.  will be used. If these don't
+        exist 'number.png' would be used.  If that doesn't exist then
+        the default marker will be used.  (optional)
+      'text' - html text to be located in a pop-up window when you click
+        on the marker. (@@@ Describe array tabs trick... --Bdragon)
+  shapes - an array of shape arrays.  Each shape array can have the
+    following elements:
+      'type' -  'line', 'circle', 'rpolygon', or 'polygon'
+      'color' - the hex for the color to create the line (eg. '#00dd00')
+      'width' - the width of the line in px
+      'opacity' - between 0 and 1 for the opacity of the line
+      'pattern' - a broken line definition '20 5 10 5' would mean 20 px
+         long line, 5x break, 10px line 5px break 20px line ...
+         (xmaps objects only)
+      'text' - the text used in the line (xmaps only)
+      'fillcolor' - the fill color for filled objects (xmaps objects only)
+      'fillopacity' - the opacity of the filled objects (xmaps object only)
+  tracks - an array of track arrays.  Each track array can have the
+    following elements:
+      'filename' - a filename for the track (.plt) file.  Should be
+         relative to the drupal base url.
+      'type', 'color', etc... same as the shape line.
+  feeds - an array of feed arrays.  Each feed array can have the
+    following elements:
+      'url' - the url of the feed.
+      'markername' - the marker icon to use.  same as for markers
+         except that numbered markers are not supported.
+  wmss - an array of WMS services arrays.  Each WMS service array can have the
+    following elements:
+      'name' - the name of the custom map (no spaces or special chars).
+      'url' - the url of the WMS service.
+      'format' - image format to retrieve. Depends of WMS service:
+         'image/gif','image/png','image/jpeg'
+      'layers' - a comma separated list of layers advertized by WMS service
+         to show in this custom map.
+      'minresolution' - lowest zoom level of this custom map.
+      'maxresolution' - highest zoom level of this custom map.
+      'copyrights' - an array of copyrights to display. Each copyright array
+         can have the following elements:
+           'minzoom' - lowest zoom level at which this information applies.
+           'bounds' - a comma separated list of coordinates defining a
+              region to which this copyright information applies: 'S,W,N,E'
+           'text' - text of the copyright message.
+      'overlaywith' - (optional) overlay WMS layers with this Google layers:
+         'Map', 'Hybrid', 'Satellite' or 'None'(default)
+      'merczoomlevel' - (optional) zoom factor of the google map where WMS service
+         should advertize layers in Transverse Mercator projection instead
+         of WGS84 projection. See discussion of this topic here:
+         http://johndeck.blogspot.com/#112679047816546118
+      'opacity' - (optional) Opacity level for this tile from 0.0 (transparent)
+         to 1.0 (opaque)
+
+
+);
+
+$map['markers'][] = array(
+
+
+);
+
+$map['feeds'][] = array(
+  'url' => 'http://earthquake.usgs.gov/eqcenter/catalogs/eqs7day-M5.xml',
+  'markername' => 'red',
+);
+
+    // Each marker is
+    array(
+
+    ),
+    // ...
+  ),
+
+
+
+
+$output = theme('gmap', array('#settings' => $map));
+
+
+
+
+
+
+
+
+
+
+
+
+
 hook_gmap()
 ===========
 
