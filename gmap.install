@@ -62,6 +62,6 @@ function gmap_update_5000() {
     unset($d['behavior']['notype']);
   }
 
-  variable_set('gmap_default, $d);
+  variable_set('gmap_default', $d);
   return $ret;
 }
