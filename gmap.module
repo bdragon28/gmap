@@ -19,13 +19,13 @@ define('GMAP_LINECOLOR3', '#0000ff');
 
 define('GMAP_WMS', variable_get('gmap_wms', 0));
 
-// Current minimum version: 2.111
-// Minimum version last changed on: May 27 2008
-// Reason: New built in editing tools. http://googlemapsapi.blogspot.com/2008/05/love-my-maps-use-its-line-and-shape.html
+// Current minimum version: 2.113
+// Minimum version last changed on: June 9 2008
+// Reason: G_SATELLITE_3D_MAP support in gmap_addons. See http://code.google.com/apis/earth/.
 //
 // See http://groups.google.com/group/Google-Maps-API/web/api-version-changes
 // for details on using other version numbers.
-define('GMAP_API_VERSION', '2.111');
+define('GMAP_API_VERSION', '2.115');
 
 /**
  * Get the defaults for a gmap.
@@ -147,6 +147,8 @@ function gmap_gmap($op, &$map = null) {
           'default' => FALSE,
           'help' => t('Enabling this will work around some issues that can occur when maps appear inside collapsible fieldsets.'),
         ),
+        // Note to myself, who keeps forgetting what a scale control actually IS.:
+        // |------------  1mi ------------|
         'scale' => array(
           'title' => t('Add scale control to map.'),
           'default' => FALSE,
@@ -442,14 +444,47 @@ function gmap_parse_macro($instring, $ver=2) {
     unset($m['behavior-temp']);
   }
 
-  // Stuff that was converted to behavior flags
+  // tcontrol now is mtc.
   if ($m['tcontrol']) {
     if (strtolower(trim($m['tcontrol'])) == 'on') {
-      $m['behavior']['notype'] = FALSE;
+      $m['mtc'] = 'standard';
     }
     else {
-      $m['behavior']['notype'] = TRUE;
+      $m['mtc'] = 'none';
     }
+    unset($m['tcontrol']);
+  }
+
+  // notype also controls mtc.
+  if (isset($m['behavior']['notype'])){
+    if ($m['behavior']['notype']) {
+      $m['mtc']= 'none';
+    }
+    unset($m['behavior']['notype']);
+  }
+
+  // Stuff that was converted to behavior flags
+
+  // Scale control.
+  if ($m['scontrol']) {
+    if (strtolower(trim($m['scontrol'])) == 'on') {
+      $m['behavior']['scale'] = TRUE;
+    }
+    else {
+      $m['behavior']['scale'] = FALSE;
+    }
+    unset($m['scontrol']);
+  }
+
+  // Draggability.
+  if ($m['drag']) {
+    if (strtolower(trim($m['drag'])) == 'yes') {
+      $m['behavior']['nodrag'] = FALSE;
+    }
+    else {
+      $m['behavior']['nodrag'] = TRUE;
+    }
+    unset($m['drag']);
   }
 
   // Markers fixup
