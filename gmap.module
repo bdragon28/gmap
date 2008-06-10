@@ -525,24 +525,13 @@ function gmap_parse_macro($instring, $ver=2) {
   }
   unset($m['markers-temp']);
 
-
-/*
-  porting note: gmap_dopoint() flips lat/lon based on google maps api version.
-
-case 'track':
-        $tt['color']=GMAP_LINECOLOR1;
-        if (strpos($t[1],':')) { // note: we don't care about case starting with ':'
-          list($configs,$t[1])=explode(':',$t[1],2);
-          list($tt['color'],$tt['width'],$tt['opacity'],$tt['pattern'],$tt['text'])=explode('/',$configs);
-        }
-        $tt['filename'] =$t[1];
-        $gmap['tracks'][] = $tt;
-        break;
-*/
-  $additions = module_invoke_all('gmap', 'parse_macro', $m);
-  if (!empty($additions)) {
-    foreach ($additions as $k => $v) {
-      $m[$k] = $v;
+  // The macro can now be manipulated by reference.
+  foreach (module_implements('gmap') as $module) {
+    $additions = call_user_func_array($module .'_gmap', array('parse_macro', &$m));
+    if (!empty($additions)) {
+      foreach ($additions as $k => $v) {
+        $m[$k] = $v;
+      }
     }
   }
   return $m;
@@ -563,6 +552,8 @@ function _gmap_str2coord($str) {
   return $points;
 }
 
+// @@@ Warning: This produces an obsolete point format!
+// @@@ Clean up asap!
 /**
  * Parse a set of points in string format.
  * (Trying to convert this to the more efficient _gmap_str2coord...)
