@@ -468,3 +468,41 @@ $map = array(
     ),
   ),
 );
+
+
+(parse macro header, integrate back into docs.)
+/**
+ *
+ * Returns a variable based on .
+ *
+ * @param $instring
+ * A string with the settings of gmap insertion in the format var=setting|var2=setting2
+ *  The possible variables are
+ *  id - the id of the map every map on a page must have a unique id
+ *  width - width of the map
+ *  height - height of the map
+ *  center - a string of the longitude and latitude of the centre of the map
+ *  zoom - the zoom factor of the google map
+ *  align - the alignment of the map 'right', 'left' or 'center'
+ *  control - the control shown on the map 'Large', 'Small', or 'None'
+ *  type - 'Map', 'Hybrid' or 'Satellite'
+ *  points/markers - a string of points to mark on the map with + between
+ *          each point
+ *  line - the line is defined by a set of points separated by a +
+ *  The following shape types require XMaps:
+ *  circle - a circle based on a center point and a radius in km separated
+ *          by a + and optionally can include the number of sizes.
+ *  rpolygon - a regular polygon is defined by the center point and a point
+ *          on the permiter separated by a +
+ *  polygon - a polygon is defined by a set of points
+ *
+ *  Each of the shapes types can optionally have charecteristics of colour,
+ *  width, opacity, pattern, text, fill colour, fill opacity.  Pattern, text
+ *  and fill are all only used by xmaps.
+ *      color - hexadecimal for the colour include the '#'
+ *
+ *
+ * @return
+ * A string with the google map ready to be inserted into a node.
+ *
+ */
