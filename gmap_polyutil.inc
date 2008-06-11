@@ -35,6 +35,41 @@ function gmap_polyutil_e5_to_encoded($e5) {
   return $out;
 }
 
-function gmap_polyutil_distance_from_line() {
-  // http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
+function gmap_polyutil_dist($p1, $p2) {
+  // Distance in two dimensions.
+  // √((x1-x0)^2 + (y1-y0)^2)
+  return sqrt(pow($p2[0] - $p1[0], 2) + pow($p2[1] - $p1[1], 2));
+}
+
+/**
+ * Distance calculation between a point and a line segment.
+ * @param $p
+ *   Point to measure.
+ * @param $lp1
+ *   Point 1 on line.
+ * @param $lp2
+ *   Point 2 on line.
+ */
+function gmap_polyutil_distance($p, $lp1, $lp2) {
+  if ($lp1[0] == $lp2[0] && $lp1[1] == $lp2[1]) {
+    // The "line" is really being a point. Just use simple distance.
+    return gmap_polyutil_dist($p, $lp1);
+  }
+  // mathematica code: (q-p1).(p2-p1)/(p2-p1).(p2-p1);
+  // I asked maxima, and it said ((p2y-p1y)*(qy-p1y)+(p2x-p1x)*(qx-p1x))/((p2y-p1y)^2+(p2x-p1x)^2).
+  $tmp = (($lp2[1]-$lp1[1])*($p[1]-$lp1[1])+($lp2[0]-$lp1[0])*($p[0]-$lp1[0]))/(pow($lp2[1]-$lp1[1],2) + pow($lp2[0]-$lp1[0], 2));
+  // Point is not alongside segment, is further off in $lp1's direction.
+  if ($tmp <= 0) {
+    return gmap_polyutil_dist($lp1, $p);
+  }
+  // Point is not alongside segment, is further off in $lp2's direction.
+  else if ($tmp >= 1) {
+    return gmap_polyutil_dist($lp2, $p);
+  }
+  else {
+    // mathematica code: Norm[q-(p1+u (p2-p1))]
+    // which means q and (p1+u (p2-p1)) are the things we are calculating distance on.
+    // maxima sez: (p1+u*(p2-p1)) => [(p2x-p1x)*u+p1x,(p2y-p1y)*u+p1y]
+    return gmap_polyutil_dist($p, array(($lp2[0]-$lp1[0])*$tmp + $lp1[0], ($lp2[1]-$lp1[1])*$tmp + $lp1[1]));
+  }
 }
