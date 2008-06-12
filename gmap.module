@@ -471,7 +471,7 @@ function gmap_parse_macro($instring, $ver = 2) {
     }
     // Break down into points
     $points = explode('+', $t);
-    $offset = 0;
+    $offset = -1;
     foreach ($points as $point) {
       $marker = array();
       $offset++;
