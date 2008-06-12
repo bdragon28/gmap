@@ -15,9 +15,10 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   });
 */
   obj.bind('prepareshape',function(shape) {
-    var i, pa, pp, cargs;
+    var i, pa, pp, cargs, style;
     //var m = new GMarker(new GLatLng(marker.latitude,marker.longitude),marker.opts);
     pa = []; // point array (array of GLatLng-objects)
+    var fillstyle = true;
     if (shape.type == 'circle') {
       pa = obj.poly.calcPolyPoints(new GLatLng(shape.center[0],shape.center[1]), shape.radius * 1000, shape.numpoints);
     }
@@ -39,9 +40,29 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       $.each(shape.points, function(i,n) {
         pa.push(new GLatLng(n[0],n[1]));
       });
+      fillstyle = false;
     }
     cargs = [pa];
-    $.each(shape.style, function(i,n){
+
+    // Style normalization
+    if (fillstyle) {
+      style = obj.vars.styles['poly_default'].slice();
+    }
+    else {
+      style = obj.vars.styles['line_default'].slice();
+    }
+    if (shape.style) {
+      style = shape.style.slice();
+    }
+    style[0] = '#' + style[0];
+    style[1] = Number(style[1]);
+    style[2] = style[2] / 100;
+    if (fillstyle) {
+      style[3] = '#' + style[3];
+      style[4] = style[4] / 100;
+    }
+
+    $.each(style, function(i,n){
       cargs.push(n);
     });
     var Pg = function(args) {

@@ -219,6 +219,27 @@ Gmap_views will use this array to plot the node on the map.
 (Misc. documentation, up to date from this point down.)
 
 <?php
+
+// A style description.
+$style = array(
+  '00dd00', // STROKE COLOR: The hex color of the line or border ('#RRGGBB'), without the leading #.
+  5,        // STROKE WEIGHT: The weight of the line or border. Defined as width, in pixels.
+  80,       // STROKE OPACITY: The opacity of the line or border. Defined as % out of 100.
+  'ff00ff', // FILL COLOR: The hex color of the polygon fill ('#RRGGBB'), without the leading #. (if applicable.)
+  60,       // FILL OPACITY: The opacity of the fill. Defined as % out of 100. Use 0 for no fill. (if applicable.)
+);
+
+// Backwards compatibility note:
+// There were originally more style options, but they were for xmaps only, and
+// as xmaps is not compatible with google maps anymore, they are now ignored.
+//
+// 'pattern' - a broken line definition '20 5 10 5' would mean 20 px long line,
+//    5x break, 10px line 5px break 20px line ... (xmaps objects only)
+// 'text' - the text used in the line (xmaps only)
+// 'fillcolor' - the fill color for filled objects (xmaps objects only)
+// 'fillopacity' - the opacity of the filled objects (xmaps object only)
+
+
 $map = array(
   // The identifier used to tell the map apart from other maps on the page.
   // Any controls that are to be synced with the map use the same map id.
@@ -386,7 +407,29 @@ $map['feeds'][] = array(
     // ...
   ),
 
+$map['shapes'][] = array(
+  // The type of shape.
+  // 'line': A polyline.
+  // 'circle':
+  'type' => 'line',
+  'style' => $style,
 
+
+  shapes - an array of shape arrays.  Each shape array can have the
+    following elements:
+      'type' -  'line', 'circle', 'rpolygon', or 'polygon'
+      'color' - the hex for the color to create the line (eg. '#00dd00')
+      'width' - the width of the line in px
+      'opacity' - between 0 and 1 for the opacity of the line
+      'pattern' - a broken line definition '20 5 10 5' would mean 20 px
+         long line, 5x break, 10px line 5px break 20px line ...
+         (xmaps objects only)
+      'text' - the text used in the line (xmaps only)
+      'fillcolor' - the fill color for filled objects (xmaps objects only)
+      'fillopacity' - the opacity of the filled objects (xmaps object only)
+
+
+);
 
 
 $output = theme('gmap', array('#settings' => $map));
@@ -506,3 +549,6 @@ $map = array(
  * A string with the google map ready to be inserted into a node.
  *
  */
+
+
+@@@ Describe style changes for 1.0 final!

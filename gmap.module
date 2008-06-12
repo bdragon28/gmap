@@ -42,6 +42,10 @@ function gmap_defaults() {
     'maptype' => 'Map',
     'mtc' => 'standard',
     'baselayers' => array('Map', 'Satellite', 'Hybrid'),
+    'styles' => array(
+      'line_default' => array('0000ff',5,45,'',0,0),
+      'poly_default' => array('000000',3,25,'ff0000',45),
+    ),
     'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
   );
   $defaults['behavior'] = array();
@@ -223,6 +227,21 @@ drupal_add_js($gmap_path .'/js/poly.js');
   $gmap_initialized = TRUE;
 }
 
+function _gmap_parse_style($style) {
+  $styles = explode('/', $style);
+
+  // @@@ Todo: Fix up old xmaps stuff. Possibly detect by looking for array length 7?
+
+  // Strip off # signs, they get added by code.
+  if (isset($styles[0]) && substr($styles[0], 0, 1) == '#') {
+    $styles[0] = substr($styles[0], 1);
+  }
+  if (isset($styles[3]) && substr($styles[3], 0, 1) == '#') {
+    $styles[3] = substr($styles[3], 1);
+  }
+  return $styles;
+}
+
 /**
  * Convert a macro string into a GMap array.
  *
@@ -306,10 +325,7 @@ function gmap_parse_macro($instring, $ver = 2) {
       $cp = strpos($shape, ':');
       if ($cp !== false) {
         $stylestr = substr($shape, 0, $cp);
-        $s['style'] = explode('/', $stylestr);
-        foreach ($s['style'] as $k => $v) {
-          if (is_numeric($v)) $s['style'][$k] = (float)$v;
-        }
+        $s['style'] = _gmap_parse_style($stylestr);
         $shape = substr($shape, $cp+1);
       }
       $tmp = explode('+', $shape);
@@ -344,10 +360,7 @@ function gmap_parse_macro($instring, $ver = 2) {
       $cp = strpos($shape, ':');
       if ($cp != false) {
         $stylestr = substr($shape, 0, $cp);
-        $s['style'] = explode('/', $stylestr);
-        foreach ($s['style'] as $k => $v) {
-          if (is_numeric($v)) $s['style'][$k] = (float)$v;
-        }
+        $s['style'] = _gmap_parse_style($stylestr);
         $shape = substr($shape, $cp+1);
       }
       $s['points'] = _gmap_str2coord($shape);
@@ -361,7 +374,7 @@ function gmap_parse_macro($instring, $ver = 2) {
       $cp = strpos($shape, ':');
       if ($cp !== false) {
         $stylestr = substr($shape, 0, $cp);
-        $s['style'] = explode('/', $stylestr);
+        $s['style'] = _gmap_parse_style($stylestr);
         $shape = substr($shape, $cp+1);
       }
       $tmp = explode('+', $shape);
@@ -379,7 +392,7 @@ function gmap_parse_macro($instring, $ver = 2) {
       $cp = strpos($shape, ':');
       if ($cp !== false) {
         $stylestr = substr($shape, 0, $cp);
-        $s['style'] = explode('/', $stylestr);
+        $s['style'] = _gmap_parse_style($stylestr);
         $shape = substr($shape, $cp+1);
       }
       $s['points'] = _gmap_str2points($shape);
@@ -762,6 +775,7 @@ function gmap_elements() {
       ),
     ),
     'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit' => array())),
+    'gmap_style' => array('#input' => TRUE, '#tree' => TRUE, '#gmap_style_type' => 'poly', '#process' => array('process_gmap_style' => array())),
     'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address' => array())),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align' => array())),
     'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'latitude', 'gmap_coord'))),
@@ -786,6 +800,7 @@ function expand_gmap($element) {
   if (!$element['#settings']) {
     $element['#settings'] = array();
   }
+  // @@@
   $element['#settings'] = array_merge(gmap_defaults(), array(
     'id' => $mapid,
     'points' => array(),
@@ -811,6 +826,70 @@ function process_gmap_control($element, $edit, $fieldtype, $control, $theme='') 
   return $element;
 }
 
+function process_gmap_style($element) {
+  $isline = ($element['#gmap_style_type'] == 'line');
+  // Stroke color
+  $element[0] = array(
+    '#type' => 'textfield',
+    '#size' => 6,
+    '#maxlength' => 6,
+    '#field_prefix' => '#',
+    '#title' => t('Stroke color'),
+    '#value' => $element['#value'][0],
+    '#attributes' => array('class' => 'gmap_style'),
+  );
+  // Stroke weight
+  $element[1] = array(
+    '#type' => 'textfield',
+    '#title' => t('Stroke weight'),
+    '#description' => t('Thickness of line, in pixels.'),
+    '#size' => 3,
+    '#maxlength' => 3,
+    '#field_suffix' => t('px'),
+    '#value' => $element['#value'][1],
+    '#attributes' => array('class' => 'gmap_style'),
+  );
+  // Stroke opacity
+  $element[2] = array(
+    '#type' => 'textfield',
+    '#title' => t('Stroke opacity'),
+    '#size' => 3,
+    '#maxlength' => 3,
+    '#field_suffix' => '%',
+    '#value' => $element['#value'][2],
+    '#attributes' => array('class' => 'gmap_style'),
+  );
+  // Fill color
+  $element[3] = array(
+    '#type' => 'textfield',
+    '#title' => t('Fill color'),
+    '#description' => t('Hex color value for fill color. Example: #<em>00AA33</em>'),
+    '#size' => 6,
+    '#maxlength' => 6,
+    '#field_prefix' => '#',
+    '#value' => $element['#value'][3],
+    '#disabled' => $isline,
+    '#attributes' => array('class' => 'gmap_style'),
+  );
+  $element[4] = array(
+    '#type' => 'textfield',
+    '#title' => t('Fill opacity'),
+    '#description' => t('Opacity of fill, from 0 to 100%.'),
+    '#size' => 3,
+    '#maxlength' => 3,
+    '#field_suffix' => '%',
+    '#value' => $element['#value'][4],
+    '#disabled' => $isline,
+    '#attributes' => array('class' => 'gmap_style'),
+  );
+  return $element;
+}
+
+function theme_gmap_style($element) {
+  return theme('fieldset', $element, $element['#children']);
+  //return theme('form_element', $element, '<div'. drupal_attributes($element['#attributes']) .'>'.$element['#children'] .'</div>');
+}
+
 function process_gmap_overlay_edit($element) {
   // Conver the root element into a fieldset.
   $element['#type'] = 'fieldset';
@@ -827,15 +906,18 @@ function process_gmap_overlay_edit($element) {
       'Points' => t('Points'),
       'Lines' => t('Lines'),
       'Circles' => t('Circles'),
+      'GPolygon' => t('Filled Polygons'),
     ),
   );
   gmap_widget_setup($element['mapclicktype'], 'overlayedit_mapclicktype');
   $element['markerclicktype'] = array(
     '#type' => 'select',
-    '#title' => t('Click marker'),
+    '#title' => t('Click marker / segment'),
     '#map' => $element['#map'],
     '#options' => array(
       'Remove' => t('Remove'),
+//      'updatestyle' => t('Update Styles'),
+//      'removestyle' => t('Remove Styles'),
       'Edit Info' => t('Edit Info'),
     ),
   );
@@ -850,66 +932,35 @@ function process_gmap_overlay_edit($element) {
   );
   gmap_widget_setup($element['marker'], 'overlayedit');
 
-  $element['linesettings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Line/Polygon settings'),
-    '#tree' => TRUE,
+  $element['linestyle'] = array(
+    '#type' => 'gmap_style',
+    '#title' => t('Line style'),
+    '#gmap_style_type' => 'line',
+    '#default_value' => array('0000ff',5,45,'',''), // @@@
   );
+  gmap_widget_setup($element['linestyle'], 'overlayedit_linestyle', $element['#map']);
+  $element['linestyle']['linestyle_apply'] = array(
+    '#tree' => FALSE,
+    '#type' => 'checkbox',
+    '#title' => t('Use for new and changed lines'),
+    '#default_value' => FALSE,
+  );
+  gmap_widget_setup($element['linestyle']['linestyle_apply'], 'overlayedit_linestyle_apply', $element['#map']);
 
-  $element['linesettings']['scol'] = array(
-    '#type' => 'textfield',
-    '#map' => $element['#map'],
-    '#size' => 6,
-    '#maxlength' => 6,
-    '#field_prefix' => '#',
-    '#title' => t('Stroke color'),
-    '#default_value' => '000000',
+  $element['polystyle'] = array(
+    '#type' => 'gmap_style',
+    '#title' => t('Polygon style'),
+    '#gmap_style_type' => 'poly',
+    '#default_value' => array('000000',3,25,'ff0000',45), // @@@
   );
-  gmap_widget_setup($element['linesettings']['scol'], 'overlayedit_scol');
-
-  $element['linesettings']['sweight'] = array(
-    '#type' => 'textfield',
-    '#map' => $element['#map'],
-    '#size' => 3,
-    '#maxlength' => 3,
-    '#field_suffix' => t('px'),
-    '#title' => t('Stroke weight'),
-    '#default_value' => 1,
+  gmap_widget_setup($element['polystyle'], 'overlayedit_polystyle', $element['#map']);
+  $element['polystyle']['polystyle_apply'] = array(
+    '#tree' => FALSE,
+    '#type' => 'checkbox',
+    '#title' => t('Use for new and changed polygons'),
+    '#default_value' => FALSE,
   );
-  gmap_widget_setup($element['linesettings']['sweight'], 'overlayedit_sweight');
-
-  $element['linesettings']['sopac'] = array(
-    '#type' => 'textfield',
-    '#map' => $element['#map'],
-    '#size' => 3,
-    '#maxlength' => 3,
-    '#field_suffix' => '%',
-    '#title' => t('Stroke opacity'),
-    '#default_value' => '100',
-  );
-  gmap_widget_setup($element['linesettings']['sopac'], 'overlayedit_sopac');
-
-  $element['linesettings']['fcolor'] = array(
-    '#type' => 'textfield',
-    '#map' => $element['#map'],
-    '#size' => 6,
-    '#maxlength' => 6,
-    '#field_prefix' => '#',
-    '#title' => t('Fill color'),
-    '#default_value' => '00FF00',
-  );
-  gmap_widget_setup($element['linesettings']['fcolor'], 'overlayedit_fcolor');
-
-  $element['linesettings']['fopac'] = array(
-    '#type' => 'textfield',
-    '#map' => $element['#map'],
-    '#size' => 3,
-    '#maxlength' => 3,
-    '#field_suffix' => '%',
-    '#title' => t('Fill opacity'),
-    '#default_value' => '60',
-  );
-  gmap_widget_setup($element['linesettings']['fopac'], 'overlayedit_fopac');
+  gmap_widget_setup($element['polystyle']['polystyle_apply'], 'overlayedit_polystyle_apply', $element['#map']);
 
   return $element;
 }

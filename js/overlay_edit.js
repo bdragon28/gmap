@@ -4,6 +4,51 @@
  * Gmap Overlay Editor
  */
 
+Drupal.gmap.addHandler('overlayedit_linestyle', function(elem) {
+  var obj = this;
+  obj.vars.styles['overlayline'] = [];
+  var f = function() {
+    var o = Number($(this).attr('id').match(/\d+$/));
+    obj.vars.styles['overlayline'][o] = this.value;
+  };
+  $(elem).find('input.gmap_style').change(f).each(f);
+});
+
+Drupal.gmap.addHandler('overlayedit_linestyle_apply', function(elem) {
+  var obj = this;
+  obj.vars.overlay_linestyle_apply = Boolean(elem.checked);
+  $(elem).change(function() {
+    obj.vars.overlay_linestyle_apply = Boolean(this.checked);
+  });
+});
+
+Drupal.gmap.addHandler('overlayedit_polystyle', function(elem) {
+  var obj = this;
+  obj.vars.styles['overlaypoly'] = [];
+  var f = function() {
+    var o = Number($(this).attr('id').match(/\d+$/));
+    obj.vars.styles['overlaypoly'][o] = this.value;
+  };
+  $(elem).find('input.gmap_style').change(f).each(f);
+});
+
+Drupal.gmap.addHandler('overlayedit_polystyle_apply', function(elem) {
+  var obj = this;
+  obj.vars.overlay_polystyle_apply = Boolean(elem.checked);
+  $(elem).change(function() {
+    obj.vars.overlay_polystyle_apply = Boolean(this.checked);
+  });
+});
+
+Drupal.gmap.addHandler('overlayedit_fillstroke_default', function(elem) {
+  var obj = this;
+  obj.vars._usedefaultfillstroke = Boolean(elem.checked);
+  $(elem).change(function() {
+    obj.vars._usedefaultfillstroke = Boolean(this.checked);
+    alert(obj.vars._usedefaultfillstroke);
+  });
+});
+
 Drupal.gmap.addHandler('overlayedit_mapclicktype',function(elem) {
   var obj = this;
   obj.vars.overlay_add_mode = elem.value;
@@ -21,97 +66,75 @@ Drupal.gmap.addHandler('overlayedit_markerclicktype',function(elem) {
     obj.vars.overlay_del_mode = elem.value;
   });
 });
-Drupal.gmap.addHandler('overlayedit_scol',function(elem) {
-  var obj = this;
-  obj.vars.overlay_stroke_color = '#'+elem.value;
-  $(elem).change(function() {
-    obj.vars.overlay_stroke_color = '#'+elem.value;
-  });
-});
-Drupal.gmap.addHandler('overlayedit_sweight',function(elem) {
-  var obj = this;
-  obj.vars.overlay_stroke_weight = Number(elem.value);
-  $(elem).change(function() {
-    obj.vars.overlay_stroke_weight = Number(elem.value);
-  });
-});
-Drupal.gmap.addHandler('overlayedit_sopac',function(elem) {
-  var obj = this;
-  obj.vars.overlay_stroke_opacity = Number(elem.value) / 100;
-  $(elem).change(function() {
-    obj.vars.overlay_stroke_opacity = Number(elem.value) / 100;
-  });
-});
-Drupal.gmap.addHandler('overlayedit_fcolor',function(elem) {
-  var obj = this;
-  obj.vars.overlay_fill_color = '#' + elem.value;
-  $(elem).change(function() {
-    obj.vars.overlay_fill_color = '#'+elem.value;
-  });
-});
-Drupal.gmap.addHandler('overlayedit_fopac',function(elem) {
-  var obj = this;
-  obj.vars.overlay_fill_opacity = Number(elem.value) / 100;
-  $(elem).change(function() {
-    obj.vars.overlay_fill_opacity = Number(elem.value) / 100;
-  });
-});
 
 Drupal.gmap.addHandler('gmap',function(elem) {
   var obj = this;
+
   // Add status bar
   var status = $(elem).after('<div class="gmap-statusbar">Status</div>').next();
   obj.statusdiv = status[0];
 
   obj.bind('buildmacro',function(add) {
-    var temp, i, q;
-    if (obj.vars.shapes) {
-      var circles  = [];
-      var lines = [];
-      $.each(obj.vars.shapes,function(i,n){
-        if (n.type == 'circle') {
-          if (!n.style) {n.style = [];}
-          circles.push(n.style.join('/') +':'+ n.center.join(' , ') +' + '+ n.radius);
-        }
-        else if (n.type == 'line') {
-          if (!n.style) {n.style = [];}
-          var tmp = [];
-          $.each(n.points, function(idx,pt) {
-            tmp.push(''+ pt[0] +' , '+ pt[1]);
-          });
-          lines.push(n.style.join('/') +':'+ tmp.join(' + '));
-        }
-      });
-      $.each(circles, function(i,n) {
-        add.push('circle='+ n);
-      });
-      $.each(lines, function(i,n) {
-        add.push('line='+ n);
-      });
+    var temp, i, q, tm, ct;
+
+    var style_line = function(n) {
+      if (!n.style.length) { return '';};
+      var style = n.style.slice(0,3);
+      style[0] = '#' + style[0];
+      return style.join('/') + ':';
     }
-    if (obj.vars.points) {
-      for (i in obj.vars.points) {
-        temp = [];
-        for (var j = 0 ; j < obj.vars.points[i].length ; j++) {
-          var data = obj.vars.points[i][j].gmapMarkerData();
-          temp.push(''+ data.point.lat() + ',' + data.point.lng());
-        }
-        if (temp.length > 0) {
-          add.push('markers='+i+'::' + temp.join(' + '));
-        }
+    var style_poly = function(n) {
+      if (!n.style.length) { return '';};
+      var style = n.style.slice();
+      style[0] = '#' + style[0];
+      style[3] = '#' + style[3];
+      return style.join('/') + ':';
+    }
+
+    var feature_dump = function(n) {
+      var f = n.overlay;
+      var tmp = [];
+      var i, ct, vtx;
+      ct = f.getVertexCount();
+      for (i = 0; i < ct; i++) {
+        vtx = f.getVertex(i);
+        tmp.push('' + vtx.lat() + ',' + vtx.lng());
       }
-    }
-    for (q = 0; q<3 ; q++) {
-      temp = [];
-      if (obj.vars.lines && obj.vars.lines[q] && obj.vars.lines[q].points) {
-        // Lines have at least 2 points.
-        if (obj.vars.lines[q].points.length > 1) {
-          for(i = 0; i < obj.vars.lines[q].points.length; i++) {
-            temp[i] = '' + obj.vars.lines[q].points[i].lat() + ',' + obj.vars.lines[q].points[i].lng();
+      return tmp.join(' + ');
+    };
+
+    if (obj._oe && obj._oe.features) {
+      var polygons = [];
+      var polylines = [];
+      var circles = [];
+      var markers = {};
+      $.each(obj._oe.features, function(i,n) {
+        if (n.type) {
+          switch (n.type) {
+            case 'polyline':
+              add.push('line=' + style_line(n) + feature_dump(n));
+              break;
+            case 'polygon':
+              add.push('polygon=' + style_poly(n) + feature_dump(n));
+              break;
+            case 'point':
+              if (!markers[n.marker]) { markers[n.marker] = [];};
+              var pt = n.overlay.getLatLng();
+              var ptxt = '';
+              if (n.html) {
+                ptxt = ':' + n.html;
+              }
+              markers[n.marker].push('' + pt.lat() + ',' + pt.lng() + ptxt);
+              break;
+            case 'circle':
+              add.push('circle=' + style_poly(n) + n.center.lat() + ' , ' + n.center.lng() + ' + ' + n.radius / 1000);
+              break;
           }
-          add.push('line' + (q+1) + '=' + temp.join(' + '));
         }
-      }
+      });
+      $.each(markers, function(i, n) {
+        add.push('markers=' + i + '::' + n.join(' + '));
+      });
     }
   });
 });
@@ -147,131 +170,174 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
 //    obj.change('overlay_edit_mode',binding);
   });
 
-  obj.bind('init',function() {
+  obj.bind('init', function() {
+    obj._oe = {};
     obj.vars.overlay_add_mode = 'Points'; //elem.value;
     obj.vars.overlay_del_mode = 'Remove';
     var edit_text_elem;
 
     if(obj.map) {
-      obj.vars.pointsOverlays = [];
-      obj.vars.points = {};
-
+      obj._oe.features = [];
+      obj._oe.featuresRef = {};
+      obj._oe.editing = false;
+      obj._oe.markerseq = {};
       GEvent.addListener(obj.map, 'click', function(overlay, point) {
         if (overlay) {
-          switch (obj.vars.overlay_del_mode) {
-            case 'Remove':
-              var data = overlay.gmapMarkerData();
-              obj.vars.points[data.type].splice(data.idx,1);
-              obj.map.removeOverlay(overlay);
-              // Shift all following markers left one in sequence.
-              for (var i = data.idx ; i < obj.vars.points[data.type].length ; i++) {
-                var tempdata = obj.vars.points[data.type][i].gmapMarkerData();
-                obj.map.removeOverlay(obj.vars.points[data.type][i]);
-                tempdata.idx--;
-                var marker = new GMarker(tempdata.point,{icon:Drupal.gmap.getIcon(tempdata.type,tempdata.idx)});
-                marker.gmapMarkerData(tempdata);
-                obj.vars.points[data.type][i] = marker;
-                obj.map.addOverlay(marker);
-              }
-
-              obj.status("Removed overlay");
-              obj.change('point',-1);
-              break;
-            case 'Edit Info':
-              break;
+          if (obj._oe.editing) {
+            // Work around problem where double clicking to finish a poly fires a click event.
+            obj._oe.editing = false;
+          }
+          else {
           }
         }
-        else if (point) {
+        else if (point && !obj._oe.editing) {
+          obj._oe.editing = true;
           switch (obj.vars.overlay_add_mode) {
-            // I've got the feeling that some of the following logic could be trimmed
             case 'Points':
-              if (!obj.vars.points[elem.value]) {
-                obj.vars.points[elem.value] = [];
-              }
-              marker = new GMarker(point,{icon:Drupal.gmap.getIcon(elem.value,obj.vars.points[elem.value].length)});
-              marker.gmapMarkerData({type: elem.value, idx: obj.vars.points[elem.value].length, point: point});
-              obj.vars.points[elem.value].push(marker);
-              obj.map.addOverlay(marker);
-              obj.change('point',-1);
-              break;
-            case 'Lines':
-              if (!obj.temp_point) {
-                obj.temp_point = [];
-                obj.temp_point.push(point);
-                obj.status("Drawing line. Click for more points, double click to finish.");
-              }
-              else {
-                obj.temp_point.push(point);
-                // @@@ Add a temporary overlay here?
-              }
-              break;
-            case 'Circles':
-              if (!obj.temp_point) {
-                obj.temp_point = point;
-                // @@@ Translate
-                obj.status("Drawing circle. Click a point on the rim to place.");
-              }
-              else {
-                var point1 = obj.temp_point;
-                delete obj.temp_point;
-                obj.status("Placed circle. Radius was "+ point1.distanceFrom(point) / 1000 + " km.");
-                if (!obj.vars.shapes) {
-                  obj.vars.shapes = [];
+              var m = elem.value; // @@@ It's kinda silly to be binding the whole shebang to this dropdown..
+              if (!obj._oe.markerseq.hasOwnProperty(m)) {obj._oe.markerseq[m] = -1;};
+              obj._oe.markerseq[m] = obj._oe.markerseq[m] + 1;
+              var p = new GMarker(point,{icon:Drupal.gmap.getIcon(m, obj._oe.markerseq[m])});
+              obj.map.addOverlay(p);
+              var ctx = {
+                'type' : 'point',
+                'marker' : m,
+                'overlay' : p
+              };
+              var offset = obj._oe.features.push(ctx) - 1;
+              obj._oe.editing = false;
+              GEvent.addListener(p, "click", function() {
+                switch (obj.vars.overlay_del_mode) {
+                  case 'Remove':
+                    obj._oe.markerseq[m] = obj._oe.markerseq[m] - 1;
+                    ctx.type = 'deleted';
+                    obj.map.removeOverlay(p);
+                    delete ctx.overlay;
+                    var tmpcnt = 0;
+                    // Renumber markers in set.
+                    $.each(obj._oe.features, function(i, n) {
+                      if (n.type && n.type == 'point' && n.marker == m) {
+                        var pt = n.overlay.getLatLng();
+                        n.overlay.setImage(Drupal.gmap.getIcon(n.marker, tmpcnt).image);
+                        tmpcnt = tmpcnt + 1;
+                      }
+                    });
+                    break;
                 }
-                var shape = {
-                  type: 'circle',
-                  center: [
-                    point1.lat(),
-                    point1.lng()
-                  ],
-                  radius: point1.distanceFrom(point) / 1000,
-                  style: [
-                    obj.vars.overlay_stroke_color,
-                    obj.vars.overlay_stroke_weight,
-                    obj.vars.overlay_stroke_opacity,
-                    obj.vars.overlay_fill_color,
-                    obj.vars.overlay_fill_opacity
-                  ]
-                };
-                obj.change('prepareshape', -1, shape);
-                obj.change('addshape', -1, shape);
+              });
+              obj.change('mapedited', -1);
+              break;
+
+            case 'Lines':
+              var ctx = {
+                'type' : 'polyline',
+                'style' : [],
+                'overlay' : null
+              };
+              var s = obj.vars.styles['line_default'];
+              if (obj.vars.overlay_linestyle_apply) {
+                ctx.style = obj.vars.styles.overlayline.slice();
+                s = ctx.style;
               }
+              var p = new GPolyline([point], '#' + s[0], Number(s[1]), s[2] / 100);
+              obj.map.addOverlay(p);
+              ctx.overlay = p;
+              obj._oe.featuresRef[p] = obj._oe.features.push(ctx) - 1;
+
+              p.enableDrawing();
+              p.enableEditing({onEvent: "mouseover"});
+              p.disableEditing({onEvent: "mouseout"});
+              GEvent.addListener(p, "endline", function() {
+                //obj._oe.editing = false;
+                //GEvent.addListener(p, "lineupdated", function(){obj.change('buildmacro', -1);});
+                GEvent.addListener(p, "click", function(latlng, index) {
+                  if (typeof index == "number") {
+                    // Delete vertex on click.
+                    p.deleteVertex(index);
+                  }
+                  else {
+                    var feature = obj._oe.features[obj._oe.featuresRef[p]];
+                    feature.stroke = obj.vars.stroke; // @@@
+                    p.setStrokeStyle(feature.stroke);
+                  }
+                });
+                obj.change('mapedited', -1);
+              });
+              break;
+
+            case 'GPolygon':
+              var ctx = {
+                'type' : 'polygon',
+                'style' : [],
+                'overlay' : null
+              };
+              var s = obj.vars.styles['poly_default'];
+              if (obj.vars.overlay_polystyle_apply) {
+                ctx.style = obj.vars.styles.overlaypoly.slice();
+                s = ctx.style;
+              }
+              var p = new GPolygon([point], '#' + s[0], Number(s[1]), s[2] / 100, '#' + s[3], s[4] / 100);
+              obj.map.addOverlay(p);
+              ctx.overlay = p;
+              obj._oe.featuresRef[p] = obj._oe.features.push(ctx) - 1;
+
+              p.enableDrawing();
+              p.enableEditing({onEvent: "mouseover"});
+              p.disableEditing({onEvent: "mouseout"});
+              GEvent.addListener(p, "endline", function() {
+                //obj._oe.editing = false;
+                //GEvent.addListener(p, "lineupdated", function(){obj.change('buildmacro', -1);});
+                GEvent.addListener(p, "click", function(latlng, index) {
+                  if (typeof index == "number") {
+                    p.deleteVertex(index);
+                  }
+                  else {
+                    var feature = obj._oe.features[obj._oe.featuresRef[p]];
+                    feature.stroke = obj.vars.stroke;
+                    feature.fill = obj.vars.fill;
+                    p.setStrokeStyle(feature.stroke);
+                    p.setFillStyle(feature.fill); // @@@
+                 }
+                });
+                obj.change('mapedited', -1);
+              });
+              break;
+
+            case 'Circles':
+              var temppoint = point;
+              // @@@ Translate
+              obj.status("Drawing circle. Click a point on the rim to place.");
+
+              var handle = GEvent.addListener(obj.map, 'click', function(overlay, point) {
+                if (point) {
+                  var ctx = {
+                    'type' : 'circle',
+                    'center' : temppoint,
+                    'radius' : null,
+                    'style' : [],
+                    'overlay' : null
+                  };
+                  var s = obj.vars.styles['poly_default'];
+                  if (obj.vars.overlay_polystyle_apply) {
+                    ctx.style = obj.vars.styles.overlaypoly.slice();
+                    s = ctx.style;
+                  }
+                  obj.status("Placed circle. Radius was "+ temppoint.distanceFrom(point) / 1000 + " km.");
+                  ctx.radius = temppoint.distanceFrom(point);
+                  var p = new GPolygon(obj.poly.calcPolyPoints(ctx.center, ctx.radius, 32), '#' + s[0], Number(s[1]), s[2] / 100, '#' + s[3], s[4] / 100);
+                  obj.map.addOverlay(p);
+                  ctx.overlay = p;
+                  obj._oe.featuresRef[p] = obj._oe.features.push(ctx) - 1;
+                }
+                else {
+                  // @@@ Uh, do cleanup I suppose..
+                }
+                obj._oe.editing = false;
+                GEvent.removeListener(handle);
+                obj.change('mapedited', -1);
+              });
               break;
           }
-        }
-      });
-      GEvent.addListener(obj.map, 'dblclick', function(overlay, point) {
-        if (overlay) {
-
-        }
-        else if (point) {
-          switch (obj.vars.overlay_add_mode) {
-            case 'Lines':
-              obj.temp_point.pop(); // Remove the second of two click events that happens before the dblclick...
-              if (obj.temp_point.length < 2) {return;} // If the user started by double clicking...
-              var points = obj.temp_point;
-              delete obj.temp_point;
-              obj.status("Placed "+ points.length +"-segment line.");
-
-              if (!obj.vars.shapes) {
-                obj.vars.shapes = [];
-              }
-              var coords = [];
-              $.each(points, function(i,n) {
-                coords.push([n.lat(), n.lng()]);
-              });
-              var shape = {
-                type: 'line',
-                points: coords,
-                style: [
-                  obj.vars.overlay_stroke_color,
-                  obj.vars.overlay_stroke_weight,
-                  obj.vars.overlay_stroke_opacity
-                ]
-              };
-              obj.change('prepareshape', -1, shape);
-              obj.change('addshape', -1, shape);
-            }
         }
       });
     }

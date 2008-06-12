@@ -117,6 +117,21 @@ function _gmap_admin_settings() {
   );
   // This one isn't a gmap widget.
 
+  $form['gmap_default']['styles']['line_default'] = array(
+    '#type' => 'gmap_style',
+    '#gmap_style_type' => 'line',
+    '#title' => t('Line default style'),
+    '#description' => t('Lines without a specific style defined will fall back to this style'),
+    '#default_value' => $defaults['styles']['line_default'],
+  );
+  $form['gmap_default']['styles']['poly_default'] = array(
+    '#type' => 'gmap_style',
+    '#gmap_style_type' => 'poly',
+    '#title' => t('Polygon default style'),
+    '#description' => t('Polygons without a specific style defined will fall back to this style'),
+    '#default_value' => $defaults['styles']['poly_default'],
+  );
+
   $form['gmap_default']['controltype'] = array(
     '#type' => 'select',
     '#title' => t('Default control type'),
