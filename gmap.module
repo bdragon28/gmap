@@ -49,7 +49,8 @@ function gmap_defaults() {
     'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
   );
   $defaults['behavior'] = array();
-  $behaviors = module_invoke_all('gmap', 'behaviors');
+  $m = array();
+  $behaviors = module_invoke_all('gmap', 'behaviors', $m);
   foreach ($behaviors as $k => $v) {
     $defaults['behavior'][$k] = $v['default'];
   }
@@ -255,7 +256,8 @@ function _gmap_parse_style($style) {
  */
 function gmap_parse_macro($instring, $ver = 2) {
   // Get a list of keys that are "multiple."
-  $multiple = module_invoke_all('gmap', 'macro_multiple');
+  $m = array();
+  $multiple = module_invoke_all('gmap', 'macro_multiple', $m);
 
   // Remove leading and trailing tags
   if (substr(trim($instring), -1)==']') {
