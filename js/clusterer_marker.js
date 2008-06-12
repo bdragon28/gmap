@@ -31,11 +31,11 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   });
 
   obj.bind('addmarker',function(marker) {
-    var t;
+    var t = '';
     if (marker.opts.title) {
       t = marker.opts.title;
       if (marker.link) {
-        t = t.link(marker.link);
+        t = '<a href="' + marker.link + '">' + t + '</a>';
       }
     }
     obj.clusterer.AddMarker(marker.marker,t);
