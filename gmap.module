@@ -60,7 +60,7 @@ function gmap_defaults() {
 /**
  * Implementation of hook_gmap().
  */
-function gmap_gmap($op, &$map = null) {
+function gmap_gmap($op, &$map) {
   switch ($op) {
     case 'macro':
       return array(
