@@ -212,7 +212,7 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
                     obj._oe.markerseq[m] = obj._oe.markerseq[m] - 1;
                     ctx.type = 'deleted';
                     obj.map.removeOverlay(p);
-                    delete ctx.overlay;
+                    ctx.overlay = null;
                     var tmpcnt = 0;
                     // Renumber markers in set.
                     $.each(obj._oe.features, function(i, n) {
@@ -224,6 +224,7 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
                     });
                     break;
                 }
+                obj.change('mapedited', -1);
               });
               obj.change('mapedited', -1);
               break;
@@ -328,6 +329,16 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
                   obj.map.addOverlay(p);
                   ctx.overlay = p;
                   obj._oe.featuresRef[p] = obj._oe.features.push(ctx) - 1;
+                  GEvent.addListener(p, "click", function() {
+                    switch (obj.vars.overlay_del_mode) {
+                      case 'Remove':
+                        ctx.type = 'deleted';
+                        obj.map.removeOverlay(p);
+                        ctx.overlay = null;
+                        break;
+                    }
+                    obj.change('mapedited', -1);
+                  });
                 }
                 else {
                   // @@@ Uh, do cleanup I suppose..
