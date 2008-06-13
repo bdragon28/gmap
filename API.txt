@@ -76,7 +76,105 @@ longitude, latitude (set to 1 in that case).
 
 ###GMap Array###
 
-**NOTE**: This section is ALSO completely wrong.
+The main map array is quite complex. Most of the features have a macro equivilent,
+but some of the more powerful constructs do not.
+
+####Style subsection####
+
+Some places in the array accept a style array. A style array is an array with
+3 or 5 elements, used to define fill and stroke parameters.
+
+    <?php
+    // A style description.
+    $style = array(
+      '00dd00', // STROKE COLOR: The hex color of the line or border ('#RRGGBB'), without the leading #.
+      5,        // STROKE WEIGHT: The weight of the line or border. Defined as width, in pixels.
+      80,       // STROKE OPACITY: The opacity of the line or border. Defined as % out of 100.
+      'ff00ff', // FILL COLOR: The hex color of the polygon fill ('#RRGGBB'), without the leading #. (if applicable.)
+      60,       // FILL OPACITY: The opacity of the fill. Defined as % out of 100. Use 0 for no fill. (if applicable.)
+    );
+    ?>
+
+Google Maps does not currently support named colors properly. (@@@ verify this?)
+
+@@@ Describe changes to style array for 5?
+
+####Marker subsection####
+
+####Shape subsection####
+
+Shapes are parsed by gmap_shapes.js and loaded by shapeloader_static.js.
+
+#####Line#####
+
+    <?php
+    $shape = array(
+      // 'line' will be drawn as a GPolyline.
+      'type' => 'line',
+      // points is an array of arrays containing [latitude, longitude] pairs.
+      // There must be at least two points.
+      'points' => array(array(0.000, 0.000), array(0.000, 0.000)),
+      // Optional. Will use the 'line_default' style if not defined.
+      'style' => $style,
+    );
+    $map['shapes'][] = $shape;
+    ?>
+
+#####Polygon#####
+
+    <?php
+    $shape = array(
+      // 'polygon' will be drawn as a GPolygon.
+      'type' => 'polygon',
+      // points is an array of arrays containing [latitude, longitude] pairs.
+      // The first and last point should have the same coordinate, and there
+      // should be at least three points.
+      'points' => array(array(0.000, 0.000), array(0.000, 0.000), array(0.000, 0.000)),
+      // Optional. Will use the 'poly_default' style if not defined.
+      'style' => $style,
+    );
+    $map['shapes'][] = $shape;
+    ?>
+
+#####Circle#####
+
+Circle is a special case of Polygon, except the points will be calculated
+on the fly.
+
+    <?php
+    $shape = array(
+      // 'circle' will be drawn as a GPolygon.
+      'type' => 'circle',
+      // Center coordinate of the circle.
+      'center' => array(0.000, 0.000),
+      // Radius of the circle, specified in kilometers.
+      'radius' => 100,
+      // Optional. Will use the 'poly_default' style if not defined.
+      'style' => $style,
+    );
+    $map['shapes'][] = $shape;
+    ?>
+
+#####RPolygon#####
+
+RPolygon is similar to Circle, except that one of the vertexes will be *point2*.
+
+    <?php
+    $shape = array(
+      // 'rpolygon' will be drawn as a GPolygon.
+      'type' => 'rpolygon',
+      // Center coordinate of the regular polygon.
+      'center' => array(0.000, 0.000),
+      // A point on the rim of the regular polygon.
+      'point2' => array(0.000, 0.000),
+      // Optional. Will use the 'poly_default' style if not defined.
+      'style' => $style,
+    );
+    $map['shapes'][] = $shape;
+    ?>
+
+
+**NOTE**: This rest of this section is inaccurate.
 
 The GMap Array is an associative array with the following definitions:
 
@@ -121,30 +219,6 @@ The GMap Array is an associative array with the following definitions:
       'url' - the url of the feed.
       'markername' - the marker icon to use.  same as for markers
          except that numbered markers are not supported.
-  wmss - an array of WMS services arrays.  Each WMS service array can have the
-    following elements:
-      'name' - the name of the custom map (no spaces or special chars).
-      'url' - the url of the WMS service.
-      'format' - image format to retrieve. Depends of WMS service:
-         'image/gif','image/png','image/jpeg'
-      'layers' - a comma separated list of layers advertized by WMS service
-         to show in this custom map.
-      'minresolution' - lowest zoom level of this custom map.
-      'maxresolution' - highest zoom level of this custom map.
-      'copyrights' - an array of copyrights to display. Each copyright array
-         can have the following elements:
-           'minzoom' - lowest zoom level at which this information applies.
-           'bounds' - a comma separated list of coordinates defining a
-              region to which this copyright information applies: 'S,W,N,E'
-           'text' - text of the copyright message.
-      'overlaywith' - (optional) overlay WMS layers with this Google layers:
-         'Map', 'Hybrid', 'Satellite' or 'None'(default)
-      'merczoomlevel' - (optional) zoom factor of the google map where WMS service
-         should advertize layers in Transverse Mercator projection instead
-         of WGS84 projection. See discussion of this topic here:
-         http://johndeck.blogspot.com/#112679047816546118
-      'opacity' - (optional) Opacity level for this tile from 0.0 (transparent)
-         to 1.0 (opaque)
 
 The gmap marker is converted to the javascript to display the map using the
 function gmap_draw_map($gmap, $javascript=''), where $gmap is a map
@@ -420,29 +494,6 @@ $map['feeds'][] = array(
     // ...
   ),
 
-$map['shapes'][] = array(
-  // The type of shape.
-  // 'line': A polyline.
-  // 'circle':
-  'type' => 'line',
-  'style' => $style,
-
-
-  shapes - an array of shape arrays.  Each shape array can have the
-    following elements:
-      'type' -  'line', 'circle', 'rpolygon', or 'polygon'
-      'color' - the hex for the color to create the line (eg. '#00dd00')
-      'width' - the width of the line in px
-      'opacity' - between 0 and 1 for the opacity of the line
-      'pattern' - a broken line definition '20 5 10 5' would mean 20 px
-         long line, 5x break, 10px line 5px break 20px line ...
-         (xmaps objects only)
-      'text' - the text used in the line (xmaps only)
-      'fillcolor' - the fill color for filled objects (xmaps objects only)
-      'fillopacity' - the opacity of the filled objects (xmaps object only)
-
-
-);
 
 
 $output = theme('gmap', array('#settings' => $map));
