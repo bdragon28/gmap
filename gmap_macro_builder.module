@@ -84,14 +84,31 @@ function gmap_macro_builder_form($settings = array(), $hide = array()) {
   );
   gmap_widget_setup($form['macroform']['mapid'], 'mapid', 'macro_map');
 
+  // @@@ TODO: Roll this next section into an element, it's duplicated from the settings ui.
+  $baselayers = array();
+
+  foreach (module_implements('gmap') as $module) {
+    call_user_func_array($module .'_gmap', array('baselayers', &$baselayers));
+  }
+
+  $options = array();
+  foreach ($baselayers as $name => $layers) {
+    $options[$name] = array();
+    foreach ($layers as $k => $v) {
+      // @@@TODO: Only show the enabled ones?
+      $options[$name][$k] = $v['title'];
+    }
+  }
+
   $form['macroform']['maptype'] = array(
     '#type' => 'select',
     '#title' => t('Map type'),
-    '#options' => drupal_map_assoc(array('Map', 'Satellite', 'Hybrid')),
     '#default_value' => $defaults['maptype'],
-    '#required' => FALSE,
+    '#options' => $options,
   );
   gmap_widget_setup($form['macroform']['maptype'], 'maptype', 'macro_map');
+
+  // @@@TODO: We need to allow choosing an alternate set of baselayers...
 
   $form['macroform']['controltype'] = array(
     '#type' => 'select',
