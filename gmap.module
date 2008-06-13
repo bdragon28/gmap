@@ -228,6 +228,10 @@ drupal_add_js($gmap_path .'/js/poly.js');
   $gmap_initialized = TRUE;
 }
 
+/**
+ * Parse a macro style definition.
+ * Example: #111111/1/100/#111111/1
+ */
 function _gmap_parse_style($style) {
   $styles = explode('/', $style);
 
@@ -380,8 +384,12 @@ function gmap_parse_macro($instring, $ver = 2) {
         $shape = substr($shape, $cp+1);
       }
       $tmp = explode('+', $shape);
-      if ($tmp[2]) $s['numpoints'] = trim($tmp[2]);
-      $tmp = _gmap_str2points($shape);
+      if ($tmp[2]) {
+        $s['numpoints'] = (int)trim($tmp[2]);
+        $tmp = array_slice($tmp, 0, 2);
+      }
+      $shape = implode('+', $tmp);
+      $tmp = _gmap_str2coord($shape);
       $s['center'] = $tmp[0];
       $s['point2'] = $tmp[1];
       $m['shapes'][] = $s;
@@ -397,7 +405,7 @@ function gmap_parse_macro($instring, $ver = 2) {
         $s['style'] = _gmap_parse_style($stylestr);
         $shape = substr($shape, $cp+1);
       }
-      $s['points'] = _gmap_str2points($shape);
+      $s['points'] = _gmap_str2coord($shape);
       $m['shapes'][] = $s;
     }
     unset($m['polygon']);
@@ -528,7 +536,7 @@ function gmap_parse_macro($instring, $ver = 2) {
 }
 
 /**
- * Parse "x.xxxxx , y.yyyyyy" into an array of points.
+ * Parse "x.xxxxx , y.yyyyyy (+ x.xxxxx, y.yyyyy ...)" into an array of points.
  */
 function _gmap_str2coord($str) {
   // Explode along + axis
@@ -538,27 +546,6 @@ function _gmap_str2coord($str) {
   foreach ($arr as $pt) {
     list($lat, $lon) = explode(',', $pt);
     $points[] = array((float)trim($lat), (float)trim($lon));
-  }
-  return $points;
-}
-
-// @@@ Warning: This produces an obsolete point format!
-// @@@ Clean up asap!
-/**
- * Parse a set of points in string format.
- * (Trying to convert this to the more efficient _gmap_str2coord...)
- */
-function _gmap_str2points($str) {
-  // Explode along + axis
-  $arr = explode(' + ', $str);
-  // Explode along , axis
-  $points = array();
-  foreach ($arr as $pt) {
-    list($lat, $lon) = explode(',', $pt);
-    $points[] = array(
-      'latitude' => (float)trim($lat),
-      'longitude' => (float)trim($lon),
-    );
   }
   return $points;
 }

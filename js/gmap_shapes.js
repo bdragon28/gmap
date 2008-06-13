@@ -23,22 +23,19 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       pa = obj.poly.calcPolyPoints(new GLatLng(shape.center[0],shape.center[1]), shape.radius * 1000, shape.numpoints);
     }
     else if (shape.type == 'rpolygon') {
-      shape.center = new GLatLng(parseFloat(shape.center.latitude),
-                                 parseFloat(shape.center.longitude));
-      shape.point2 = new GLatLng(parseFloat(shape.point2.latitude),
-                                 parseFloat(shape.point2.longitude));
+      shape.center = new GLatLng(shape.center[0], shape.center[1]);
+      shape.point2 = new GLatLng(shape.point2[0], shape.point2[1]);
       var radius = shape.center.distanceFrom(shape.point2);
       pa = obj.poly.calcPolyPoints(shape.center, radius, shape.numpoints);
     }
-    else if(shape.type == 'polygon') { // CHECK: ??? always shape.type == 'polygon' here ???
-      for(i = 0; i < shape.points.length; i++) {
-        pp = shape.points[i];
-        pa.push(new GLatLng(parseFloat(pp.latitude), parseFloat(pp.longitude)));
-      }
+    else if (shape.type == 'polygon') {
+      $.each(shape.points, function(i, n) {
+        pa.push(new GLatLng(n[0], n[1]));
+      });
     }
     else if (shape.type == 'line') {
-      $.each(shape.points, function(i,n) {
-        pa.push(new GLatLng(n[0],n[1]));
+      $.each(shape.points, function(i, n) {
+        pa.push(new GLatLng(n[0], n[1]));
       });
       fillstyle = false;
     }
@@ -75,6 +72,8 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     Pl.prototype = new GPolyline();
     switch (shape.type) {
       case 'circle':
+      case 'polygon':
+      case 'rpolygon':
         shape.shape = new Pg(cargs);
         break;
       case 'line':
