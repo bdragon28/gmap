@@ -567,7 +567,10 @@ function theme_gmap_marker_popup($label) {
  * Location chooser utility function.
  *
  * Creates a map that can be interactively used to fill a form with a
- * location (latitude, longitude and zoom level)
+ * location (latitude, longitude and zoom level).
+ *
+ * Note: This is a utility function designed for location.module, there is no
+ * guarantee it will not be removed eventually.
  *
  * @param $map
  * Either a macro to use as the base map for setting a location, or an already set map associative array.
@@ -610,6 +613,9 @@ function gmap_set_location($map, &$form, $fields) {
   return theme('gmap', $element);
 }
 
+/**
+ * Handle filter preparation.
+ */
 function _gmap_prepare($intext) {
   $out = FALSE;
   $matches = array();
@@ -655,6 +661,9 @@ function gmap_dimension_validate(&$elem) {
   }
 }
 
+/**
+ * Implementation of hook_filter().
+ */
 function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
   switch ($op) {
     case 'list':
@@ -667,7 +676,7 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
       return t('converts a google map  macro into the html required for inserting a google map.');
 
     case 'process':
-      $gmaps=_gmap_prepare($text);   //returns an array of $tables[0] = table macro $table[1]= table html
+      $gmaps = _gmap_prepare($text);   //returns an array of $tables[0] = table macro $table[1]= table html
       if ($gmaps) {                    // there are table macros in this node
         return str_replace($gmaps[0], $gmaps[1], $text);
       }
@@ -679,11 +688,13 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
       return $text;
 
     case 'no cache':
-      return TRUE;
-      return (variable_get('gmap_method', 'Static')=='Dynamic');
+      return TRUE; // @@@ Possibly improve efficiency in the future?
   }
 }
 
+/**
+ * Implementation of hook_filter_tips().
+ */
 function gmap_filter_tips($delta, $format, $long = false) {
   if (user_access('create macro')) { // only display macro if user can create one
     return t('Insert Google Map macro.') .'<a href="'. url('map/macro') .'" target="_blank" >'. t('Create a macro') .'</a>';
@@ -693,6 +704,9 @@ function gmap_filter_tips($delta, $format, $long = false) {
   }
 }
 
+/**
+ * Implementation of hook_menu().
+ */
 function gmap_menu($may_cache) {
   if ($may_cache) {
     $items = array();
@@ -733,13 +747,10 @@ function gmap_json_query() {
     ));
     exit();
   }
-  if (arg(2)=='marker') {
-    $name = arg(3);
-  }
 }
 
 /**
- * Settings page.
+ * Settings page. (remove for d6)
  */
 function gmap_admin_settings() {
   require_once(drupal_get_path('module', 'gmap') .'/gmap_settings_ui.inc');
@@ -781,7 +792,7 @@ function gmap_elements() {
 }
 
 /**
- * Gmap element process hook
+ * Gmap element #process function.
  */
 function expand_gmap($element) {
   $mapid = 'map';
@@ -806,7 +817,7 @@ function expand_gmap($element) {
 }
 
 /**
- * Generic gmap control processor
+ * Generic gmap control #process function.
  */
 function process_gmap_control($element, $edit, $fieldtype, $control, $theme='') {
   $element['#type'] = $fieldtype;
@@ -820,6 +831,9 @@ function process_gmap_control($element, $edit, $fieldtype, $control, $theme='') 
   return $element;
 }
 
+/**
+ * Style fieldset #process function.
+ */
 function process_gmap_style($element) {
   $isline = ($element['#gmap_style_type'] == 'line');
   // Stroke color
@@ -879,11 +893,18 @@ function process_gmap_style($element) {
   return $element;
 }
 
+/**
+ * Theme a gmap_style fieldset.
+ */
 function theme_gmap_style($element) {
+  // @@@ Null out $element['#value']?
   return theme('fieldset', $element, $element['#children']);
   //return theme('form_element', $element, '<div'. drupal_attributes($element['#attributes']) .'>'.$element['#children'] .'</div>');
 }
 
+/**
+ * Overlay editor #process function.
+ */
 function process_gmap_overlay_edit($element) {
   // Conver the root element into a fieldset.
   $element['#type'] = 'fieldset';
@@ -959,6 +980,9 @@ function process_gmap_overlay_edit($element) {
   return $element;
 }
 
+/**
+ * Alignment selector #process function.
+ */
 function process_gmap_align($element) {
   $element['#type'] = 'select';
   gmap_widget_setup($element, 'align');
@@ -967,6 +991,9 @@ function process_gmap_align($element) {
   return $element;
 }
 
+/**
+ * Address widget #process function.
+ */
 function process_gmap_address($element) {
   $element['#type'] = 'textfield';
   gmap_widget_setup($element, 'address');
@@ -974,12 +1001,18 @@ function process_gmap_address($element) {
   return $element;
 }
 
+/**
+ * Marker chooser #process function.
+ */
 function process_gmap_markerchooser($element) {
   $element['#type'] = 'select';
   $element['#options'] = gmap_get_marker_titles();
   return $element;
 }
 
+/**
+ * Overlay editor theme function.
+ */
 function theme_gmap_overlay_edit($element) {
   $path = drupal_get_path('module', 'gmap');
   drupal_add_js($path .'/js/gmap.js');
@@ -1174,7 +1207,7 @@ function gmap_get_marker_titles($reset = FALSE) {
 /**
  * Get the JSON icon data for all the default markers.
  */
-function gmap_get_icondata($reset=FALSE) {
+function gmap_get_icondata($reset = FALSE) {
   static $icons;
   if (is_array($icons) && !$reset) {
     return $icons;
