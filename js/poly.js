@@ -42,7 +42,7 @@ Drupal.gmap.map.prototype.poly.calcPolyPoints = function(center, radM, numPoints
   var angleRad = sAngle * d2r;
   // earth semi major axis is about 6378137 m
   var latScale = radM / 6378137 * r2d;
-  var lngScale = latScale / Math.cos(center.lngRadians());
+  var lngScale = latScale / Math.cos(center.latRadians());
 
   var angInc = 2 * Math.PI / numPoints;
   var points = [];
