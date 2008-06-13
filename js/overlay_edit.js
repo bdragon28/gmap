@@ -249,7 +249,7 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
               p.disableEditing({onEvent: "mouseout"});
               GEvent.addListener(p, "endline", function() {
                 //obj._oe.editing = false;
-                //GEvent.addListener(p, "lineupdated", function(){obj.change('buildmacro', -1);});
+                GEvent.addListener(p, "lineupdated", function(){obj.change('mapedited', -1);});
                 GEvent.addListener(p, "click", function(latlng, index) {
                   if (typeof index == "number") {
                     // Delete vertex on click.
@@ -286,7 +286,7 @@ Drupal.gmap.addHandler('overlayedit',function(elem) {
               p.disableEditing({onEvent: "mouseout"});
               GEvent.addListener(p, "endline", function() {
                 //obj._oe.editing = false;
-                //GEvent.addListener(p, "lineupdated", function(){obj.change('buildmacro', -1);});
+                GEvent.addListener(p, "lineupdated", function(){obj.change('mapedited', -1);});
                 GEvent.addListener(p, "click", function(latlng, index) {
                   if (typeof index == "number") {
                     p.deleteVertex(index);
