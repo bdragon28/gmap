@@ -40,7 +40,7 @@
  *      - "internal": If TRUE, the flag will be marked as map specific, and
  *        will not be stored in the defaults.
  */
-function hook_gmap($op, $map=null) {
+function hook_gmap($op, &$map) {
   switch ($op) {
     case 'macro':
       return array(
