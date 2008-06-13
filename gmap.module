@@ -523,6 +523,11 @@ function gmap_parse_macro($instring, $ver = 2) {
   }
   unset($m['markers-temp']);
 
+  // Assign an id if one wasn't specified.
+  if (!$m['id']) {
+    $m['id'] = gmap_get_auto_mapid();
+  }
+
   // The macro can now be manipulated by reference.
   foreach (module_implements('gmap') as $module) {
     $additions = call_user_func_array($module .'_gmap', array('parse_macro', &$m));
