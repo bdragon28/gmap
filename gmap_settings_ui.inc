@@ -175,6 +175,8 @@ function _gmap_admin_settings() {
 
   $form['gmap_default']['baselayers']['maptype'] = array(
     '#type' => 'select',
+    '#tree' => FALSE,
+    '#parents' => array('gmap_default', 'maptype'),
     '#title' => t('Default map type'),
     '#default_value' => $defaults['maptype'],
     '#options' => $options,
