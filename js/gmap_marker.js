@@ -24,7 +24,6 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       else {
         obj.bounds.extend(marker.marker.getPoint());
       }
-      obj.map.setCenter(obj.bounds.getCenter(), Math.min(obj.map.getBoundsZoomLevel(obj.bounds), obj.vars.maxzoom));
     }
   });
 
@@ -38,6 +37,13 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     // Reset bounds if autozooming
     if (obj.vars.behavior.autozoom) {
       obj.bounds = null;
+    }
+  });
+
+  obj.bind('markersready', function() {
+    // If we are autozooming, set the map center at this time.
+    if (obj.vars.behavior.autozoom) {
+      obj.map.setCenter(obj.bounds.getCenter(), Math.min(obj.map.getBoundsZoomLevel(obj.bounds), obj.vars.maxzoom));
     }
   });
 });
