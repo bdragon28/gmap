@@ -895,9 +895,10 @@ function process_gmap_style($element) {
  * Theme a gmap_style fieldset.
  */
 function theme_gmap_style($element) {
-  // @@@ Null out $element['#value']?
+  // Fieldsets print #value at the end, so we need to empty it out.
+  // Otherwise, it puts "Array" at the end of the fieldset.
+  $element['#value'] = '';
   return theme('fieldset', $element, $element['#children']);
-  //return theme('form_element', $element, '<div'. drupal_attributes($element['#attributes']) .'>'.$element['#children'] .'</div>');
 }
 
 /**
