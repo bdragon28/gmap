@@ -235,6 +235,13 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     else if (!obj.vars.behavior.nokeyboard) {
       obj._kbdhandler = new GKeyboardHandler(map);
     }
+    if (obj.vars.extent) {
+      var c = obj.vars.extent;
+      var extent = new GLatLngBounds(new GLatLng(c[0][0], c[0][1]), new GLatLng(c[1][0], c[1][1]));
+      obj.vars.latitude = extent.getCenter().lat();
+      obj.vars.longitude = extent.getCenter().lng();
+      obj.vars.zoom = map.getBoundsZoomLevel(extent);
+    }
     if (obj.vars.behavior.collapsehack) {
       // Modify collapsable fieldsets to make maps check dom state when the resize handle
       // is clicked. This may not necessarily be the correct thing to do in all themes,
