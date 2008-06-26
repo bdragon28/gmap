@@ -432,7 +432,14 @@ function gmap_location_node_point() {
  * Theme function for displaying the node page.
  */
 function theme_gmap_location_node_page($count, $header, $map, $footer) {
-  $output = "<p>$header</p>\n<p>$map</p>\n<p>$footer</p>";
+  $output = '';
+  if ($header) {
+    $output .= "<p>$header</p>";
+  }
+  $output .= $map;
+  if ($footer) {
+    $output .= "<p>$footer</p>";
+  }
   return $output;
 }
 
