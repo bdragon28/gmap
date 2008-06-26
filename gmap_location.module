@@ -460,7 +460,7 @@ function gmap_location_admin_settings() {
 
   $form['user']['gmap_user_map'] = array(
     '#type' => 'fieldset',
-    '#title' => t('User Map (<em>map/users</em>)'),
+    '#title' => t('User Map (<em>map/user</em>)'),
     '#tree' => TRUE,
   );
   $form['user']['gmap_user_map']['macro'] = array(
@@ -474,7 +474,7 @@ function gmap_location_admin_settings() {
   $form['user']['gmap_user_map']['header'] = array(
     '#type' => 'textarea',
     '#title' => t('Page header'),
-    '#description' => t('Text at the top of the user map.', array('@url' => url('map/users'))),
+    '#description' => t('Text at the top of the user map.', array('@url' => url('map/user'))),
     '#default_value' => $temp['header'],
     '#cols' => 50,
     '#rows' => 6,
