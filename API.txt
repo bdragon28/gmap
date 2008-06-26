@@ -173,63 +173,109 @@ RPolygon is similar to Circle, except that one of the vertexes will be *point2*.
     $map['shapes'][] = $shape;
     ?>
 
+#####GMap Array#####
 
-**NOTE**: This rest of this section is inaccurate.
+  The map array is processed and converted to a javascript object.
 
-The GMap Array is an associative array with the following definitions:
+  Anything left out of the array will be filled in with the default map
+  settings. You can change these settings at *admin/settings/gmap*.
 
-  id - the id of the map every map on a page must have a unique id
-  width - width of the map should be either 'px' or '%'
-  height - height of the map
-  latitude - a string of the latitude of the centre of the map
-  longitude - a string of the longitude of the centre of the map
-  zoom - the zoom factor of the google map
-  align - the alignment of the map 'right', 'left' or 'center'
-  control - the control shown on the map 'Large', 'Small', or 'None'
-  tcontrol - whether the type control is on the map or not: 'off' or 'on'
-  scontrol - whether the scale control is on the map or not: 'off' or 'on'
-  ocontrol - the 'width,height' of the overview map control
-  type - 'Map', 'Hybrid' or 'Satellite'
-  drag - 'yes' or 'no' map is draggable.  Default is 'yes'
-  markers - an array of marker arrays.  Each marker array is an associative
-    array with the following elements:
-      'latitude' - the latitude of the marker
-      'longitude' - the longitude of the marker
-      'markername' - the marker icon to use. For example if it is set
-        to 'number', then the icons in the marker directory named
-        'number1.png', 'number2.png' etc.  will be used. If these don't
-        exist 'number.png' would be used.  If that doesn't exist then
-        the default marker will be used.  (optional)
-      'text' - html text to be located in a pop-up window when you click
-        on the marker. (@@@ Describe array tabs trick... --Bdragon)
-  shapes - an array of shape arrays.  Each shape array can have the
-    following elements:
-      'type' -  'line', 'circle', 'rpolygon', or 'polygon'
-      'color' - the hex for the color to create the line (eg. '#00dd00')
-      'width' - the width of the line in px
-      'opacity' - between 0 and 1 for the opacity of the line
-      'pattern' - a broken line definition '20 5 10 5' would mean 20 px
-         long line, 5x break, 10px line 5px break 20px line ...
-         (xmaps objects only)
-      'text' - the text used in the line (xmaps only)
-      'fillcolor' - the fill color for filled objects (xmaps objects only)
-      'fillopacity' - the opacity of the filled objects (xmaps object only)
-  feeds - an array of feed arrays.  Each feed array can have the
-    following elements:
-      'url' - the url of the feed.
-      'markername' - the marker icon to use.  same as for markers
-         except that numbered markers are not supported.
+* id
 
-The gmap marker is converted to the javascript to display the map using the
-function gmap_draw_map($gmap, $javascript=''), where $gmap is a map
-variable and javascript is some javascript to be run when the map is
-loaded.  Note that the string '{mapid}' in the javascript will be
-replaced with the mapid of the map being drawn.
+  The identifier used to tell the map apart from other maps on the page.
+  Any controls that are to be synced with the map use the same map id.
+  Usually required.
 
-It should be noted that the default map settings provided on the
-admin/settings/gmap page will be used for any value that is not provided.
+* width
 
-An example of the gmap_draw_map function being used.
+  The width of the map, specified as a valid css dimension.
+
+* height
+
+  The height of the map, specified as a valid css dimension.
+
+* latitude
+
+  The latitude of the initial point to center the map on.
+
+* longitude
+
+  The longitude of the initial point to center the map on.
+
+* zoom
+
+  The initial zoom level of the map.
+
+* maxzoom
+
+  The maximum zoom level this map will zoom to *automatically*. Only applicable
+  if the 'autozoom' behavior flag is on.
+
+* controltype
+
+  The panzoom control type.
+  Choose either 'Large', 'Small', or 'None'.
+
+* align
+
+  You may center or align the map on the page with this.
+  Available choices: 'left', 'right', 'center'.
+  Default is to left align.
+
+* maptype
+
+  Choose the default baselayer for the map.
+  By default, 'Map', 'Satellite', 'Hybrid', and 'Physical' are available, but
+  modules can add additional choices.
+  The most common one is 'Map'.
+
+
+* mtc
+
+  Choose the 'map type control', the widget used to select among multiple
+  baselayers.
+  The options 'none', 'standard', 'hier', and 'menu' are available.
+
+  * none:
+    Don't use a map type control at all. The baselayer will not be changeable.
+  * standard:
+    The 'GMapTypeControl' widget (Button bar).
+  * hier:
+    The 'GHierarchicalMapTypeControl' widget (Similar to standard, but buttons can
+    have dropdowns.)
+  * menu:
+    The 'GMenuMapTypeControl' widget. (A dropdown menu.)
+
+* baselayers
+
+  An array of enabled baselayer names.
+  GMap.module defines 'Map', 'Satellite', 'Hybrid', and 'Physical', and other
+  modules can define additional baselayers to choose from.
+  Usually something like array('Map', 'Satellite', 'Hybrid').
+
+* styles
+
+  An array of style names and definitions.
+  Currently, 'line_default' and 'poly_default' are defined. In the future, there
+  may be the ability to store styles to apply to shapes easily, but it is currently
+  not implemented.
+
+  * line_default:
+    The default style for lines.
+  * poly_default:
+    The default style for polygons.
+
+
+    'baselayers' => array('Map', 'Satellite', 'Hybrid'),
+    'styles' => array(
+      'line_default' => array('0000ff',5,45,'',0,0),
+      'poly_default' => array('000000',3,25,'ff0000',45),
+    ),
+    'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
+
+====Example====
+
+The following example contains most of the
 
 $myshapes=array(array('color' => '#00dd00',
                       'type'=>'line',
@@ -267,6 +313,49 @@ $mymap=array('id' => 'mymap',
              'markers' => $mymarkers);
 
 gmap_draw_map($mymap);
+
+
+
+
+**NOTE**: This rest of this section is inaccurate.
+
+The GMap Array is an associative array with the following definitions:
+
+  ocontrol - the 'width,height' of the overview map control
+  type - 'Map', 'Hybrid' or 'Satellite'
+  drag - 'yes' or 'no' map is draggable.  Default is 'yes'
+  markers - an array of marker arrays.  Each marker array is an associative
+    array with the following elements:
+      'latitude' - the latitude of the marker
+      'longitude' - the longitude of the marker
+      'markername' - the marker icon to use. For example if it is set
+        to 'number', then the icons in the marker directory named
+        'number1.png', 'number2.png' etc.  will be used. If these don't
+        exist 'number.png' would be used.  If that doesn't exist then
+        the default marker will be used.  (optional)
+      'text' - html text to be located in a pop-up window when you click
+        on the marker. (@@@ Describe array tabs trick... --Bdragon)
+  shapes - an array of shape arrays.  Each shape array can have the
+    following elements:
+      'type' -  'line', 'circle', 'rpolygon', or 'polygon'
+      'color' - the hex for the color to create the line (eg. '#00dd00')
+      'width' - the width of the line in px
+      'opacity' - between 0 and 1 for the opacity of the line
+      'pattern' - a broken line definition '20 5 10 5' would mean 20 px
+         long line, 5x break, 10px line 5px break 20px line ...
+         (xmaps objects only)
+      'text' - the text used in the line (xmaps only)
+      'fillcolor' - the fill color for filled objects (xmaps objects only)
+      'fillopacity' - the opacity of the filled objects (xmaps object only)
+  feeds - an array of feed arrays.  Each feed array can have the
+    following elements:
+      'url' - the url of the feed.
+      'markername' - the marker icon to use.  same as for markers
+         except that numbered markers are not supported.
+
+
+An example of the gmap_draw_map function being used.
+
 
 GMAP VIEWS API
 --------------
@@ -449,30 +538,6 @@ $map = array(
       'url' - the url of the feed.
       'markername' - the marker icon to use.  same as for markers
          except that numbered markers are not supported.
-  wmss - an array of WMS services arrays.  Each WMS service array can have the
-    following elements:
-      'name' - the name of the custom map (no spaces or special chars).
-      'url' - the url of the WMS service.
-      'format' - image format to retrieve. Depends of WMS service:
-         'image/gif','image/png','image/jpeg'
-      'layers' - a comma separated list of layers advertized by WMS service
-         to show in this custom map.
-      'minresolution' - lowest zoom level of this custom map.
-      'maxresolution' - highest zoom level of this custom map.
-      'copyrights' - an array of copyrights to display. Each copyright array
-         can have the following elements:
-           'minzoom' - lowest zoom level at which this information applies.
-           'bounds' - a comma separated list of coordinates defining a
-              region to which this copyright information applies: 'S,W,N,E'
-           'text' - text of the copyright message.
-      'overlaywith' - (optional) overlay WMS layers with this Google layers:
-         'Map', 'Hybrid', 'Satellite' or 'None'(default)
-      'merczoomlevel' - (optional) zoom factor of the google map where WMS service
-         should advertize layers in Transverse Mercator projection instead
-         of WGS84 projection. See discussion of this topic here:
-         http://johndeck.blogspot.com/#112679047816546118
-      'opacity' - (optional) Opacity level for this tile from 0.0 (transparent)
-         to 1.0 (opaque)
 
 
 );
@@ -506,7 +571,7 @@ $output = theme('gmap', array('#settings' => $map));
 
 
 
-
+?>
 
 
 
