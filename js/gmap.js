@@ -334,7 +334,7 @@ Drupal.gmap.addHandler('latitude', function(elem) {
   });
   // Send out outgoing movements.
   $(elem).change(function() {
-    obj.vars.latitude = this.value;
+    obj.vars.latitude = Number(this.value);
     obj.change("move", binding);
   });
 });
@@ -350,7 +350,7 @@ Drupal.gmap.addHandler('longitude', function(elem) {
   });
   // Send out outgoing movements.
   $(elem).change(function() {
-    obj.vars.longitude = this.value;
+    obj.vars.longitude = Number(this.value);
     obj.change("move", binding);
   });
 });
@@ -367,8 +367,8 @@ Drupal.gmap.addHandler('latlon', function(elem) {
   // Send out outgoing movements.
   $(elem).change(function() {
     var t = this.value.split(',');
-    obj.vars.latitude = t[0];
-    obj.vars.longitude = t[1];
+    obj.vars.latitude = Number(t[0]);
+    obj.vars.longitude = Number(t[1]);
     obj.change("move", binding);
   });
 });
