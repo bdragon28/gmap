@@ -17,8 +17,6 @@ define('GMAP_LINECOLOR2', '#ff0000');
 define('GMAP_LINECOLOR3', '#0000ff');
 // @@@ Remove these and generalize lines. @@@
 
-define('GMAP_WMS', variable_get('gmap_wms', 0));
-
 // Current minimum version: 2.113
 // Minimum version last changed on: June 9 2008
 // Reason: G_SATELLITE_3D_MAP support in gmap_addons. See http://code.google.com/apis/earth/.
