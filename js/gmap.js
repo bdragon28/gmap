@@ -170,6 +170,7 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     if(obj.currentcontrol) {
       obj.map.removeControl(obj.currentcontrol);
     }
+    if (obj.vars.controltype=='Micro') {obj.map.addControl(obj.currentcontrol = new GSmallZoomControl());}
     if (obj.vars.controltype=='Small') {obj.map.addControl(obj.currentcontrol = new GSmallMapControl());}
     if (obj.vars.controltype=='Large') {obj.map.addControl(obj.currentcontrol = new GLargeMapControl());}
   });

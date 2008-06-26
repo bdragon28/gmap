@@ -136,7 +136,7 @@ function _gmap_admin_settings() {
   $form['gmap_default']['controltype'] = array(
     '#type' => 'select',
     '#title' => t('Default control type'),
-    '#options' => array('None' => t('None'), 'Small' => t('Small'), 'Large' => t('Large')),
+    '#options' => array('None' => t('None'), 'Micro' => t('Micro'), 'Small' => t('Small'), 'Large' => t('Large')),
     '#default_value' => $defaults['controltype'],
   );
   gmap_widget_setup($form['gmap_default']['controltype'], 'controltype', 'settings_default_map');
