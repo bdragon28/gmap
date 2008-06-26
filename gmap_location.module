@@ -332,32 +332,56 @@ function gmap_location_node_page($nid = NULL) {
 
   // Special cases for single node view.
   if (is_numeric($nid) && $node = node_load($nid)) {
-    if (user_access('user locations') && $node->type == 'og') {
-      // An OG is displayed as a map of the users who belong to the group.
 
+    // Organic groups. Group nodes are displayed as a map of the users who belong to the group.
+    if (user_access('user locations') && function_exists('og_is_group_type') && og_is_group_type($node->type)) {
       $rolemarkers = variable_get('gmap_role_markers', array());
 
       $map['markers'] = array(); // Reset markers.
-      $result = db_query("
-        SELECT
-          MAX(r.rid) as role, l.eid as uid, l.latitude, l.longitude
-        FROM
-          {og_uid} o
-        INNER JOIN {location} l
-          ON o.uid = l.eid
-        LEFT JOIN {users_roles} r
-          ON l.eid = r.uid
-        WHERE
-          o.nid = %d
-        AND
-          o.is_active >= 1
-        AND
-          l.type = '%s'
-        AND
-          (l.latitude != 0 OR l.longitude != 0)
-        GROUP BY
-          o.uid", $nid, 'user');
 
+      // Location 3.x on Drupal 5.
+      if (function_exists('location_newapi')) {
+        $result = db_query("
+          SELECT
+            MAX(r.rid) as role, i.uid, l.latitude, l.longitude
+          FROM
+            {og_uid} o
+          INNER JOIN {location_instance} i
+            ON i.uid = o.uid
+          INNER JOIN {location} l
+            ON l.lid = i.lid
+          LEFT JOIN {users_roles} r
+            ON i.uid = r.uid
+          WHERE
+            o.nid = %d
+          AND
+            o.is_active >= 1
+          AND
+            (l.latitude != 0 OR l.longitude != 0)
+          GROUP BY
+            o.uid", $nid, 'user');
+      }
+      else {
+        $result = db_query("
+          SELECT
+            MAX(r.rid) as role, l.eid as uid, l.latitude, l.longitude
+          FROM
+            {og_uid} o
+          INNER JOIN {location} l
+            ON o.uid = l.eid
+          LEFT JOIN {users_roles} r
+            ON l.eid = r.uid
+          WHERE
+            o.nid = %d
+          AND
+            o.is_active >= 1
+          AND
+            l.type = '%s'
+          AND
+            (l.latitude != 0 OR l.longitude != 0)
+          GROUP BY
+            o.uid", $nid, 'user');
+      }
       while ($row = db_fetch_object($result)) {
         $newmarker = array();
         $newmarker['rmt'] = $nid .'/'. $row->uid;
