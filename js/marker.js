@@ -7,6 +7,12 @@
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
 
+  obj.bind('init', function() {
+    if (obj.vars.behavior.autozoom) {
+      obj.bounds = new GLatLngBounds();
+    }
+  });
+
   obj.bind('addmarker',function(marker) {
     var m = Drupal.gmap.factory.marker(new GLatLng(marker.latitude,marker.longitude), marker.opts);
     marker.marker = m;
@@ -29,6 +35,9 @@ Drupal.gmap.addHandler('gmap', function(elem) {
      */
     if (marker.autoclick || (marker.options && marker.options.autoclick)) {
       obj.deferChange('clickmarker',-1,marker);
+    }
+    if (obj.vars.behavior.autozoom) {
+      obj.bounds.extend(marker.marker.getPoint());
     }
   });
 
@@ -53,4 +62,23 @@ Drupal.gmap.addHandler('gmap', function(elem) {
         open(marker.link,'_self');
     }
   });
+
+  obj.bind('markersready', function() {
+    // If we are autozooming, set the map center at this time.
+    if (obj.vars.behavior.autozoom) {
+      if (!obj.bounds.isEmpty()) {
+        obj.map.setCenter(obj.bounds.getCenter(), Math.min(obj.map.getBoundsZoomLevel(obj.bounds), obj.vars.maxzoom));
+      }
+    }
+  });
+
+  obj.bind('clearmarkers', function() {
+    // Reset bounds if autozooming
+    // @@@ Perhaps we should have a bounds for both markers and shapes?
+    if (obj.vars.behavior.autozoom) {
+      obj.bounds = new GLatLngBounds();
+    }
+  });
+
+  // @@@ TODO: Some sort of bounds handling for deletemarker? We'd have to walk the whole thing to figure out the new bounds...
 });
