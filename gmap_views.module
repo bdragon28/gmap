@@ -147,17 +147,18 @@ function theme_views_view_gmap($view, $results) {
         }
         // Popup
         if ($markermode == 1) {
-          $marker_tabs = theme('gmap_views_marker_label', $view, $fields, $entry);
+          // @@@ TODO: Switch to using views_theme sometime. Unfortunately, it changes the function prototype.. :-/
+          //$marker_popup = views_theme('gmap_views_marker_label', $view->name, $view, $fields, $entry);
+          $marker_popup = theme('gmap_views_marker_label', $view, $fields, $entry);
 
-          // add themed infoWindow HTML to either 'tabs' or 'text'
-          if (is_array($marker_tabs)) {
-              foreach ($marker_tabs as $tabi => $tabvalue) {
-                  $marker_tabs[$tabi] = strtr($tabvalue, "'\n\r", '" ');
-              }
-              $themarker['tabs'] = $marker_tabs;
+          // add themed HTML to either text or tabs depending on whether or not
+          // it was an array.
+          if (is_array($marker_popup)) {
+            // Tabbed.
+            $themarker['tabs'] = $marker_popup;
           }
           else {
-              $themarker['text'] = strtr($marker_tabs, "'\n\r", '" ');
+            $themarker['text'] = $marker_popup;
           }
         }
         // Link
