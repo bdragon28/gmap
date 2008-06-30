@@ -108,8 +108,8 @@ http://www.webgeer.com/map/users
 Credit
 ------
 
-GMap for Drupal 5 was refactored and updated by Brandon Bergren (Bdragon), who is also the module's maintainer.
-http://drupal.org/user/53081
+GMap was refactored and updated for Drupal 5 by Brandon Bergren (Bdragon) and the Chicago Technology Cooperative, who also maintain the module.
+http://chicagotech.org/
 
 GMap for Drupal 4.6-4.7 was written by James Blake
 http://www.webgeer.com/James
