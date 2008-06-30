@@ -745,6 +745,8 @@ function gmap_location_block_view($nid) {
         $macro = variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+autozoom,+notype] ');
       }
       $map = gmap_parse_macro($macro);
+      $map['latitude'] = $markers[0]['latitude'];
+      $map['longitude'] = $markers[0]['longitude'];
       $map['markers'] = $markers;
       // @@@
       $map['behavior']['autozoom'] = true;
