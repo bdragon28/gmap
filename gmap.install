@@ -65,3 +65,13 @@ function gmap_update_5000() {
   variable_set('gmap_default', $d);
   return $ret;
 }
+
+/**
+ * Post 5.x-1.0beta2 update 1.
+ * We added a menu callback, force a rebuild.
+ */
+function gmap_update_5001() {
+  $ret = array();
+  menu_rebuild();
+  return $ret;
+}
