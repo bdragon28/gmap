@@ -72,15 +72,14 @@ Drupal.gmap.getIcon = function(setname, sequence) {
  * When doing the JSON call, the data comes back in a packed format.
  * We need to expand it and file it away in a more useful format.
  */
-Drupal.gmap.iconSetup = function(json) {
+Drupal.gmap.iconSetup = function() {
   Drupal.gmap.icons = {};
-  var rootpath = json.path;
-  Drupal.gmap.iconpath = rootpath;
-  for (var path in json.markers) {
+  var m = Drupal.gmap.icondata;
+  for (var path in m) {
     // Reconstitute files array
-    var filef = json.markers[path].f;
-    var filew = Drupal.gmap.expandArray(json.markers[path].w,filef.length);
-    var fileh = Drupal.gmap.expandArray(json.markers[path].h,filef.length);
+    var filef = m[path].f;
+    var filew = Drupal.gmap.expandArray(m[path].w,filef.length);
+    var fileh = Drupal.gmap.expandArray(m[path].h,filef.length);
     var files = [];
     for (var i = 0; i < filef.length; i++) {
       files[i] = {f : filef[i], w : filew[i], h : fileh[i]};
@@ -89,12 +88,10 @@ Drupal.gmap.iconSetup = function(json) {
     delete filew;
     delete fileh;
 
-    for (var ini in json.markers[path].i) {
-      $.extend(Drupal.gmap.icons,Drupal.gmap.expandIconDef(json.markers[path].i[ini],path,files));
+    for (var ini in m[path].i) {
+      $.extend(Drupal.gmap.icons,Drupal.gmap.expandIconDef(m[path].i[ini],path,files));
     }
   }
-  // Tell everyone marker icons are ready
-  Drupal.gmap.globalChange('iconsready');
 };
 
 /**
@@ -181,19 +178,18 @@ Drupal.gmap.expandIconDef = function(c,path,files) {
  */
 Drupal.gmap.addHandler('gmap', function(elem) {
   var obj = this;
-  var attached;
-  // Only attach once.
-  if (!this.attached) {
-    // If all maps on the page are doing their own thing regarding icons,
-    // we just skip attaching.
-    if (!obj.vars.behavior.customicons) {
-      this.attached = true;
-      // We'll start our query in the background during init.
-      obj.bind("init", function() {
-        $.getJSON(Drupal.settings.gmap_init.querypath + '/markers', Drupal.gmap.iconSetup);
-      });
+
+  obj.bind('init', function() {
+    // Only expand once.
+    if (!Drupal.gmap.icons) {
+      Drupal.gmap.iconSetup();
     }
-  }
+  });
+
+  obj.bind('ready', function() {
+    // Compatibility event.
+    obj.deferChange('iconsready', -1);
+  });
 
   if (!obj.vars.behavior.customicons) {
     // Provide icons to markers.
