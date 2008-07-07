@@ -3,10 +3,9 @@ $Id$
 Description
 -----------
 
-GMap is an api and a set of modules to add Google Maps functionality to a Drupal
-site.
+GMap is an API and a related set of modules which allows the integration of Google Maps with a Drupal site.
 
-gmap.module: The main module. Contains the API, the basic map functions, and a fileter to create macros into working maps with minimal effort.
+gmap.module: The main module. Contains the API, the basic map functions, and an input filter to create macros into working maps with minimal effort.
 
 gmap_location.module: Provides map features for Location.module (v2 and v3).
 
@@ -32,7 +31,7 @@ Enter your Google Maps API key in the GMap settings page (admin/settings/gmap).
 
 If you are using the HTML filter, it will need to appear BEFORE the GMap filter; otherwise the HTML filter will remove the GMap code. To modify the order of filters in an input format, go to the "Rearrange" tab on the input format's configuration page (Administer > Site configuration > Input formats, then click "Configure" by your format).
 
-* If you would like to use third party functionality such as mousewheel support
+* If you would like to use third party functionality such as mouse wheel support
 or Clusterer, read thirdparty/README.txt for download links and instructions.
 
 
@@ -57,6 +56,7 @@ for more information. This won't affect you unless you're displaying lines on yo
 Macro
 -----
 **NOTE: This section needs revision still!**
+**does it though? --bec
 
 "GMap macros" are text-based representations of Google Maps. A GMap macro can be created with the GMap Macro Builder tool or by hand. Any map parameter not specified by a macro will use the defaults from the GMap settings page (Administer > Site configuration > GMap). There are several places where you may use Gmap macros, mainly:
 1) GMap settings, like the GMap Location module's settings page.
@@ -75,7 +75,7 @@ Note that there are many more options you can set on your maps if you are willin
 User and node maps
 ------------------
 
-User and node location maps are made available by gmap_location.module, and work in conjunction with location.module. Any user that has the 'show user map' or 'show node map' permission can see the user or node maps, repsectively. These are maps with a marker for every user or node, and are located at the 'map/user' and 'map/node' paths (links to these maps are placed in the Navigation menu).
+User and node location maps are made available by gmap_location.module, and work in conjunction with location.module. Any user that has the 'show user map' or 'show node map' permission can see the user or node maps, respectively. These are maps with a marker for every user or node, and are located at the 'map/user' and 'map/node' paths (links to these maps are placed in the Navigation menu).
 
 Users with the 'user locations' permission can click markers on the User map to see information on individual users.
 
@@ -86,7 +86,7 @@ GMap Location provides an interactive Google Map to the Location module for sett
 Markers
 -------
 
-The 'markers' directory contains many useful markers, and you can add custom markers by placing PNG files (markers must be in PNG format) in the markers directory and creating a ".ini" file for them. Use the exisiting .ini files as a guide--start with "markers/colors.ini".
+The 'markers' directory contains many useful markers, and you can add custom markers by placing PNG files (markers must be in PNG format) in the markers directory and creating a ".ini" file for them. Use the existing .ini files as a guide--start with "markers/colors.ini".
 
 If you have created custom markers and are willing to release them under the GPL for inclusion in GMap, please file an issue in the issue queue at: http://drupal.org/project/issues/gmap
 
@@ -108,8 +108,11 @@ http://www.webgeer.com/map/users
 Credit
 ------
 
-GMap was refactored and updated for Drupal 5 by Brandon Bergren (Bdragon) and the Chicago Technology Cooperative, who also maintain the module.
-http://chicagotech.org/
+Gmap for Drupal is part of the Mapedelic suite - a collection of Drupal modules providing a variety of mapping and geographic information functionality.  Work on Gmap for Drupal is sponsored by the Chicago Technology Cooperative.
+http://chicagotech.org
+
+GMap was refactored and updated for Drupal 5 by Brandon Bergren (Bdragon).
+http://drupal.org/user/53081
 
 GMap for Drupal 4.6-4.7 was written by James Blake
 http://www.webgeer.com/James
