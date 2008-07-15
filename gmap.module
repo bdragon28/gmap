@@ -77,7 +77,14 @@ function gmap_gmap($op, &$map) {
       $path = drupal_get_path('module', 'gmap') .'/js/';
       // Activate markers if needed
       if ($map['behavior']['dynmarkers'] || !empty($map['markers'])) {
-        drupal_add_js('map/markerdata.js');
+        // The marker data is not a real file. We need to respect
+        // clean url capabilities here.
+        if (variable_get('clean_url', '0')) {
+          drupal_add_js('map/markerdata.js');
+        }
+        else {
+          drupal_add_js('?q=map/markerdata.js');
+        }
         drupal_add_js($path .'icon.js');
         drupal_add_js($path .'marker.js');
         drupal_add_js($path . variable_get('gmap_mm_type', 'gmap') .'_marker.js');
