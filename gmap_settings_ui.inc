@@ -409,14 +409,15 @@ function gmap_admin_settings(&$form_state) {
     '#default_value' => $opts['clusterer']['max_lines'],
   );
 
-  $form['#validate']['gmap_admin_settings_validate'] = array();
+  // @@@ Convert to element level validation.
+  $form['#validate'][] = 'gmap_admin_settings_validate';
 
   return system_settings_form($form);
 }
 
-function gmap_admin_settings_validate($form_id, $form_values, $form) {
+function gmap_admin_settings_validate($form, &$form_state) {
   $found = FALSE;
-  foreach ($form_values['gmap_default']['baselayers'] as $l) {
+  foreach ($form_state['values']['gmap_default']['baselayers'] as $l) {
     if ($l) {
       $found = TRUE;
       break;
@@ -427,7 +428,7 @@ function gmap_admin_settings_validate($form_id, $form_values, $form) {
   }
 
   // Check that the default map type is sane.
-  if (!$form_values['gmap_default']['baselayers'][$form_values['gmap_default']['maptype']]) {
+  if (!$form_state['values']['gmap_default']['baselayers'][$form_state['values']['gmap_default']['maptype']]) {
     form_error($form['gmap_default']['baselayers']['maptype'], t('The default map type must be an enabled baselayer!'));
   }
 }
