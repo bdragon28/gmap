@@ -11,8 +11,8 @@
 /**
  * Implemenation of hook_help().
  */
-function gmap_macro_builder_help($section) {
-  switch ($section) {
+function gmap_macro_builder_help($path, $arg) {
+  switch ($path) {
     case 'map/macro':
       return t('You can use this interface to create a map macro suitable for pasting into a node or any other place that accepts a GMap macro.');
   }
@@ -28,19 +28,15 @@ function gmap_macro_builder_perm() {
 /**
  * Implementation of hook_menu().
  */
-function gmap_macro_builder_menu($may_cache) {
-  if ($may_cache) {
-    $items = array();
-    $items[] = array(
-      'path' => 'map/macro',
-      'type' => MENU_NORMAL_ITEM,
-      'title' => t('Build a GMap macro'),
-      'access' => user_access('create macro'),
-      'callback' => 'drupal_get_form',
-      'callback arguments' => 'gmap_macro_builder_form',
-    );
-    return $items;
-  }
+function gmap_macro_builder_menu() {
+  $items['map/macro'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => 'Build a GMap macro',
+    'access arguments' => array('create macro'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gmap_macro_builder_form'),
+  );
+  return $items;
 }
 
 /**

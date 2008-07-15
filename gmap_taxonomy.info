@@ -2,4 +2,6 @@
 name = GMap Taxonomy Markers
 description = Taxonomy based markers
 package = Location
-dependencies = gmap taxonomy
+core = 6.x
+dependencies[] = taxonomy
+dependencies[] = gmap

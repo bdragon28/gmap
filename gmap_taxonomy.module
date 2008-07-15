@@ -11,7 +11,7 @@
 /**
  * Implementation of hook_form_alter().
  */
-function gmap_taxonomy_form_alter($form_id, &$form) {
+function gmap_taxonomy_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'taxonomy_form_vocabulary') {
     $form['gmap_taxonomy'] = array(
       '#type' => 'fieldset',

@@ -2,4 +2,5 @@
 name = GMap Macro Builder
 description = UI for building GMap macros.
 package = Location
-dependencies = gmap
+core = 6.x
+dependencies[] = gmap
