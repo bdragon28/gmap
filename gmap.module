@@ -724,38 +724,27 @@ function gmap_filter_tips($delta, $format, $long = FALSE) {
 /**
  * Implementation of hook_menu().
  */
-function gmap_menu($may_cache) {
-  if ($may_cache) {
-    $items = array();
-/*    $items[] = array(
-      'path' => 'map',
-      'type' => MENU_ITEM_GROUPING,
-      'title' => t('google maps'),
-      'access' => user_access('create macro')||user_access('show user map')||user_access('show node map'),
-    );  */
-    $items[] = array(
-      'path' => 'admin/settings/gmap',
-      'title' => t('GMap'),
-      'description' => t('Configure GMap settings'),
-      'callback' => 'drupal_get_form',
-      'callback arguments' => 'gmap_admin_settings',
-      'access' => user_access('administer site configuration'),
-      'type' => MENU_NORMAL_ITEM,
-    );
-    $items[] = array(
-      'path' => 'map/query',
-      'type' => MENU_CALLBACK,
-      'access' => user_access('access content'),
-      'callback' => 'gmap_json_query',
-    );
-    $items[] = array(
-      'path' => 'map/markerdata.js',
-      'type' => MENU_CALLBACK,
-      'access' => user_access('access content'),
-      'callback' => 'gmap_markerdata_js',
-    );
-    return $items;
-  }
+function gmap_menu() {
+  $items['admin/settings/gmap'] = array(
+    'title' => 'GMap',
+    'description' => 'Configure GMap settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gmap_admin_settings'),
+    'file' => 'gmap_settings_ui.inc',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['map/query'] = array(
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+    'page callback' => 'gmap_json_query',
+  );
+  $items['map/markerdata.js'] = array(
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+    'page callback' => 'gmap_markerdata_js',
+  );
+  return $items;
 }
 
 /**
@@ -781,14 +770,6 @@ function gmap_json_query() {
     ));
     exit();
   }
-}
-
-/**
- * Settings page. (remove for d6)
- */
-function gmap_admin_settings() {
-  require_once(drupal_get_path('module', 'gmap') .'/gmap_settings_ui.inc');
-  return _gmap_admin_settings();
 }
 
 /**
@@ -1228,14 +1209,14 @@ function gmap_get_marker_titles($reset = FALSE) {
 
   $titles = cache_get('gmap_marker_titles');
   if ($titles) {
-    $titles = unserialize($titles->data);
+    $titles = $titles->data;
   }
 
   if ($reset || !$titles) {
     require_once(drupal_get_path('module', 'gmap') .'/gmap_markerinfo.inc');
     $titles = _gmap_get_marker_titles();
   }
-  cache_set('gmap_marker_titles', 'cache', serialize($titles));
+  cache_set('gmap_marker_titles', $titles, 'cache');
   return $titles;
 }
 
@@ -1250,14 +1231,14 @@ function gmap_get_icondata($reset = FALSE) {
 
   $icons = cache_get('gmap_icondata');
   if ($icons) {
-    $icons = unserialize($icons->data);
+    $icons = $icons->data;
   }
 
   if ($reset || !$icons) {
     require_once(drupal_get_path('module', 'gmap') .'/gmap_markerinfo.inc');
     $icons = _gmap_get_icondata();
   }
-  cache_set('gmap_icondata', 'cache', serialize($icons));
+  cache_set('gmap_icondata', $icons, 'cache');
   return $icons;
 }
 
