@@ -2,6 +2,11 @@
 // $Id$
 
 /**
+ * @file
+ * gmap_location install routines.
+ */
+
+/**
  * Implementation of hook_install().
  */
 function gmap_location_install() {
