@@ -77,10 +77,11 @@ function gmap_location_menu() {
     'access arguments' => array('show node map'),
     'page callback' => 'gmap_location_node_page',
   );
-  $items['map/node/load'] = array(
+  $items['map/node/load/%node/%'] = array(
     'type' => MENU_CALLBACK,
     'access arguments' => array('show node map'),
     'page callback' => 'gmap_location_node_point',
+    'page arguments' => array(3,4),
   );
   $items['admin/settings/gmap_location'] = array(
     'type' => MENU_NORMAL_ITEM,
@@ -354,19 +355,12 @@ function gmap_location_node_page($nid = NULL) {
 /**
  * AHAH callback for getting the contents of a node point popup.
  */
-function gmap_location_node_point() {
-  $nid = arg(3);
-  $opt = arg(4);
-  if (is_numeric($nid) && $node = node_load($nid)) {
-    $output = '';
-    $type = strtr($node->type, '-', '_');
-    $output = theme($type .'_gmapnodelabel', $node, $opt);
-    if (empty($output)) {
-      $output = theme('gmapnodelabel', $node, $opt);
-    }
-    echo $output;
-    exit();
-  }
+function gmap_location_node_point($node, $opt) {
+  $output = '';
+  // @@@ Make sure $node->type is an ok thing to do here..
+  echo theme(array("gmap_location_infowindow_node__$node->type", 'gmap_location_infowindow_node'), $node, $opt);
+  // exit();
+  return;
 }
 
 /**

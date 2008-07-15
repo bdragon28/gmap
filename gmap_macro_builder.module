@@ -47,7 +47,7 @@ function gmap_macro_builder_menu() {
  *   Fields to hide from the map. (See code for details.)
  *   Suggestions for better ways of doing this welcome!
  */
-function gmap_macro_builder_form($settings = array(), $hide = array()) {
+function gmap_macro_builder_form(&$form_state, $settings = array(), $hide = array()) {
   $form['macroform'] = array(
     '#type' => 'fieldset',
     '#title' => t('Gmap macro creation'),

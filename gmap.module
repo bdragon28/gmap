@@ -70,6 +70,7 @@ function gmap_theme() {
     'gmap_dimension' => array('arguments' =>  array('element')),
     'gmap_address' => array('arguments' => array('element')),
     'gmap_align' => array('arguments' => array('element')),
+    'gmap_style' => array('arguments' => array('element')),
     'gmap' => array('arguments' => array('element')),
   );
 }
@@ -107,7 +108,7 @@ function gmap_gmap($op, &$map) {
         drupal_add_js($path .'marker.js');
         drupal_add_js($path . variable_get('gmap_mm_type', 'gmap') .'_marker.js');
       }
-      if ($map['behavior']['locpick']) {
+      if (isset($map['behavior']['locpick']) && $map['behavior']['locpick']) {
         drupal_add_js($path .'locpick.js');
       }
       if (variable_get('gmap_load_zoom_plugin', TRUE) && !$map['behavior']['nomousezoom']) {
@@ -812,7 +813,7 @@ function gmap_elements() {
         'process_gmap_control' => array('textarea', 'macrotext'),
       ),
     ),
-    'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit')),
+    'gmap_overlay_edit' => array('#input' => TRUE, '#process' => array('process_gmap_overlay_edit')),
     'gmap_style' => array('#input' => TRUE, '#tree' => TRUE, '#gmap_style_type' => 'poly', '#process' => array('process_gmap_style')),
     'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address')),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align')),
@@ -1127,7 +1128,7 @@ function theme_gmap($element) {
   _gmap_doheader();
 
   // If the theme function is called directly, the map is not properly set up yet.
-  if (!$element['#id']) {
+  if (empty($element['#id'])) {
     gmap_widget_setup($element, 'gmap');
   }
   // Possible if this gmap was created manually.
@@ -1198,6 +1199,9 @@ function gmap_widget_setup(&$element, $type, $map=NULL) {
         $map = $element['#settings']['id'];
       }
     }
+  }
+  if (!isset($element['#attributes']['class'])) {
+    $element['#attributes']['class'] = '';
   }
   $element['#attributes']['class'] = trim(implode(' ', array(
     $element['#attributes']['class'],
