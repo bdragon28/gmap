@@ -106,55 +106,29 @@ function gmap_location_user_page() {
 
   // Find the highest rid, if available, for each user with a location.
 
-  // Location 3.x on Drupal 5.
-  if (function_exists('location_newapi')) {
-    $result = db_query("
-      SELECT
-        u.name, MAX(r.rid) as role, i.uid, l.latitude, l.longitude
-      FROM
-        {users} u
-      INNER JOIN
-        {location_instance} i
-        ON
-          u.uid = i.uid
-      INNER JOIN
-        {location} l
-        ON
-          i.lid = l.lid
-      LEFT JOIN
-        {users_roles} r
-        ON
-          i.uid = r.uid
-      WHERE
-        u.status = 1
-      AND
-        (l.latitude != 0 OR l.longitude != 0)
-      GROUP BY
-        i.uid");
-  }
-  else {
-    $result = db_query("
-      SELECT
-        u.name, MAX(r.rid) as role, l.eid as uid, l.latitude, l.longitude
-      FROM
-        {users} u
-      INNER JOIN
-        {location} l
-        ON
-          u.uid = l.eid
-      LEFT JOIN
-        {users_roles} r
-        ON
-          l.eid = r.uid
-      WHERE
-        l.type = '%s'
-      AND
-        u.status = 1
-      AND
-        (l.latitude != 0 OR l.longitude != 0)
-      GROUP BY
-        l.eid", 'user');
-  }
+  $result = db_query("
+    SELECT
+      u.name, MAX(r.rid) as role, i.uid, l.latitude, l.longitude
+    FROM
+      {users} u
+    INNER JOIN
+      {location_instance} i
+      ON
+        u.uid = i.uid
+    INNER JOIN
+      {location} l
+      ON
+        i.lid = l.lid
+    LEFT JOIN
+      {users_roles} r
+      ON
+        i.uid = r.uid
+    WHERE
+      u.status = 1
+    AND
+      (l.latitude != 0 OR l.longitude != 0)
+    GROUP BY
+      i.uid");
 
   while ($row = db_fetch_object($result)) {
     // Determine marker type to show.
@@ -271,37 +245,19 @@ function gmap_location_node_page($nid = NULL) {
   }
 
   $add_sql = (is_numeric($nid) && $nid > 0) ? ' AND n.nid = %d' : '';
-  // Location 3.x on Drupal 5.
-  if (function_exists('location_newapi')) {
-    $result = db_query(db_rewrite_sql("
-      SELECT n.nid, n.type, n.title, l.latitude, l.longitude $marker_sql1
-      FROM {node} n
-      INNER JOIN {location_instance} i
-        ON n.vid = i.vid
-      INNER JOIN {location} l
-        ON l.lid = i.lid
-      $marker_sql2
-      WHERE
-        n.status = 1
-      AND
-        (l.latitude != 0 OR l.longitude != 0)
-      ". $add_sql), 'node', $nid);
-  }
-  else {
-    $result = db_query(db_rewrite_sql("
-      SELECT n.nid, n.type, n.title, l.latitude, l.longitude $marker_sql1
-      FROM {node} n
-      INNER JOIN {location} l
-        ON n.vid = l.eid
-      $marker_sql2
-      WHERE
-        l.type = '%s'
-      AND
-        n.status = 1
-      AND
-        (l.latitude != 0 OR l.longitude != 0)
-      ". $add_sql), 'node', $nid);
-  }
+  $result = db_query(db_rewrite_sql("
+    SELECT n.nid, n.type, n.title, l.latitude, l.longitude $marker_sql1
+    FROM {node} n
+    INNER JOIN {location_instance} i
+      ON n.vid = i.vid
+    INNER JOIN {location} l
+      ON l.lid = i.lid
+    $marker_sql2
+    WHERE
+      n.status = 1
+    AND
+      (l.latitude != 0 OR l.longitude != 0)
+    ". $add_sql), 'node', $nid);
 
   $count = 0;
   while ($row = db_fetch_object($result)) {
@@ -347,49 +303,26 @@ function gmap_location_node_page($nid = NULL) {
 
       $map['markers'] = array(); // Reset markers.
 
-      // Location 3.x on Drupal 5.
-      if (function_exists('location_newapi')) {
-        $result = db_query("
-          SELECT
-            MAX(r.rid) as role, i.uid, l.latitude, l.longitude
-          FROM
-            {og_uid} o
-          INNER JOIN {location_instance} i
-            ON i.uid = o.uid
-          INNER JOIN {location} l
-            ON l.lid = i.lid
-          LEFT JOIN {users_roles} r
-            ON i.uid = r.uid
-          WHERE
-            o.nid = %d
-          AND
-            o.is_active >= 1
-          AND
-            (l.latitude != 0 OR l.longitude != 0)
-          GROUP BY
-            o.uid", $nid, 'user');
-      }
-      else {
-        $result = db_query("
-          SELECT
-            MAX(r.rid) as role, l.eid as uid, l.latitude, l.longitude
-          FROM
-            {og_uid} o
-          INNER JOIN {location} l
-            ON o.uid = l.eid
-          LEFT JOIN {users_roles} r
-            ON l.eid = r.uid
-          WHERE
-            o.nid = %d
-          AND
-            o.is_active >= 1
-          AND
-            l.type = '%s'
-          AND
-            (l.latitude != 0 OR l.longitude != 0)
-          GROUP BY
-            o.uid", $nid, 'user');
-      }
+      $result = db_query("
+        SELECT
+          MAX(r.rid) as role, i.uid, l.latitude, l.longitude
+        FROM
+          {og_uid} o
+        INNER JOIN {location_instance} i
+          ON i.uid = o.uid
+        INNER JOIN {location} l
+          ON l.lid = i.lid
+        LEFT JOIN {users_roles} r
+          ON i.uid = r.uid
+        WHERE
+          o.nid = %d
+        AND
+          o.is_active >= 1
+        AND
+          (l.latitude != 0 OR l.longitude != 0)
+        GROUP BY
+          o.uid", $nid, 'user');
+
       while ($row = db_fetch_object($result)) {
         $newmarker = array();
         $newmarker['rmt'] = $nid .'/'. $row->uid;
@@ -466,28 +399,6 @@ function gmap_location_admin_settings() {
     '#default_value' => variable_get('gmap_geocode', 1),
     '#options' => array(1 => 'Enabled', 0 => 'Disabled'),
   );
-
-  // Location 3.x manages user settings by itself.
-  if (!function_exists('location_newapi')) {
-    $form['userloc'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Location settings for users'),
-    );
-    $form['userloc']['gmap_user'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Profile map'),
-      '#default_value' => variable_get('gmap_user', TRUE),
-      '#description' => t('Let users set/edit their location in their profile.'),
-    );
-    $form['userloc']['gmap_user_profile_category'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Profile category title'),
-      '#default_value' => variable_get('gmap_user_profile_category', "Location map"),
-      '#size' => 50,
-      '#maxlength' => 50,
-      '#description' => t('Let users set/edit their location in their profile.'),
-    );
-  }
 
   $form['user'] = array(
     '#type' => 'fieldset',
@@ -771,12 +682,7 @@ function gmap_location_author_block_view($nid) {
   $block = array();
   $node = node_load($nid);
   if (variable_get('gmap_location_author_block_'. $node->type, FALSE)) {
-    if (function_exists('location_newapi')) {
-      $result = db_fetch_array(db_query("SELECT latitude, longitude FROM {location} l INNER JOIN {location_instance} i ON l.lid = i.lid WHERE i.uid = %d", $node->uid));
-    }
-    else {
-      $result = db_fetch_array(db_query("SELECT latitude, longitude FROM {location} WHERE eid = %d AND type = 'user'", $node->uid));
-    }
+    $result = db_fetch_array(db_query("SELECT latitude, longitude FROM {location} l INNER JOIN {location_instance} i ON l.lid = i.lid WHERE i.uid = %d", $node->uid));
     if (!$result) {
       // Location not set at all.
       return;
@@ -857,107 +763,6 @@ function theme_gmap_location_infowindow_user($account) {
   $returntxt = theme('user_picture', $account);
   $returntxt .= theme('username', $account);
   return $returntxt;
-}
-
-function gmap_location_user($op, &$edit, &$user, $category = NULL) {
-  if (function_exists('location_newapi')) {
-    // Location 3.x handles the whole process.
-    return;
-  }
-
-  if (variable_get('gmap_user', 0) && user_access('set user location')) {
-    switch ($op) {
-      case 'load':
-        $result = db_query("SELECT latitude,longitude FROM {location} WHERE eid = %d AND type='user'", $user->uid);
-        $u = db_fetch_object($result);
-        if ($u) {
-          $user->gmap_location_longitude = $u->longitude;
-          $user->gmap_location_latitude = $u->latitude;
-          $user->gmap_location_set = TRUE;
-        }
-        break;
-      case 'categories':
-        return array(
-          array(
-            'name' => 'gmap_user',
-            'title' => variable_get('gmap_user_profile_category', t('location map')),
-            'weight' => 5,
-          ),
-        );
-
-      case 'insert':
-      case 'update':
-        if ($category == 'gmap_user') {
-          // source==1, location.module's LOCATION_LATLON_USER_SUBMITTED define.
-          // Insert or update based on the existance of $user->gmap_location_set.
-          if ($user->gmap_location_set) {
-            db_query("UPDATE {location} SET latitude = %s , longitude = %s , source = 1 WHERE eid = %d AND type = 'user'",
-              gmap_decimal($edit['gmap_location_latitude']),
-              gmap_decimal($edit['gmap_location_longitude']),
-              $user->uid);
-          }
-          else {
-            $lid = db_next_id('{location}_lid');
-            db_query("INSERT INTO {location} (eid, lid, type, latitude, longitude, source) VALUES (%d, %d, 'user', %s, %s, 1)",
-              $user->uid, $lid,
-              gmap_decimal($edit['gmap_location_latitude']),
-              gmap_decimal($edit['gmap_location_longitude']));
-          }
-          unset($edit['gmap_location_latitude']);
-          unset($edit['gmap_location_longitude']);
-        }
-        return;
-
-      case 'form':
-        if ($category == 'gmap_user' && user_access('set user location')) {
-          $form = array();
-
-          $form['coordinates'] = array(
-            '#type' => 'fieldset',
-            '#title' => t('Coordinates'),
-            '#weight' => 5,
-            '#collapsible' => $type!='user',
-            '#collapsed' => FALSE,
-          );
-
-          // Reserve spot for map.
-          $form['coordinates']['gmap_node'] = array();
-
-          $form['coordinates']['gmap_location_latitude'] = array(
-            '#type' => 'textfield',
-            '#title' => t('Latitude'),
-            '#default_value' => $edit['gmap_location_latitude'],
-            '#size' => 30,
-            '#maxlength' => 120,
-          );
-
-          $form['coordinates']['gmap_location_longitude'] = array(
-            '#type' => 'textfield',
-            '#title' => t('Longitude'),
-            '#default_value' => $edit['gmap_location_longitude'],
-            '#size' => 30,
-            '#maxlength' => 120,
-            '#description' => t('The latitude and longitude will be entered here when you click on a location in the interactive map above. You can also fill in the values manually.'),
-          );
-
-          // @@@ Why is this based off the user map?
-          $tmp = variable_get('gmap_user_map', _gmap_location_user_map_defaults());
-
-          $form['coordinates']['gmap_node']['#value'] = gmap_set_location($tmp['macro'], $form['coordinates'], array('latitude' => 'gmap_location_latitude', 'longitude' => 'gmap_location_longitude'));
-
-/*
-          if (variable_get('gmap_geocode', 1)) {
-            $form['coordinates']['gmap_location_address'] = array(
-              '#type' => 'textfield',
-              '#title' => t('Address'),
-              '#description' => t('The address to be found on the map.  Enter an address and then hit "TAB" and the current location will be updated.  Please note that this address is not saved for the node, it is only used for finding a location.'),
-            );
-          }
-*/
-        }
-        return $form;
-    }
-  }
 }
 
 /**
