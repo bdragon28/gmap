@@ -749,8 +749,8 @@ function gmap_location_block_view($nid) {
       $map['longitude'] = $markers[0]['longitude'];
       $map['markers'] = $markers;
       // @@@
-      $map['behavior']['autozoom'] = true;
-      $map['behavior']['notype'] = true;
+      $map['behavior']['autozoom'] = TRUE;
+      $map['behavior']['notype'] = TRUE;
       $map['controltype'] = 'None';
       $block['subject'] = t('Location');
       $block['content'] = theme('gmap', array('#settings' => $map));
@@ -860,7 +860,7 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
         if ($u) {
           $user->gmap_location_longitude = $u->longitude;
           $user->gmap_location_latitude = $u->latitude;
-          $user->gmap_location_set = true;
+          $user->gmap_location_set = TRUE;
         }
         break;
       case 'categories':
@@ -904,7 +904,7 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
             '#title' => t('Coordinates'),
             '#weight' => 5,
             '#collapsible' => $type!='user',
-            '#collapsed' => false,
+            '#collapsed' => FALSE,
           );
 
           // Reserve spot for map.
