@@ -69,7 +69,7 @@ function gmap_theme() {
     'gmap_location_user_html' => array('arguments' => array('element')),
     'views_view_gmap' => array('arguments' => array('element')),
     'gmap_views_marker_label' => array('arguments' => array('element')),
-    'gmap_marker_popup' => array('arguments' => array('element')),
+    'gmap_marker_popup' => array('arguments' => array('label')),
     'gmap_overlay_edit' => array('arguments' => array('element')),
     'gmap_coord' => array('arguments' => array('element')),
     'gmap_macrotext' => array('arguments' => array('element')),
@@ -818,14 +818,14 @@ function gmap_elements() {
         'process_gmap_control' => array('textarea', 'macrotext'),
       ),
     ),
-    'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit' => array())),
-    'gmap_style' => array('#input' => TRUE, '#tree' => TRUE, '#gmap_style_type' => 'poly', '#process' => array('process_gmap_style' => array())),
-    'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address' => array())),
-    'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align' => array())),
-    'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'latitude', 'gmap_coord'))),
-    'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'longitude', 'gmap_coord'))),
-    'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'latlon', 'gmap_coord'))),
-    'gmap_markerchooser' => array('#input' => TRUE, '#process' => array('process_gmap_markerchooser' => array())),
+    'gmap_overlay_edit' => array('#input' => FALSE, '#process' => array('process_gmap_overlay_edit')),
+    'gmap_style' => array('#input' => TRUE, '#tree' => TRUE, '#gmap_style_type' => 'poly', '#process' => array('process_gmap_style')),
+    'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address')),
+    'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align')),
+    'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_textfield')),
+    'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_textfield')),
+    'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_textfield')),
+    'gmap_markerchooser' => array('#input' => TRUE, '#process' => array('process_gmap_markerchooser')),
     'gmap_dimension' => array('#input' => TRUE, '#theme' => 'textfield', '#validate' => array('gmap_dimension_validate' => array())),
   );
 }
@@ -858,7 +858,9 @@ function expand_gmap($element) {
 /**
  * Generic gmap control #process function.
  */
-function process_gmap_control($element, $edit, $fieldtype, $control, $theme='') {
+//function process_gmap_control($element, $edit, $fieldtype, $control, $theme='') {
+function process_gmap_control($element, $edit, &$form_state, $complete_form) {
+//dpm($element);
   $element['#type'] = $fieldtype;
   gmap_widget_setup($element, $control);
   if (!empty($theme)) {
@@ -867,6 +869,22 @@ function process_gmap_control($element, $edit, $fieldtype, $control, $theme='') 
   else {
     $element['#theme'] = 'gmap_'. $control;
   }
+  return $element;
+}
+
+// @@@ Finish debugging.
+function process_gmap_textfield($element, $edit, &$form_state, $complete_form) {
+  $control = substr($element['#type'], 5);
+dpm($element);
+  $element['#type'] = 'textfield';
+  gmap_widget_setup($element, $control);
+  if (!empty($theme)) {
+    $element['#theme'] = $theme;
+  }
+  else {
+    $element['#theme'] = 'gmap_'. $control;
+  }
+dpm($element);
   return $element;
 }
 
