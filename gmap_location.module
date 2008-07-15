@@ -9,6 +9,22 @@
  */
 
 /**
+ * Implementation of hook_theme().
+ */
+function gmap_location_theme() {
+  return array(
+    'gmap_location_user_page' => array('arguments' => array('header', 'map', 'footer')),
+    'gmap_location_node_page' => array('arguments' => array('count', 'header', 'map', 'footer')),
+    // @@@ Test this one thoroughly.
+    'gmap_location_infowindow_node' => array(
+      'pattern' => 'gmap_location_infowindow_node__',
+      'arguments' => array('node', 'opt'),
+    ),
+    'gmap_location_infowindow_user' => array('arguments' => array('account')),
+  );
+}
+
+/**
  * Implementation of hook_perm().
  */
 function gmap_location_perm() {
@@ -42,46 +58,38 @@ function _gmap_location_node_map_defaults() {
 /**
  * Implementation of hook_menu().
  */
-function gmap_location_menu($may_cache) {
-  $items = array();
-
-  if ($may_cache) {
-    $items[] = array(
-      'path' => 'map/user',
-      'type' => MENU_NORMAL_ITEM,
-      'title' => t('User locations'),
-      'access' => user_access('show user map'),
-      'callback' => 'gmap_location_user_page',
-    );
-    $items[] = array(
-      'path' => 'map/user/load',
-      'type' => MENU_CALLBACK,
-      'access' => user_access('show user map'),
-      'callback' => 'gmap_location_user_point',
-    );
-    $items[] = array(
-      'path' => 'map/node',
-      'type' => MENU_NORMAL_ITEM,
-      'title' => t('Node locations'),
-      'access' => user_access('show node map'),
-      'callback' => 'gmap_location_node_page',
-    );
-    $items[] = array(
-      'path' => 'map/node/load',
-      'type' => MENU_CALLBACK,
-      'access' => user_access('show node map'),
-      'callback' => 'gmap_location_node_point',
-    );
-    $items[] = array(
-      'path' => 'admin/settings/gmap_location',
-      'type' => MENU_NORMAL_ITEM,
-      'title' => t('GMap Location'),
-      'access' => user_access('administer site configuration'),
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('gmap_location_admin_settings'),
-      'description' => t('Configure GMap Location settings.'),
-    );
-  }
+function gmap_location_menu() {
+  $items['map/user'] = array(
+    'path' => 'map/user',
+    'type' => MENU_NORMAL_ITEM,
+    'title' => 'User locations',
+    'access arguments' => array('show user map'),
+    'page callback' => 'gmap_location_user_page',
+  );
+  $items['map/user/load'] = array(
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('show user map'),
+    'page callback' => 'gmap_location_user_point',
+  );
+  $items['map/node'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => 'Node locations',
+    'access arguments' => array('show node map'),
+    'page callback' => 'gmap_location_node_page',
+  );
+  $items['map/node/load'] = array(
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('show node map'),
+    'page callback' => 'gmap_location_node_point',
+  );
+  $items['admin/settings/gmap_location'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => 'GMap Location',
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gmap_location_admin_settings'),
+    'description' => 'Configure GMap Location settings.',
+  );
   return $items;
 }
 
@@ -802,21 +810,22 @@ function gmap_location_author_block_view($nid) {
   return $block;
 }
 
-//Any module can create a default theme for the display of nodes of the node type by
-//creating a function theme_hook_gmapnodelabel a theme could then further specify it
-//by creating a mytheme_nodetype_gmapnodelabel or could simply create a default
-//node type by creating a mytheme_gmapnodelabel
-function theme_image_gmapnodelabel($n) {
-  $out = '<a href="'. url('node/'. $n->nid) .'">'. check_plain($n->title) .'</a> <br>';
-  $out .= image_display($n, 'thumbnail');
+/**
+ * Default theme for image nodes.
+ * @@@ Todo: Move to a tpl.
+ */
+function theme_gmap_location_infowindow_node__image($node) {
+  $out = '<a href="'. url('node/'. $node->nid) .'">'. check_plain($node->title) .'</a> <br>';
+  $out .= image_display($node, 'thumbnail');
   return $out;
 }
 
 // @@@ This is not thoroughly tested for 5.x yet!
+// @@@ Or 6.x for that matter!
 /**
  * Theme an Organic Groups node info window.
  */
-function theme_og_gmapnodelabel($node, $opt) {
+function theme_gmap_location_infowindow_node__og($node, $opt) {
   if (is_numeric($opt) && $account = user_load(array('uid' => $opt))) {
     $output = theme('user_picture', $account);
     $output .= theme('username', $account);
@@ -825,22 +834,26 @@ function theme_og_gmapnodelabel($node, $opt) {
   }
 }
 
+// @@@ This is completely wrong.
 /**
  * Theme a node info window.
  * @ingroup themable
  */
-function theme_gmapnodelabel($n) {
+function theme_gmap_location_infowindow_node($node) {
   // Allow a module (where the module name matches the node type name)
   // to define a custom display for the google map label.
   // For this to work with flexinode defined data types,
   // a module called 'flexinode_#.module' in your site's module
   // directory and add theme_hook_gmapnodelabel($node, $location) to it.
   // Be sure to enable your 'flexinode_#.module'.
-  return '<div class="gmapnodelabel gmapnodelabel-'. form_clean_id($n->type) .
-    '">'. strtr(theme('node', $n, TRUE), "'\n\r", '"  ') .'</div>'; // make sure it all goes on one line.
+  return '<div class="gmapnodelabel gmapnodelabel-'. form_clean_id($node->type) .
+    '">'. strtr(theme('node', $node, TRUE), "'\n\r", '"  ') .'</div>'; // make sure it all goes on one line.
 }
 
-function theme_gmap_location_user_html($account) {
+/**
+ * Default theme for user infowindows.
+ */
+function theme_gmap_location_infowindow_user($account) {
   $returntxt = theme('user_picture', $account);
   $returntxt .= theme('username', $account);
   return $returntxt;
