@@ -41,8 +41,8 @@ function gmap_defaults() {
     'mtc' => 'standard',
     'baselayers' => array('Map', 'Satellite', 'Hybrid'),
     'styles' => array(
-      'line_default' => array('0000ff',5,45,'',0,0),
-      'poly_default' => array('000000',3,25,'ff0000',45),
+      'line_default' => array('0000ff', 5, 45, '', 0, 0),
+      'poly_default' => array('000000', 3, 25, 'ff0000', 45),
     ),
     'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
   );
@@ -346,7 +346,7 @@ function gmap_parse_macro($instring, $ver = 2) {
     foreach ($m['circle'] as $shape) {
       $s = array('type' => 'circle');
       $cp = strpos($shape, ':');
-      if ($cp !== false) {
+      if ($cp !== FALSE) {
         $stylestr = substr($shape, 0, $cp);
         $s['style'] = _gmap_parse_style($stylestr);
         $shape = substr($shape, $cp+1);
@@ -381,7 +381,7 @@ function gmap_parse_macro($instring, $ver = 2) {
     foreach ($m['line'] as $shape) {
       $s = array('type' => 'line');
       $cp = strpos($shape, ':');
-      if ($cp != false) {
+      if ($cp != FALSE) {
         $stylestr = substr($shape, 0, $cp);
         $s['style'] = _gmap_parse_style($stylestr);
         $shape = substr($shape, $cp+1);
@@ -395,7 +395,7 @@ function gmap_parse_macro($instring, $ver = 2) {
     foreach ($m['rpolygon'] as $shape) {
       $s = array('type' => 'rpolygon');
       $cp = strpos($shape, ':');
-      if ($cp !== false) {
+      if ($cp !== FALSE) {
         $stylestr = substr($shape, 0, $cp);
         $s['style'] = _gmap_parse_style($stylestr);
         $shape = substr($shape, $cp+1);
@@ -417,7 +417,7 @@ function gmap_parse_macro($instring, $ver = 2) {
     foreach ($m['polygon'] as $shape) {
       $s = array('type' => 'polygon');
       $cp = strpos($shape, ':');
-      if ($cp !== false) {
+      if ($cp !== FALSE) {
         $stylestr = substr($shape, 0, $cp);
         $s['style'] = _gmap_parse_style($stylestr);
         $shape = substr($shape, $cp+1);
@@ -471,7 +471,7 @@ function gmap_parse_macro($instring, $ver = 2) {
   }
 
   // notype also controls mtc.
-  if (isset($m['behavior']['notype'])){
+  if (isset($m['behavior']['notype'])) {
     if ($m['behavior']['notype']) {
       $m['mtc']= 'none';
     }
@@ -526,7 +526,7 @@ function gmap_parse_macro($instring, $ver = 2) {
         list($point, $addons) = explode('%', $point, 2);
         $motemp = explode('%', $addons);
         foreach ($motemp as $option) {
-          $marker['options'][trim($option)] = true;
+          $marker['options'][trim($option)] = TRUE;
         }
       }
       list($marker['latitude'], $marker['longitude']) = explode(',', $point, 2);
@@ -712,7 +712,7 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
 /**
  * Implementation of hook_filter_tips().
  */
-function gmap_filter_tips($delta, $format, $long = false) {
+function gmap_filter_tips($delta, $format, $long = FALSE) {
   if (user_access('create macro')) { // only display macro if user can create one
     return t('Insert Google Map macro.') .'<a href="'. url('map/macro') .'" target="_blank" >'. t('Create a macro') .'</a>';
   }
@@ -986,7 +986,7 @@ function process_gmap_overlay_edit($element) {
     '#type' => 'gmap_style',
     '#title' => t('Line style'),
     '#gmap_style_type' => 'line',
-    '#default_value' => array('0000ff',5,45,'',''), // @@@
+    '#default_value' => array('0000ff', 5, 45, '', ''), // @@@
   );
   gmap_widget_setup($element['linestyle'], 'overlayedit_linestyle', $element['#map']);
   $element['linestyle']['linestyle_apply'] = array(
@@ -1001,7 +1001,7 @@ function process_gmap_overlay_edit($element) {
     '#type' => 'gmap_style',
     '#title' => t('Polygon style'),
     '#gmap_style_type' => 'poly',
-    '#default_value' => array('000000',3,25,'ff0000',45), // @@@
+    '#default_value' => array('000000', 3, 25, 'ff0000', 45), // @@@
   );
   gmap_widget_setup($element['polystyle'], 'overlayedit_polystyle', $element['#map']);
   $element['polystyle']['polystyle_apply'] = array(
