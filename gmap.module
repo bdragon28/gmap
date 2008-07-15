@@ -61,12 +61,6 @@ function gmap_defaults() {
  */
 function gmap_theme() {
   return array(
-    'gmap_location_user_page' => array('arguments' => array('element')),
-    'og_gmapnodelabel' => array('arguments' => array('element')),
-    'gmap_location_node_page' => array('arguments' => array('element')),
-    'image_gmapnodelabel' => array('arguments' => array('element')),
-    'gmapnodelabel' => array('arguments' => array('element')),
-    'gmap_location_user_html' => array('arguments' => array('element')),
     'views_view_gmap' => array('arguments' => array('element')),
     'gmap_views_marker_label' => array('arguments' => array('element')),
     'gmap_marker_popup' => array('arguments' => array('label')),
@@ -863,28 +857,29 @@ function process_gmap_control($element, $edit, &$form_state, $complete_form) {
 //dpm($element);
   $element['#type'] = $fieldtype;
   gmap_widget_setup($element, $control);
+/*
   if (!empty($theme)) {
     $element['#theme'] = $theme;
   }
   else {
     $element['#theme'] = 'gmap_'. $control;
-  }
+  } */
   return $element;
 }
 
 // @@@ Finish debugging.
 function process_gmap_textfield($element, $edit, &$form_state, $complete_form) {
   $control = substr($element['#type'], 5);
-dpm($element);
+//dpm($element);
   $element['#type'] = 'textfield';
   gmap_widget_setup($element, $control);
-  if (!empty($theme)) {
+  /*if (!empty($theme)) {
     $element['#theme'] = $theme;
   }
   else {
     $element['#theme'] = 'gmap_'. $control;
-  }
-dpm($element);
+  }*/
+//dpm($element);
   return $element;
 }
 
