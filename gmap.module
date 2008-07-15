@@ -803,51 +803,25 @@ function gmap_elements() {
         'pointsOverlays' => array(),
         'lines' => array(),
       )),
-      '#process' => array('expand_gmap' => array()),
     ),
     'gmap_macrotext' => array(
       '#input' => TRUE,
       '#cols' => 60,
       '#rows' => 5,
-      '#process' => array(
-        'process_gmap_control' => array('textarea', 'macrotext'),
-      ),
+      '#gmap_newtype' => 'textarea',
+      '#theme' => 'gmap_macrotext',
+      '#process' => array('process_gmap_textfield'),
     ),
     'gmap_overlay_edit' => array('#input' => TRUE, '#process' => array('process_gmap_overlay_edit')),
     'gmap_style' => array('#input' => TRUE, '#tree' => TRUE, '#gmap_style_type' => 'poly', '#process' => array('process_gmap_style')),
     'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address')),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align')),
-    'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_textfield')),
-    'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_textfield')),
-    'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_textfield')),
+    'gmap_latitude' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_textfield')),
+    'gmap_longitude' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_textfield')),
+    'gmap_latlon' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_textfield')),
     'gmap_markerchooser' => array('#input' => TRUE, '#process' => array('process_gmap_markerchooser')),
-    'gmap_dimension' => array('#input' => TRUE, '#theme' => 'textfield', '#validate' => array('gmap_dimension_validate' => array())),
+    'gmap_dimension' => array('#input' => TRUE, '#theme' => 'textfield', '#element_validate' => array('gmap_dimension_validate')),
   );
-}
-
-/**
- * Gmap element #process function.
- */
-function expand_gmap($element) {
-  $mapid = 'map';
-  if ($element['#map']) {
-    $mapid = $element['#map'];
-  }
-  else {
-    $element['#map'] = $mapid;
-  }
-  if (!$element['#settings']) {
-    $element['#settings'] = array();
-  }
-  // @@@
-  $element['#settings'] = array_merge(gmap_defaults(), array(
-    'id' => $mapid,
-    'points' => array(),
-    'pointsOverlays' => array(),
-    'lines' => array(),
-  ), $element['#settings']);
-  gmap_widget_setup($element, 'gmap');
-  return $element;
 }
 
 /**
@@ -869,10 +843,12 @@ function process_gmap_control($element, $edit, &$form_state, $complete_form) {
 }
 
 // @@@ Finish debugging.
+// @@@ Rename this to something more appropriate.
 function process_gmap_textfield($element, $edit, &$form_state, $complete_form) {
   $control = substr($element['#type'], 5);
 //dpm($element);
-  $element['#type'] = 'textfield';
+  $element['#type'] = $element['#gmap_newtype'];
+  unset($element['#gmap_newtype']);
   gmap_widget_setup($element, $control);
   /*if (!empty($theme)) {
     $element['#theme'] = $theme;
@@ -1127,11 +1103,18 @@ function theme_gmap_align($element) {
 function theme_gmap($element) {
   _gmap_doheader();
 
-  // If the theme function is called directly, the map is not properly set up yet.
-  if (empty($element['#id'])) {
-    gmap_widget_setup($element, 'gmap');
+  // Stuff moved from expand_gmap().
+  // @@@ Clean this up once and for all...
+  $mapid = 'map';
+  if ($element['#map']) {
+    $mapid = $element['#map'];
   }
-  // Possible if this gmap was created manually.
+  else {
+    $element['#map'] = $mapid;
+  }
+
+  gmap_widget_setup($element, 'gmap');
+
   if (!$element['#settings']) {
     $element['#settings'] = array();
   }
@@ -1154,7 +1137,7 @@ function theme_gmap($element) {
   $style[] = 'width: '. $map['width'];
   $style[] = 'height: '. $map['height'];
 
-  $element['#attributes']['class'] = trim($element['#attributes']['class'] .'gmap gmap-map gmap-'. $map['id'] .'-gmap');
+  $element['#attributes']['class'] = trim($element['#attributes']['class'] .'gmap gmap-map gmap-'. $element['#map'] .'-gmap');
 
   // Some markup parsers (IE) don't handle empty inners well. Use the space to let users know javascript is required.
   // @@@ Bevan sez: Google static maps could be useful here.
