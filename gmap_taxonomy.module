@@ -28,10 +28,6 @@ function gmap_taxonomy_form_alter(&$form, &$form_state, $form_id) {
       '#description' => t('Enable choosing a marker for terms in this vocabulary.'),
       '#default_value' => $temp[$vid],
     );
-    $form['submit']['#weight']++;
-    if ($form['delete']) {
-      $form['delete']['#weight']+=2;
-    }
   }
   if ($form_id == 'taxonomy_form_term') {
     $vid = $form['vid']['#value'];
@@ -50,9 +46,23 @@ function gmap_taxonomy_form_alter(&$form, &$form_state, $form_id) {
         '#description' => t('If you would like nodes tagged as this term to have a special marker, choose one here.'),
         '#default_value' => $temp,
       );
+    }
+  }
+
+  // Move the Save and Delete buttons down below our additions.
+  if ($form_id == 'taxonomy_form_vocabulary' || $form_id == 'taxonomy_form_term') {
+    if (isset($form['submit']['#weight'])) {
       $form['submit']['#weight']++;
-      if ($form['delete']) {
+    }
+    else {
+      $form['submit']['#weight'] = 1;
+    }
+    if (isset($form['delete'])) {
+      if (isset($form['delete']['#weight'])) {
         $form['delete']['#weight']+=2;
+      }
+      else {
+        $form['delete']['#weight'] = 2;
       }
     }
   }
@@ -66,9 +76,13 @@ function gmap_taxonomy_taxonomy($op, $type, $array = NULL) {
     switch ($op) {
       case 'insert':
       case 'update':
-        $status = variable_get('gmap_taxonomy_vocabs', array());
-        $status[$array['vid']] = $array['gmap_taxonomy_enable'];
-        variable_set('gmap_taxonomy_vocabs', $status);
+        // This can get called in other places than vocabulary form submission.
+        // @@@ TODO move this to the form itself..
+        if (isset($array['gmap_taxonomy_enable'])) {
+          $status = variable_get('gmap_taxonomy_vocabs', array());
+          $status[$array['vid']] = $array['gmap_taxonomy_enable'];
+          variable_set('gmap_taxonomy_vocabs', $status);
+        }
         break;
       case 'delete':
         $status = variable_get('gmap_taxonomy_vocabs', array());
