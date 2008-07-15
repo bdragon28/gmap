@@ -242,7 +242,7 @@ function _gmap_views_get_lat_long_from_ids($entry, $ids) {
  * We need to add in the node type so we can determine markers.
  */
 function gmap_views_query_alter(&$query, &$view, $summary, $level) {
-  if ($view->page && $view->page_type == 'gmap') {
+  if (($view->page && $view->page_type == 'gmap') || ($view->block && $view->block_type == 'gmap')) {
     $query->add_field('type', 'node', 'gmap_node_type');
     if (module_exists('gmap_taxonomy')) {
       $query->ensure_table('gmap_taxonomy_node');
