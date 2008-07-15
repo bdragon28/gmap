@@ -57,6 +57,30 @@ function gmap_defaults() {
 }
 
 /**
+ * Implementation of hook_theme().
+ */
+function gmap_theme() {
+  return array(
+    'gmap_location_user_page' => array('arguments' => array('element')),
+    'og_gmapnodelabel' => array('arguments' => array('element')),
+    'gmap_location_node_page' => array('arguments' => array('element')),
+    'image_gmapnodelabel' => array('arguments' => array('element')),
+    'gmapnodelabel' => array('arguments' => array('element')),
+    'gmap_location_user_html' => array('arguments' => array('element')),
+    'views_view_gmap' => array('arguments' => array('element')),
+    'gmap_views_marker_label' => array('arguments' => array('element')),
+    'gmap_marker_popup' => array('arguments' => array('element')),
+    'gmap_overlay_edit' => array('arguments' => array('element')),
+    'gmap_coord' => array('arguments' => array('element')),
+    'gmap_macrotext' => array('arguments' => array('element')),
+    'gmap_dimension' => array('arguments' =>  array('element')),
+    'gmap_address' => array('arguments' => array('element')),
+    'gmap_align' => array('arguments' => array('element')),
+    'gmap' => array('arguments' => array('element')),
+  );
+}
+
+/**
  * Implementation of hook_gmap().
  */
 function gmap_gmap($op, &$map) {
