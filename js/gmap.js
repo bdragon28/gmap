@@ -16,7 +16,17 @@ Drupal.gmap = new function() {
    * Be a good GMap citizen! Remember to send change()s after modifying variables!
    */
   this.getMap = function(mapid) {
-    return _maps[mapid];
+    if (_maps[mapid]) {
+      return _maps[mapid];
+    }
+    else {
+      // Perhaps the user passed a widget id instead?
+      mapid = mapid.split('-').slice(1,-1).join('-');
+      if (_maps[mapid]) {
+        return _maps[mapid];
+      }
+    }
+    return false;
   };
 
   this.addHandler = function(handler,callback) {
