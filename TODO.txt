@@ -1,5 +1,12 @@
 $Id$
 
+Drupal 6 todo:
+
+* Finish porting
+
+* Keep in sync with D5 version.
+
+
 Drupal 5 todo:
 
 * Lots more documentation
