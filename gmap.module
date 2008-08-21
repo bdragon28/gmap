@@ -77,13 +77,11 @@ function gmap_gmap($op, &$map) {
       $path = drupal_get_path('module', 'gmap') .'/js/';
       // Activate markers if needed
       if ($map['behavior']['dynmarkers'] || !empty($map['markers'])) {
-        // The marker data is not a real file. We need to respect
-        // clean url capabilities here.
-        if (variable_get('clean_url', '0')) {
-          drupal_add_js('map/markerdata.js');
-        }
-        else {
-          drupal_add_js('?q=map/markerdata.js');
+        // The marker data is not a real file. Work around this fact.
+        static $header_set = FALSE;
+        if (!$header_set) {
+          $header_set = TRUE;
+          drupal_add_js("/* GMap markers enabled. */</script>\n<script type=". '"text/javascript" src="'. url('map/markerdata.js') .'">', 'inline', 'header', FALSE, TRUE, FALSE);
         }
         drupal_add_js($path .'icon.js');
         drupal_add_js($path .'marker.js');
