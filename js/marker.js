@@ -43,14 +43,30 @@ Drupal.gmap.addHandler('gmap', function(elem) {
 
   // Default marker actions.
   obj.bind('clickmarker',function(marker) {
+    // Local/stored content
     if (marker.text) {
       marker.marker.openInfoWindowHtml(marker.text);
     }
+    // AJAX content
     if (marker.rmt) {
-      $.get(obj.vars.rmtcallback + '/' + marker.rmt, {}, function(data){
+      var uri = marker.rmt;
+      // If there was a callback, prefix that.
+      // (If there wasn't, marker.rmt was the FULL path.)
+      if (obj.vars.rmtcallback) {
+        uri = obj.vars.rmtcallback + '/' + marker.rmt;
+      }
+      // @Bevan: I think it makes more sense to do it in this order.
+      // @Bevan: I don't like your choice of variable btw, seems to me like
+      // @Bevan: it belongs in the map object, or at *least* somewhere in
+      // @Bevan: the gmap settings proper...
+      //if (!marker.text && Drupal.settings.loadingImage) {
+      //  marker.marker.openInfoWindowHtml(Drupal.settings.loadingImage);
+      //}
+      $.get(uri, {}, function(data) {
         marker.marker.openInfoWindowHtml(data);
       });
     }
+    // Tabbed content
     else if (marker.tabs) {
       var infoWinTabs = [];
       for (var m in marker.tabs) {
@@ -58,6 +74,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       }
       marker.marker.openInfoWindowTabsHtml(infoWinTabs);
     }
+    // No content -- marker is a link
     else if (marker.link) {
         open(marker.link,'_self');
     }
