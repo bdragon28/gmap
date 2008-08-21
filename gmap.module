@@ -1152,7 +1152,7 @@ function theme_gmap($element) {
   // Inline settings extend.
   $o .= '<script type="text/javascript">'."\n";
   $o .= "/* <![CDATA[ */\n";
-  $o .= 'jQuery.extend(Drupal, { settings: '. drupal_to_js(array('gmap' => array($element['#map'] => $map))) ." });\n";
+  $o .= 'jQuery.extend(true, Drupal, { settings: '. drupal_to_js(array('gmap' => array($element['#map'] => $map))) ." });\n";
   $o .= "/* ]]> */\n";
   $o .= "</script>\n";
   return $o;
