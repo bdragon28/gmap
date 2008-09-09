@@ -1138,7 +1138,7 @@ function theme_gmap($element) {
   // Some markup parsers (IE) don't handle empty inners well. Use the space to let users know javascript is required.
   // @@@ Bevan sez: Google static maps could be useful here.
   // @@@ Bdragon sez: Yeah, would be nice, but hard to guarantee functionality. Not everyone uses the static markerloader.
-  $o = '<div style="'. implode('; ', $style) .';"'. drupal_attributes($element['#attributes']) .'>'. t('Javascript is required to view this map.') .'</div>';
+  $o = '<div style="'. implode('; ', $style) .';" id="'. $element['#id'] .'"'. drupal_attributes($element['#attributes']) .'>'. t('Javascript is required to view this map.') .'</div>';
 
   // $map can be manipulated by reference.
   foreach (module_implements('gmap') as $module) {
@@ -1185,7 +1185,6 @@ function gmap_widget_setup(&$element, $type, $map=NULL) {
     'gmap-'. $type,
   )));
   $element['#id'] = gmap_get_id($map, $type);
-  $element['#attributes']['id'] = $element['#id'];
   $element['#map'] = $map;
 }
 
