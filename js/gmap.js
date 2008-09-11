@@ -33,39 +33,45 @@ Drupal.gmap = new function() {
   };
 
   this.setup = function() {
-    if (Drupal.settings && Drupal.settings.gmap) {
-      for (var mapid in Drupal.settings.gmap) {
-        _maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
+    var obj = this;
 
-        for (var control in _handlers) {
-          var s = 0;
-          do {
-            var o = $('#gmap-'+mapid+'-'+control+s);
-            o.each(function() {
-                for (var i=0; i<_handlers[control].length; i++) {
-                  _handlers[control][i].call(_maps[mapid],this);
-                }
-            });
-            s++;
-          }
-          while (o.length>0);
-        }
-
+    var initcallback = function(mapid) {
+      return (function() {
         _maps[mapid].change("bootstrap_options",-1);
-
         _maps[mapid].change("boot",-1);
-
         _maps[mapid].change("init",-1);
-
         // Send some changed events to fire up the rest of the initial settings..
         _maps[mapid].change("maptypechange",-1);
         _maps[mapid].change("controltypechange",-1);
         _maps[mapid].change("alignchange",-1);
-
         // Set ready to put the event system into action.
         _maps[mapid].ready = true;
         _maps[mapid].change("ready",-1);
+      });
+    };
 
+    if (Drupal.settings && Drupal.settings.gmap) {
+      var mapid = obj.id.split('-');
+      var instanceid = mapid.pop();
+      mapid.shift();
+      mapid.join('-');
+      var control = instanceid.replace(/\d+$/, '');
+
+      // Lazy init the map object.
+      if (!_maps[mapid]) {
+        _maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
+        // Prepare the initialization callback.
+        var callback = initcallback(mapid);
+        setTimeout(callback, 0);
+      }
+
+      if (_handlers[control]) {
+        for (var i=0; i<_handlers[control].length; i++) {
+          _handlers[control][i].call(_maps[mapid], obj);
+        }
+      }
+      else {
+        // Element with wrong class?
       }
     }
   };
@@ -468,10 +474,11 @@ Drupal.gmap.addHandler('controltype', function(elem) {
   });
 });
 
-// Map setup / teardown.
+// Map cleanup.
 if (Drupal.jsEnabled) {
-  $(document).ready(Drupal.gmap.setup).unload(function() {
-    //Google cleanup.
-    GUnload();
-  });
+  $(document).unload(GUnload);
 }
+
+Drupal.behaviors.GMap = function (context) {
+  $('.gmap-control:not(.gmap-processed)', context).addClass('gmap-processed').each(Drupal.gmap.setup);
+};
