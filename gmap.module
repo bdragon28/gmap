@@ -449,7 +449,13 @@ function gmap_parse_macro($instring, $ver = 2) {
     unset($m['behaviour']);
   }
   if ($m['behavior']) {
-    $m['behavior-temp'] = explode(' ', $m['behavior']);
+    $sep = ' ';
+    if (strpos($m['behavior'], ',') !== FALSE) {
+      // In some places, commas were used to seperate behaviors.
+      // This was originally an accident, but it's easy enough to support.
+      $sep = ',';
+    }
+    $m['behavior-temp'] = explode($sep, $m['behavior']);
     $m['behavior'] = array();
     foreach ($m['behavior-temp'] as $v) {
       $m['behavior'][substr($v, 1)] = (substr($v, 0, 1) == '+') ? TRUE : FALSE;
