@@ -277,7 +277,7 @@ function gmap_location_node_page($nid = NULL) {
         n.status = 1
       AND
         (l.latitude != 0 OR l.longitude != 0)
-      ". $add_sql), 'node', $nid);
+      ". $add_sql), $nid);
   }
   else {
     $result = db_query(db_rewrite_sql("
