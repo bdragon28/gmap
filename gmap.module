@@ -10,13 +10,6 @@
  * html and javascript code required to insert a google map.
  */
 
-// @@@ Remove these and generalize lines. @@@
-// These are now stored in the map defaults, but not all the code uses it yet.
-define('GMAP_LINECOLOR1', '#00cc00');
-define('GMAP_LINECOLOR2', '#ff0000');
-define('GMAP_LINECOLOR3', '#0000ff');
-// @@@ Remove these and generalize lines. @@@
-
 // Current minimum version: 2.113
 // Minimum version last changed on: June 9 2008
 // Reason: G_SATELLITE_3D_MAP support in gmap_addons. See http://code.google.com/apis/earth/.
@@ -360,18 +353,21 @@ function gmap_parse_macro($instring, $ver = 2) {
   }
   // Fixup legacy lines.
   if ($m['line1']) {
+    $def = gmap_defaults();
     if (!isset($m['line'])) $m['line'] = array();
-    $m['line'][] = GMAP_LINECOLOR1 .':'. $m['line1'];
+    $m['line'][] = $def['line_colors'][0] .':'. $m['line1'];
     unset($m['line1']);
   }
   if ($m['line2']) {
+    $def = gmap_defaults();
     if (!isset($m['line'])) $m['line'] = array();
-    $m['line'][] = GMAP_LINECOLOR2 .':'. $m['line3'];
+    $m['line'][] = $def['line_colors'][1] .':'. $m['line3'];
     unset($m['line2']);
   }
   if ($m['line3']) {
+    $def = gmap_defaults();
     if (!isset($m['line'])) $m['line'] = array();
-    $m['line'][] = GMAP_LINECOLOR3 .':'. $m['line3'];
+    $m['line'][] = $def['line_colors'][2] .':'. $m['line3'];
     unset($m['line3']);
   }
 
