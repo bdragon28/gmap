@@ -226,7 +226,7 @@ function theme_gmap_location_user_page($header, $map, $footer) {
   $output = "<p>$header</p>\n<p>$map</p>\n<p>$footer</p>";
 
   if ($user->uid > 0) {
-    $output .= '<p>'. t('To add/change your location to the user map, <a href="@url">edit your location</a>.', array('@url' => url('user/'. $user->uid .'/edit/gmap_user'))) .'</p>';
+    $output .= '<p>'. t('To add/change your location to the user map, <a href="@url">edit your location</a>.', array('@url' => url('user/'. $user->uid .'/edit'))) .'</p>';
   }
 
   return $output;
