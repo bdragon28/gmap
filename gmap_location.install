@@ -13,6 +13,16 @@ function gmap_location_install() {
   // Gmap no longer provides the location table.
 }
 
+/**
+ * Implementation of hook_uninstall().
+ */
+function gmap_location_uninstall() {
+  variable_del('gmap_user_map');
+  variable_del('gmap_node_map');
+  variable_del('gmap_node_markers');
+  variable_del('gmap_role_markers');
+}
+
 function gmap_location_update_1() {
   drupal_set_message(t('WARNING! Obsolete gmap_location update #@num was triggered! Please verify the schema of your location table manually!', array('@num' => '1')));
 }
@@ -71,11 +81,67 @@ function gmap_location_update_5080() {
 }
 
 /**
- * Implementation of hook_uninstall().
+ * 5.x-1.0 update 1.
  */
-function gmap_location_uninstall() {
-  variable_del('gmap_user_map');
-  variable_del('gmap_node_map');
-  variable_del('gmap_node_markers');
-  variable_del('gmap_role_markers');
+function gmap_location_update_5100() {
+  $ret = array();
+
+  // Convert author block variables into a single variable.
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'gmap_location_author_block_%'");
+  $types = array();
+  $delete = array();
+  while ($row = db_fetch_object($result)) {
+    if ($row->name == 'gmap_location_author_block_macro' || $row->name == 'gmap_location_author_block_types') {
+      continue;
+    }
+    $delete[] = $row->name;
+    if (variable_get($row->name, FALSE)) {
+      $types[] = substr($row->name, 27);
+    }
+  }
+  variable_set('gmap_location_author_block_types', $types);
+  foreach ($delete as $row) {
+    variable_del($row);
+  }
+
+  // Normalize node block macro.
+  $var = variable_get('gmap_location_block_macro', FALSE);
+  if ($var) {
+    $var = trim($var);
+    switch ($var) {
+      // Record of all historical defaults
+      case '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map]':
+      case '[gmap |id=block0|zoom=10 |width=100% |height=200px |control=Small |type=Map]':
+      case '[gmap |zoom=10 |width=100% |height=200px |control=Small |type=Map]':
+      case '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+autozoom,+notype]':
+      case '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+notype]':
+        // Fall back to new default.
+        variable_del('gmap_location_block_macro');
+        break;
+      default:
+        // User has customized macro.
+        drupal_set_message(t('You have customized the !type macro. Be advised that the new default macro is %macro. Please check your macro on the <a href="@url">block configuration page</a>.', array('!type' => t('Location block'), '%macro' => '[gmap |width=100% |height=200px |control=None |behavior=+autozoom +notype]', '@url' => url('admin/build/block/configure/gmap_location/0'))));
+    }
+  }
+
+  // Normalize author block macro.
+  $var = variable_get('gmap_location_author_block_macro', FALSE);
+  if ($var) {
+    $var = trim($var);
+    switch ($var) {
+      // Record of all historical defaults
+      case '[gmap |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+notype]':
+      case '[gmap |id=block0|zoom=10 |width=100% |height=200px |control=Small |type=Map]':
+      case '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map]':
+      case '[gmap |zoom=10 |width=100% |height=200px |control=Small |type=Map]':
+        // Fall back to new default.
+        variable_del('gmap_location_author_block_macro');
+        break;
+      default:
+        // User has customized macro.
+        drupal_set_message(t('You have customized the !type macro. Be advised that the new default macro is %macro. Please check your macro on the <a href="@url">block configuration page</a>.', array('!type' => t('Author block'), '%macro' => '[gmap |width=100% |height=200px |control=None |behavior=+autozoom +notype]', '@url' => url('admin/build/block/configure/gmap_location/1'))));
+    }
+  }
+
+  return $ret;
 }

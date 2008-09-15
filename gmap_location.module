@@ -632,14 +632,14 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
 
     case 'configure':
       $form = array();
-      if ($delta == 0) {
+      if ($delta == 0) { // Location map
         $form['gmap_location_block_macro'] = array(
           '#type' => 'textfield',
           '#title' => t('Map Macro'),
           '#size' => 60,
           '#maxlength' => 500,
           '#description' => t('A macro to be used as a base map for the location block.  This map will be recentered on the location, so the center is not that important. <p>Alternate base map macros can be entered for a specific node type below.'),
-          '#default_value' => variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+notype] '),
+          '#default_value' => variable_get('gmap_location_block_macro', '[gmap |width=100% |height=200px |control=None |behavior=+autozoom +notype]'),
         );
 
         $ntypes = node_get_types();
@@ -655,45 +655,66 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
           }
         }
       }
-      elseif ($delta == 1) {
+      elseif ($delta == 1) { // Author map
         $form['gmap_location_author_block_macro'] = array(
           '#type' => 'textfield',
           '#title' => t('Map Macro'),
           '#size' => 60,
           '#maxlength' => 500,
           '#description' => t('A macro to be used as a base map for the location block author.  This map will be recentered on the location, so the center is not that important.'),
-          '#default_value' => variable_get('gmap_location_author_block_macro', '[gmap |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+notype] '),
+          '#default_value' => variable_get('gmap_location_author_block_macro', '[gmap |width=100% |height=200px |control=None |behavior=+autozoom +notype]'),
         );
 
-        $ntypes = node_get_types();
-        foreach ($ntypes as $key => $type) {
-          $form['gmap_location_author_block_'. $key] = array(
-            '#type' => 'checkbox',
-            '#title' => t('Author block enabled for %type content type', array('%type' => $type->name)),
-            '#default_value' => variable_get('gmap_location_author_block_'. $key, 0),
-          );
-        }
+        $form['gmap_location_author_block_types'] = array(
+          '#type' => 'checkboxes',
+          '#title' => t('Enable author block for the following content types'),
+          '#options' => node_get_types('names'),
+          '#default_value' => variable_get('gmap_location_author_block_types', array()),
+        );
       }
       return $form;
 
     case 'save':
       if ($delta == 0) {
-        // Have Drupal save the string to the database.
-        variable_set('gmap_location_block_macro', $edit['gmap_location_block_macro']);
+        // Save macro, if customized.
+        $macro = trim($edit['gmap_location_block_macro']);
+        if ($macro == '[gmap |width=100% |height=200px |control=None |behavior=+autozoom +notype]' || empty($macro)) {
+          // If the user doesn't customize the variable, don't set it.
+          // This saves a lot of headache in the future.
+          variable_del('gmap_location_block_macro');
+        }
+        else {
+          variable_set('gmap_location_block_macro', $macro);
+        }
+
+        // Save node type specific macros.
         $ntypes = node_get_types();
         foreach ($ntypes as $key => $value) {
           if (variable_get('location_maxnum_'. $key, 0)) {
-            variable_set('gmap_location_block_macro_'. $key, $edit['gmap_location_block_macro_'. $key]);
+            $val = trim($edit["gmap_location_block_macro_$key"]);
+            if (empty($val)) {
+              variable_del("gmap_location_block_macro_$key");
+            }
+            else {
+              variable_set('gmap_location_block_macro_'. $key, $edit['gmap_location_block_macro_'. $key]);
+            }
           }
         }
       }
       elseif ($delta == 1) {
-        // Have Drupal save the string to the database.
-        variable_set('gmap_location_author_block_macro', $edit['gmap_location_author_block_macro']);
-        $ntypes = node_get_types();
-        foreach ($ntypes as $key => $value) {
-          variable_set('gmap_location_author_block_'. $key, $edit['gmap_location_author_block_'. $key]);
+        // Save macro, if customized.
+        $macro = trim($edit['gmap_location_author_block_macro']);
+        if ($macro == '[gmap |width=100% |height=200px |control=None |behavior=+autozoom +notype]' || empty($macro)) {
+          // If the user doesn't customize the variable, don't set it.
+          // This saves a lot of headache in the future.
+          variable_del('gmap_location_author_block_macro');
         }
+        else {
+          variable_set('gmap_location_author_block_macro', $macro);
+        }
+
+        // Save "enabled on" types.
+        variable_set('gmap_location_author_block_types', array_keys(array_filter($edit['gmap_location_author_block_types'])));
       }
       return;
 
@@ -738,20 +759,14 @@ function gmap_location_block_view($nid) {
       }
     }
     if (!empty($markers)) {
-      if (strlen(variable_get('gmap_location_block_macro_'. $node->type, '')) > 0) {
-        $macro = variable_get('gmap_location_block_macro_'. $node->type, '');
-      }
-      else {
-        $macro = variable_get('gmap_location_block_macro', '[gmap |id=block0 |zoom=10 |width=100% |height=200px |control=Small |type=Map |behavior=+autozoom,+notype] ');
+      $macro = variable_get('gmap_location_block_macro_'. $node->type, '');
+      if (empty($macro)) {
+        $macro = variable_get('gmap_location_block_macro', '[gmap |width=100% |height=200px |control=None |behavior=+autozoom +notype]');
       }
       $map = gmap_parse_macro($macro);
       $map['latitude'] = $markers[0]['latitude'];
       $map['longitude'] = $markers[0]['longitude'];
       $map['markers'] = $markers;
-      // @@@
-      $map['behavior']['autozoom'] = TRUE;
-      $map['behavior']['notype'] = TRUE;
-      $map['controltype'] = 'None';
       $block['subject'] = t('Location');
       $block['content'] = theme('gmap', array('#settings' => $map));
     }
@@ -762,7 +777,7 @@ function gmap_location_block_view($nid) {
 function gmap_location_author_block_view($nid) {
   $block = array();
   $node = node_load($nid);
-  if (variable_get('gmap_location_author_block_'. $node->type, FALSE)) {
+  if (in_array($node->type, variable_get('gmap_location_author_block_types', array()))) {
     if (function_exists('location_newapi')) {
       $result = db_fetch_array(db_query("SELECT latitude, longitude FROM {location} l INNER JOIN {location_instance} i ON l.lid = i.lid WHERE i.uid = %d", $node->uid));
     }
@@ -777,15 +792,11 @@ function gmap_location_author_block_view($nid) {
       // Coordinates not set.
       return;
     }
-    $macro = variable_get('gmap_location_block_macro_'. $node->type, FALSE);
-    if (!$macro) {
-      $macro = variable_get('gmap_location_block_macro', '[gmap |zoom=10 |width=100% |height=200px |control=Small |type=Map]');
-    }
+    $macro = variable_get('gmap_location_author_block_macro', '[gmap |width=100% |height=200px |control=None |behavior=+autozoom +notype]');
     $map = array(
       '#map' => 'gmap_location_authorblock',
       '#settings' => gmap_parse_macro($macro),
     );
-    $map['#settings']['behavior']['notype'] = TRUE;
     $map['#settings']['markers'] = array();
     $map['#settings']['markers'][] = array(
       'latitude' => $result['latitude'],
