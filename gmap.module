@@ -298,7 +298,7 @@ function gmap_parse_macro($instring, $ver = 2) {
   }
 
   // Synonyms
-  if ($m['type']) {
+  if (isset($m['type'])) {
     $m['maptype'] = $m['type'];
     unset($m['type']);
   }
@@ -307,7 +307,7 @@ function gmap_parse_macro($instring, $ver = 2) {
     unset($m['control']);
   }
 
-  if (is_array($m['feed'])) {
+  if (isset($m['feed']) && is_array($m['feed'])) {
     foreach ($m['feed'] as $k => $v) {
       $temp = explode('::', $v);
       // Normalize url
@@ -323,14 +323,14 @@ function gmap_parse_macro($instring, $ver = 2) {
   }
 
   // Merge points and markers
-  if (!is_array($m['points'])) $m['points'] = array();
-  if (!is_array($m['markers'])) $m['markers'] = array();
+  if (!isset($m['points']) || !is_array($m['points'])) $m['points'] = array();
+  if (!isset($m['markers']) || !is_array($m['markers'])) $m['markers'] = array();
   $m['markers-temp'] = array_merge($m['points'], $m['markers']);
   unset($m['points']);
   unset($m['markers']);
 
   // all shapes in 1 array
-  if ($m['circle']) {
+  if (isset($m['circle']) && is_array($m['circle'])) {
     foreach ($m['circle'] as $shape) {
       $s = array('type' => 'circle');
       $cp = strpos($shape, ':');
@@ -349,26 +349,26 @@ function gmap_parse_macro($instring, $ver = 2) {
     unset($m['circle']);
   }
   // Fixup legacy lines.
-  if ($m['line1']) {
+  if (isset($m['line1'])) {
     $def = gmap_defaults();
     if (!isset($m['line'])) $m['line'] = array();
     $m['line'][] = $def['line_colors'][0] .':'. $m['line1'];
     unset($m['line1']);
   }
-  if ($m['line2']) {
+  if (isset($m['line2'])) {
     $def = gmap_defaults();
     if (!isset($m['line'])) $m['line'] = array();
     $m['line'][] = $def['line_colors'][1] .':'. $m['line3'];
     unset($m['line2']);
   }
-  if ($m['line3']) {
+  if (isset($m['line3'])) {
     $def = gmap_defaults();
     if (!isset($m['line'])) $m['line'] = array();
     $m['line'][] = $def['line_colors'][2] .':'. $m['line3'];
     unset($m['line3']);
   }
 
-  if ($m['line']) {
+  if (isset($m['line']) && is_array($m['line'])) {
     foreach ($m['line'] as $shape) {
       $s = array('type' => 'line');
       $cp = strpos($shape, ':');
@@ -382,7 +382,7 @@ function gmap_parse_macro($instring, $ver = 2) {
     }
     unset($m['line']);
   }
-  if ($m['rpolygon']) {
+  if (isset($m['rpolygon']) && is_array($m['rpolygon'])) {
     foreach ($m['rpolygon'] as $shape) {
       $s = array('type' => 'rpolygon');
       $cp = strpos($shape, ':');
@@ -404,7 +404,7 @@ function gmap_parse_macro($instring, $ver = 2) {
     }
     unset($m['rpolygon']);
   }
-  if ($m['polygon']) {
+  if (isset($m['polygon']) && is_array($m['polygon'])) {
     foreach ($m['polygon'] as $shape) {
       $s = array('type' => 'polygon');
       $cp = strpos($shape, ':');
@@ -422,7 +422,7 @@ function gmap_parse_macro($instring, $ver = 2) {
   // Version 1 -> 2 conversion
   if ($ver == 1) {
     // Zoom is flipped
-    if ($m['zoom']) {
+    if (isset($m['zoom'])) {
       $m['zoom'] = 18 - $m['zoom'];
       if ($m['zoom'] < 1) {
         $m['zoom'] = 1;
@@ -431,17 +431,17 @@ function gmap_parse_macro($instring, $ver = 2) {
   }
 
   // Center -> latitude and longitude
-  if ($m['center']) {
+  if (isset($m['center']) && is_array($m['center'])) {
     list($m['latitude'], $m['longitude']) = explode(',', $m['center']);
     unset($m['center']);
   }
 
   // Behavior
-  if ($m['behaviour']) {
+  if (isset($m['behaviour'])) {
     $m['behavior'] = $m['behaviour'];
     unset($m['behaviour']);
   }
-  if ($m['behavior']) {
+  if (isset($m['behavior'])) {
     $sep = ' ';
     if (strpos($m['behavior'], ',') !== FALSE) {
       // In some places, commas were used to seperate behaviors.
@@ -457,7 +457,7 @@ function gmap_parse_macro($instring, $ver = 2) {
   }
 
   // tcontrol now is mtc.
-  if ($m['tcontrol']) {
+  if (isset($m['tcontrol'])) {
     if (strtolower(trim($m['tcontrol'])) == 'on') {
       $m['mtc'] = 'standard';
     }
@@ -478,7 +478,7 @@ function gmap_parse_macro($instring, $ver = 2) {
   // Stuff that was converted to behavior flags
 
   // Scale control.
-  if ($m['scontrol']) {
+  if (isset($m['scontrol'])) {
     if (strtolower(trim($m['scontrol'])) == 'on') {
       $m['behavior']['scale'] = TRUE;
     }
@@ -489,7 +489,7 @@ function gmap_parse_macro($instring, $ver = 2) {
   }
 
   // Draggability.
-  if ($m['drag']) {
+  if (isset($m['drag'])) {
     if (strtolower(trim($m['drag'])) == 'yes') {
       $m['behavior']['nodrag'] = FALSE;
     }
@@ -538,7 +538,7 @@ function gmap_parse_macro($instring, $ver = 2) {
   unset($m['markers-temp']);
 
   // Assign an id if one wasn't specified.
-  if (!$m['id']) {
+  if (!isset($m['id'])) {
     $m['id'] = gmap_get_auto_mapid();
   }
 
