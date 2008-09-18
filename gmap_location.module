@@ -397,10 +397,6 @@ function gmap_location_node_page($nid = NULL) {
       }
     }
   }
-  elseif ($count == 0) {
-    // No results
-    return drupal_not_found(); // @@@ This should be an "empty" page instead...
-  }
 
   return theme('gmap_location_node_page',
     $count,
@@ -560,7 +556,7 @@ function gmap_location_admin_settings() {
 
   $form['node']['gmap_node_map'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Node Map (<em>map/nodes</em>)'),
+    '#title' => t('Node Map (<em>map/node</em>)'),
     '#tree' => TRUE,
   );
   $form['node']['gmap_node_map']['macro'] = array(
