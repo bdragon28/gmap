@@ -1,5 +1,0 @@
-; $Id$
-name = GMap Views Integration
-description = Allows the use of GMap in Views.
-package = Location
-dependencies = gmap views location_views
