@@ -811,7 +811,7 @@ function gmap_elements() {
     ),
     'gmap_overlay_edit' => array('#input' => TRUE, '#process' => array('process_gmap_overlay_edit')),
     'gmap_style' => array('#input' => TRUE, '#tree' => TRUE, '#gmap_style_type' => 'poly', '#process' => array('process_gmap_style')),
-    'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address')),
+    'gmap_address' => array('#input' => TRUE, '#process' => array('process_gmap_address')),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align')),
     'gmap_latitude' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_textfield')),
     'gmap_longitude' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_textfield')),
