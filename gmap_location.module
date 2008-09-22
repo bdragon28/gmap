@@ -301,7 +301,7 @@ function gmap_location_node_page($nid = NULL) {
     $newmarker = array();
     if ($mode == 1) {
       // Popup
-      $newmarker['rmt'] = $row->nid;
+      $newmarker['rmt'] = $row->nid .'/0';
     }
     elseif ($mode == 2) {
       // Link
