@@ -58,7 +58,6 @@ function gmap_theme() {
     'gmap_views_marker_label' => array('arguments' => array('element')),
     'gmap_marker_popup' => array('arguments' => array('label')),
     'gmap_overlay_edit' => array('arguments' => array('element')),
-    'gmap_coord' => array('arguments' => array('element')),
     'gmap_macrotext' => array('arguments' => array('element')),
     'gmap_dimension' => array('arguments' =>  array('element')),
     'gmap_address' => array('arguments' => array('element')),
@@ -1070,11 +1069,6 @@ function gmap_map_cleanup(&$map) {
       unset($map['baselayers'][$k]);
     }
   }
-}
-
-function theme_gmap_coord($element) {
-  //drupal_add_js
-  return theme('textfield', $element);
 }
 
 function theme_gmap_macrotext($element) {
