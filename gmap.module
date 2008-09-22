@@ -814,9 +814,9 @@ function gmap_elements() {
     'gmap_style' => array('#input' => TRUE, '#tree' => TRUE, '#gmap_style_type' => 'poly', '#process' => array('process_gmap_style' => array())),
     'gmap_address' => array('#input' => FALSE, '#process' => array('process_gmap_address' => array())),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align' => array())),
-    'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'latitude', 'gmap_coord'))),
-    'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'longitude', 'gmap_coord'))),
-    'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'latlon', 'gmap_coord'))),
+    'gmap_latitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'latitude'))),
+    'gmap_longitude' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'longitude'))),
+    'gmap_latlon' => array('#input' => TRUE, '#process' => array('process_gmap_control' => array('textfield', 'latlon'))),
     'gmap_markerchooser' => array('#input' => TRUE, '#process' => array('process_gmap_markerchooser' => array())),
     'gmap_dimension' => array('#input' => TRUE, '#theme' => 'textfield', '#validate' => array('gmap_dimension_validate' => array())),
   );
@@ -1075,11 +1075,6 @@ function gmap_map_cleanup(&$map) {
       unset($map['baselayers'][$k]);
     }
   }
-}
-
-function theme_gmap_coord($element) {
-  //drupal_add_js
-  return theme('textfield', $element);
 }
 
 function theme_gmap_macrotext($element) {
