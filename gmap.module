@@ -302,7 +302,7 @@ function gmap_parse_macro($instring, $ver = 2) {
     $m['maptype'] = $m['type'];
     unset($m['type']);
   }
-  if ($m['control']) {
+  if (isset($m['control'])) {
     $m['controltype'] = $m['control'];
     unset($m['control']);
   }
@@ -656,9 +656,12 @@ function _gmap_prepare($intext) {
  * Make sure a string is a valid css dimension.
  */
 function gmap_todim($instring) {
-  $s = strtolower($instring);
+  if (!is_string($instring)) {
+    return FALSE;
+  }
+  $s = strtolower(trim($instring));
   $matches = array();
-  if (preg_match('/([\d.]+)\s*(em|ex|px|in|cm|mm|pt|pc|%)/', $s, $matches)) {
+  if (preg_match('/^([\d.]+)\s*(em|ex|px|in|cm|mm|pt|pc|%)$/', $s, $matches)) {
     return $matches[1] . $matches[2];
   }
   else {
@@ -670,7 +673,12 @@ function gmap_todim($instring) {
  * Ensure a textfield is a valid css dimension string.
  */
 function gmap_dimension_validate(&$elem) {
-  if (!gmap_todim($elem['#value'])) {
+  $value = gmap_todim($elem['#value']);
+  if ($value) {
+    // Normalize the css dimension string.
+    form_set_value($elem, $value);
+  }
+  else {
     form_error($elem, t('The specified value is not a valid CSS dimension.'));
   }
 }
@@ -852,12 +860,13 @@ function expand_gmap($element) {
  */
 function process_gmap_control($element, $edit, $fieldtype, $control, $theme='') {
   $element['#type'] = $fieldtype;
+  $element += _element_info($fieldtype);
   gmap_widget_setup($element, $control);
-  if (!empty($theme)) {
+    if (!empty($theme)) {
     $element['#theme'] = $theme;
   }
   else {
-    $element['#theme'] = 'gmap_'. $control;
+//    $element['#theme'] = 'gmap_'. $control;
   }
   return $element;
 }
@@ -906,7 +915,7 @@ function process_gmap_style($element) {
     '#size' => 6,
     '#maxlength' => 6,
     '#field_prefix' => '#',
-    '#value' => $element['#value'][3],
+    '#value' => $isline ? '' : $element['#value'][3],
     '#disabled' => $isline,
     '#attributes' => array('class' => 'gmap_style'),
   );
@@ -917,10 +926,12 @@ function process_gmap_style($element) {
     '#size' => 3,
     '#maxlength' => 3,
     '#field_suffix' => '%',
-    '#value' => $element['#value'][4],
+    '#value' => $isline ? '' : $element['#value'][4],
     '#disabled' => $isline,
     '#attributes' => array('class' => 'gmap_style'),
   );
+  unset($element['#input']);
+  $element += _element_info('fieldset');
   return $element;
 }
 
@@ -940,7 +951,7 @@ function theme_gmap_style($element) {
 function process_gmap_overlay_edit($element) {
   // Conver the root element into a fieldset.
   $element['#type'] = 'fieldset';
-  if (!$element['#title']) {
+  if (!isset($element['#title'])) {
     $element['#title'] = t('Overlay editor');
   }
   $element['#tree'] = TRUE;
@@ -1009,6 +1020,7 @@ function process_gmap_overlay_edit($element) {
   );
   gmap_widget_setup($element['polystyle']['polystyle_apply'], 'overlayedit_polystyle_apply', $element['#map']);
 
+  $element += _element_info('fieldset');
   return $element;
 }
 
@@ -1020,6 +1032,7 @@ function process_gmap_align($element) {
   gmap_widget_setup($element, 'align');
   $element['#options'] = drupal_map_assoc(array('None', 'Right', 'Left', 'Center'));
   $element['#theme'] = 'gmap_align';
+  $element += _element_info('select');
   return $element;
 }
 
@@ -1030,6 +1043,7 @@ function process_gmap_address($element) {
   $element['#type'] = 'textfield';
   gmap_widget_setup($element, 'address');
   $element['#theme'] = 'gmap_address';
+  $element += _element_info('textfield');
   return $element;
 }
 
@@ -1039,6 +1053,7 @@ function process_gmap_address($element) {
 function process_gmap_markerchooser($element) {
   $element['#type'] = 'select';
   $element['#options'] = gmap_get_marker_titles();
+  $element += _element_info('select');
   return $element;
 }
 
@@ -1086,11 +1101,13 @@ function theme_gmap_macrotext($element) {
 
 function theme_gmap_address($element) {
   drupal_add_js(drupal_get_path('module', 'gmap') .'/js/address.js');
+  $element['#autocomplete_path'] = '';
   return theme('textfield', $element);
 }
 
 function theme_gmap_align($element) {
   drupal_add_js(drupal_get_path('module', 'gmap') .'/js/align.js');
+  $element['#multiple'] = FALSE;
   return theme('select', $element);
 }
 
