@@ -80,7 +80,7 @@ function gmap_gmap($op, &$map) {
         drupal_add_js($path .'marker.js');
         drupal_add_js($path . variable_get('gmap_mm_type', 'gmap') .'_marker.js');
       }
-      if ($map['behavior']['locpick']) {
+      if (isset($map['behavior']['locpick']) && $map['behavior']['locpick']) {
         drupal_add_js($path .'locpick.js');
       }
       if (variable_get('gmap_load_zoom_plugin', TRUE) && !$map['behavior']['nomousezoom']) {
@@ -1117,14 +1117,31 @@ function theme_gmap_align($element) {
 function theme_gmap($element) {
   _gmap_doheader();
 
-  // If the theme function is called directly, the map is not properly set up yet.
-  if (!$element['#id']) {
-    gmap_widget_setup($element, 'gmap');
+  $mapid = FALSE;
+  if (isset($element['#map']) && $element['#map']) {
+    // The default mapid is #map.
+    $mapid = $element['#map'];
   }
-  // Possible if this gmap was created manually.
+  if (isset($element['#settings']['id'])) {
+    // Settings overrides it.
+    $mapid = $element['#settings']['id'];
+  }
+  if (!$mapid) {
+    // Hmm, no mapid. Generate one.
+    $mapid = gmap_get_auto_mapid();
+  }
+  // Push the mapid back into #map.
+  $element['#map'] = $mapid;
+
+  gmap_widget_setup($element, 'gmap', $mapid);
+
   if (!$element['#settings']) {
     $element['#settings'] = array();
   }
+
+  // Push the mapid back into #settings.
+  $element['#settings']['id'] = $mapid;
+
   $map = array_merge(gmap_defaults(), $element['#settings']);
   gmap_map_cleanup($map);
 
@@ -1144,7 +1161,7 @@ function theme_gmap($element) {
   $style[] = 'width: '. $map['width'];
   $style[] = 'height: '. $map['height'];
 
-  $element['#attributes']['class'] = trim($element['#attributes']['class'] .'gmap gmap-map gmap-'. $map['id'] .'-gmap');
+  $element['#attributes']['class'] = trim($element['#attributes']['class'] .'gmap gmap-map gmap-'. $mapid .'-gmap');
 
   // Some markup parsers (IE) don't handle empty inners well. Use the space to let users know javascript is required.
   // @@@ Bevan sez: Google static maps could be useful here.
@@ -1189,6 +1206,9 @@ function gmap_widget_setup(&$element, $type, $map=NULL) {
         $map = $element['#settings']['id'];
       }
     }
+  }
+  if (!isset($element['#attributes']['class'])) {
+    $element['#attributes']['class'] = '';
   }
   $element['#attributes']['class'] = trim(implode(' ', array(
     $element['#attributes']['class'],
