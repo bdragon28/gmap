@@ -259,13 +259,13 @@ function _gmap_admin_settings() {
   );
 
   $opts = variable_get('gmap_markermanager', array());
-  if (!is_array($opts['gmap'])) {
+  if (!isset($opts['gmap']) || !is_array($opts['gmap'])) {
     $opts['gmap'] = array();
   }
-  if (!is_array($opts['gmarkermanager'])) {
+  if (!isset($opts['gmarkermanager']) || !is_array($opts['gmarkermanager'])) {
     $opts['gmarkermanager'] = array();
   }
-  if (!is_array($opts['clusterer'])) {
+  if (!isset($opts['clusterer']) || !is_array($opts['clusterer'])) {
     $opts['clusterer'] = array();
   }
 
