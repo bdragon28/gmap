@@ -320,7 +320,7 @@ function gmap_parse_macro($instring, $ver = 2) {
     $m['maptype'] = $m['type'];
     unset($m['type']);
   }
-  if ($m['control']) {
+  if (isset($m['control'])) {
     $m['controltype'] = $m['control'];
     unset($m['control']);
   }
@@ -674,9 +674,12 @@ function _gmap_prepare($intext) {
  * Make sure a string is a valid css dimension.
  */
 function gmap_todim($instring) {
-  $s = strtolower($instring);
+  if (!is_string($instring)) {
+    return FALSE;
+  }
+  $s = strtolower(trim($instring));
   $matches = array();
-  if (preg_match('/([\d.]+)\s*(em|ex|px|in|cm|mm|pt|pc|%)/', $s, $matches)) {
+  if (preg_match('/^([\d.]+)\s*(em|ex|px|in|cm|mm|pt|pc|%)$/', $s, $matches)) {
     return $matches[1] . $matches[2];
   }
   else {
@@ -687,8 +690,13 @@ function gmap_todim($instring) {
 /**
  * Ensure a textfield is a valid css dimension string.
  */
-function gmap_dimension_validate(&$elem) {
-  if (!gmap_todim($elem['#value'])) {
+function gmap_dimension_validate(&$elem, &$form_state) {
+  $value = gmap_todim($elem['#value']);
+  if ($value) {
+    // Normalize the css dimension string.
+    form_set_value($elem, $value, $form_state);
+  }
+  else {
     form_error($elem, t('The specified value is not a valid CSS dimension.'));
   }
 }
@@ -802,57 +810,53 @@ function gmap_elements() {
     ),
     'gmap_macrotext' => array(
       '#input' => TRUE,
-      '#cols' => 60,
-      '#rows' => 5,
       '#gmap_newtype' => 'textarea',
       '#theme' => 'gmap_macrotext',
-      '#process' => array('process_gmap_textfield'),
+      '#process' => array('process_gmap_control'),
     ),
     'gmap_overlay_edit' => array('#input' => TRUE, '#process' => array('process_gmap_overlay_edit')),
     'gmap_style' => array('#input' => TRUE, '#tree' => TRUE, '#gmap_style_type' => 'poly', '#process' => array('process_gmap_style')),
     'gmap_address' => array('#input' => TRUE, '#process' => array('process_gmap_address')),
     'gmap_align' => array('#input' => TRUE, '#process' => array('process_gmap_align')),
-    'gmap_latitude' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_textfield')),
-    'gmap_longitude' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_textfield')),
-    'gmap_latlon' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_textfield')),
+    'gmap_latitude' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_control')),
+    'gmap_longitude' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_control')),
+    'gmap_latlon' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_control')),
     'gmap_markerchooser' => array('#input' => TRUE, '#process' => array('process_gmap_markerchooser')),
-    'gmap_dimension' => array('#input' => TRUE, '#theme' => 'textfield', '#element_validate' => array('gmap_dimension_validate')),
+    'gmap_dimension' => array('#input' => TRUE, '#gmap_newtype' => 'textfield', '#process' => array('process_gmap_control'), '#element_validate' => array('gmap_dimension_validate')),
   );
 }
 
 /**
  * Generic gmap control #process function.
  */
-//function process_gmap_control($element, $edit, $fieldtype, $control, $theme='') {
 function process_gmap_control($element, $edit, &$form_state, $complete_form) {
-//dpm($element);
-  $element['#type'] = $fieldtype;
-  gmap_widget_setup($element, $control);
-/*
-  if (!empty($theme)) {
-    $element['#theme'] = $theme;
-  }
-  else {
-    $element['#theme'] = 'gmap_'. $control;
-  } */
-  return $element;
-}
-
-// @@@ Finish debugging.
-// @@@ Rename this to something more appropriate.
-function process_gmap_textfield($element, $edit, &$form_state, $complete_form) {
   $control = substr($element['#type'], 5);
-//dpm($element);
   $element['#type'] = $element['#gmap_newtype'];
   unset($element['#gmap_newtype']);
   gmap_widget_setup($element, $control);
-  /*if (!empty($theme)) {
-    $element['#theme'] = $theme;
+  // Attempt to run any #process handlers of our transmogrified type.
+  // However, if we aren't the only #process handler, we assume someone else
+  // is taking care of setting up any default handlers.
+  $chain = FALSE;
+  if (count($element['#process']) == 1) {
+    // Unset #process so we can pull in the default.
+    unset($element['#process']);
+    $chain = TRUE;
   }
-  else {
-    $element['#theme'] = 'gmap_'. $control;
-  }*/
-//dpm($element);
+  // Inherit #input from the new type.
+  unset($element['#input']);
+  // Merge in the defaults for the target element type.
+  $element += _element_info($element['#type']);
+  if (isset($element['#input']) && $element['#input']) {
+    if (isset($element['#process']) && $chain) {
+      // Chain process.
+      foreach ($element['#process'] as $process) {
+        if (function_exists($process)) {
+          $form = $process($element, $edit, $form_state, $complete_form);
+        }
+      }
+    }
+  }
   return $element;
 }
 
@@ -900,7 +904,7 @@ function process_gmap_style($element) {
     '#size' => 6,
     '#maxlength' => 6,
     '#field_prefix' => '#',
-    '#value' => $element['#value'][3],
+    '#value' => $isline ? '' : $element['#value'][3],
     '#disabled' => $isline,
     '#attributes' => array('class' => 'gmap_style'),
   );
@@ -911,10 +915,12 @@ function process_gmap_style($element) {
     '#size' => 3,
     '#maxlength' => 3,
     '#field_suffix' => '%',
-    '#value' => $element['#value'][4],
+    '#value' => $isline ? '' : $element['#value'][4],
     '#disabled' => $isline,
     '#attributes' => array('class' => 'gmap_style'),
   );
+  unset($element['#input']);
+  $element += _element_info('fieldset');
   return $element;
 }
 
@@ -934,7 +940,7 @@ function theme_gmap_style($element) {
 function process_gmap_overlay_edit($element) {
   // Conver the root element into a fieldset.
   $element['#type'] = 'fieldset';
-  if (!$element['#title']) {
+  if (!isset($element['#title'])) {
     $element['#title'] = t('Overlay editor');
   }
   $element['#tree'] = TRUE;
@@ -1003,6 +1009,7 @@ function process_gmap_overlay_edit($element) {
   );
   gmap_widget_setup($element['polystyle']['polystyle_apply'], 'overlayedit_polystyle_apply', $element['#map']);
 
+  $element += _element_info('fieldset');
   return $element;
 }
 
@@ -1014,6 +1021,7 @@ function process_gmap_align($element) {
   gmap_widget_setup($element, 'align');
   $element['#options'] = drupal_map_assoc(array('None', 'Right', 'Left', 'Center'));
   $element['#theme'] = 'gmap_align';
+  $element += _element_info('select');
   return $element;
 }
 
@@ -1024,6 +1032,7 @@ function process_gmap_address($element) {
   $element['#type'] = 'textfield';
   gmap_widget_setup($element, 'address');
   $element['#theme'] = 'gmap_address';
+  $element += _element_info('textfield');
   return $element;
 }
 
@@ -1033,6 +1042,7 @@ function process_gmap_address($element) {
 function process_gmap_markerchooser($element) {
   $element['#type'] = 'select';
   $element['#options'] = gmap_get_marker_titles();
+  $element += _element_info('select');
   return $element;
 }
 
@@ -1080,11 +1090,13 @@ function theme_gmap_macrotext($element) {
 
 function theme_gmap_address($element) {
   drupal_add_js(drupal_get_path('module', 'gmap') .'/js/address.js');
+  $element['#autocomplete_path'] = '';
   return theme('textfield', $element);
 }
 
 function theme_gmap_align($element) {
   drupal_add_js(drupal_get_path('module', 'gmap') .'/js/align.js');
+  $element['#multiple'] = FALSE;
   return theme('select', $element);
 }
 
