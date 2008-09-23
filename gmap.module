@@ -808,7 +808,6 @@ function gmap_elements() {
         'pointsOverlays' => array(),
         'lines' => array(),
       )),
-      '#process' => array('expand_gmap' => array()),
     ),
     'gmap_macrotext' => array(
       '#input' => TRUE,
@@ -828,31 +827,6 @@ function gmap_elements() {
     'gmap_markerchooser' => array('#input' => TRUE, '#process' => array('process_gmap_markerchooser' => array())),
     'gmap_dimension' => array('#input' => TRUE, '#theme' => 'textfield', '#validate' => array('gmap_dimension_validate' => array())),
   );
-}
-
-/**
- * Gmap element #process function.
- */
-function expand_gmap($element) {
-  $mapid = 'map';
-  if ($element['#map']) {
-    $mapid = $element['#map'];
-  }
-  else {
-    $element['#map'] = $mapid;
-  }
-  if (!$element['#settings']) {
-    $element['#settings'] = array();
-  }
-  // @@@
-  $element['#settings'] = array_merge(gmap_defaults(), array(
-    'id' => $mapid,
-    'points' => array(),
-    'pointsOverlays' => array(),
-    'lines' => array(),
-  ), $element['#settings']);
-  gmap_widget_setup($element, 'gmap');
-  return $element;
 }
 
 /**
