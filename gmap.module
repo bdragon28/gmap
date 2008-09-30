@@ -83,7 +83,7 @@ function gmap_gmap($op, &$map) {
       if (isset($map['behavior']['locpick']) && $map['behavior']['locpick']) {
         drupal_add_js($path .'locpick.js');
       }
-      if (variable_get('gmap_load_zoom_plugin', TRUE) && !$map['behavior']['nomousezoom']) {
+      if (variable_get('gmap_load_zoom_plugin', FALSE) && !$map['behavior']['nomousezoom']) {
         drupal_add_js(drupal_get_path('module', 'gmap') .'/thirdparty/mousewheel.js');
       }
       if (!empty($map['markers']) || !empty($map['lines'])) {

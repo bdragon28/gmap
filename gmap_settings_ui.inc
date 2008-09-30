@@ -38,7 +38,7 @@ function _gmap_admin_settings() {
   $form['initialization']['gmap_load_zoom_plugin'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable mousewheel zooming'),
-    '#default_value' => variable_get('gmap_load_zoom_plugin', TRUE),
+    '#default_value' => variable_get('gmap_load_zoom_plugin', FALSE),
     '#description' => t('Enables the mousewheel.js jQuery plugin, which adds the ability to use the mouse wheel to zoom the map.'),
   );
   if (!file_exists(drupal_get_path('module', 'gmap') .'/thirdparty/mousewheel.js')) {
