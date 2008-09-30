@@ -431,7 +431,7 @@ function gmap_parse_macro($instring, $ver = 2) {
   }
 
   // Center -> latitude and longitude
-  if (isset($m['center']) && is_array($m['center'])) {
+  if (isset($m['center']) && $m['center']) {
     list($m['latitude'], $m['longitude']) = explode(',', $m['center']);
     unset($m['center']);
   }
