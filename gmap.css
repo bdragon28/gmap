@@ -28,3 +28,8 @@ v\:* {
 .gmap-right {
   float: right;
 }
+
+.gmap-map {
+  /* Don't let long copyright texts stick out the side of the map div. */
+  overflow: hidden;
+}
