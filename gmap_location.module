@@ -606,7 +606,7 @@ function gmap_location_admin_settings() {
   foreach ($ntypes as $key => $value) {
     $form['node']['gmap_node_markers'][$key] = array(
       '#type' => 'gmap_markerchooser',
-      '#title' => t('Marker for '. $value->name),
+      '#title' => t('Marker for %type', array('%type' => $value->name)),
       '#default_value' => isset($defaults[$key]) ? $defaults[$key] : 'drupal',
     );
     if (intval(variable_get('location_maxnum_'. $key, 0)) === 0) {
@@ -643,7 +643,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
           if (variable_get('location_maxnum_'. $key, 0)) {
             $form['gmap_location_block_macro_'. $key] = array(
               '#type' => 'textfield',
-              '#title' => t('Map Macro for '. $value->name),
+              '#title' => t('Map Macro for %type', array('%type' => $value->name)),
               '#size' => 60,
               '#maxlength' => 500,
               '#default_value' => variable_get('gmap_location_block_macro_'. $key, ''),
@@ -664,7 +664,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
         $form['gmap_location_author_block_types'] = array(
           '#type' => 'checkboxes',
           '#title' => t('Enable author block for the following content types'),
-          '#options' => node_get_types('names'),
+          '#options' => array_map('check_plain', node_get_types('names')),
           '#default_value' => variable_get('gmap_location_author_block_types', array()),
         );
       }
