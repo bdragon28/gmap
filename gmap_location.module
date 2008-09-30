@@ -667,6 +667,12 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
           '#options' => array_map('check_plain', node_get_types('names')),
           '#default_value' => variable_get('gmap_location_author_block_types', array()),
         );
+
+        $form['gmap_location_author_block_marker'] = array(
+          '#type' => 'gmap_markerchooser',
+          '#title' => t('Marker to use for author map'),
+          '#default_value' => variable_get('gmap_location_author_block_marker', 'drupal'),
+        );
       }
       return $form;
 
@@ -711,6 +717,8 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
 
         // Save "enabled on" types.
         variable_set('gmap_location_author_block_types', array_keys(array_filter($edit['gmap_location_author_block_types'])));
+        // Save marker.
+        variable_set('gmap_location_author_block_marker', $edit['gmap_location_author_block_marker']);
       }
       return;
 
@@ -797,7 +805,7 @@ function gmap_location_author_block_view($nid) {
     $map['#settings']['markers'][] = array(
       'latitude' => $result['latitude'],
       'longitude' => $result['longitude'],
-      'markername' => variable_get('gmap_user_map_marker', 'drupal'),
+      'markername' => variable_get('gmap_location_author_block_marker', 'drupal'),
       'label' => check_plain($node->name),
     );
     $map['#settings']['latitude'] = $result['latitude'];
