@@ -1118,14 +1118,14 @@ function theme_gmap($element) {
 
   switch (strtolower($map['align'])) {
     case 'left':
-      $element['#attributes']['class'] += ' gmap-left';
+      $element['#attributes']['class'] .= ' gmap-left';
       break;
     case 'right':
-      $element['#attributes']['class'] += ' gmap-right';
+      $element['#attributes']['class'] .= ' gmap-right';
       break;
     case 'center':
     case 'centre':
-      $element['#attributes']['class'] += ' gmap-center';
+      $element['#attributes']['class'] .= ' gmap-center';
   }
 
   $style = array();
