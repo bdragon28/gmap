@@ -452,7 +452,7 @@ function gmap_location_admin_settings() {
     '#type' => 'radios',
     '#title' => t('Enable the Google Map API geocoding'),
     '#default_value' => variable_get('gmap_geocode', 1),
-    '#options' => array(1 => 'Enabled', 0 => 'Disabled'),
+    '#options' => array(1 => t('Enabled'), 0 => t('Disabled')),
   );
 
   // Location 3.x manages user settings by itself.
