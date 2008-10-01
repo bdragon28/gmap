@@ -68,14 +68,19 @@ function gmap_gmap($op, &$map) {
       );
     case 'pre_theme_map':
       $path = drupal_get_path('module', 'gmap') .'/js/';
-      // Activate markers if needed
+      // Activate markers if needed.
       if ((isset($map['behavior']['dynmarkers']) && $map['behavior']['dynmarkers']) || !empty($map['markers'])) {
-        // The marker data is not a real file. Work around this fact.
         static $header_set = FALSE;
         if (!$header_set) {
           $header_set = TRUE;
-          drupal_add_js("/* GMap markers enabled. */</script>\n<script type=". '"text/javascript" src="'. url('map/markerdata.js') .'">', 'inline', 'header', FALSE, TRUE, FALSE);
+          $markerpath = file_create_path('js');
+          if (!$markerpath || !file_exists("$markerpath/gmap_markers.js")) {
+            gmap_regenerate_markers();
+            $markerpath = file_create_path('js');
+          }
+          drupal_add_js("$markerpath/gmap_markers.js", 'module', 'header', FALSE, TRUE, FALSE);
         }
+
         drupal_add_js($path .'icon.js');
         drupal_add_js($path .'marker.js');
         drupal_add_js($path . variable_get('gmap_mm_type', 'gmap') .'_marker.js');
@@ -212,12 +217,6 @@ function _gmap_doheader() {
 drupal_add_js($gmap_path .'/js/poly.js');
   $key = gmap_get_key();
   drupal_set_html_head('<script src="'. check_url('http://maps.google.com/maps?file=api&v='. variable_get('gmap_api_version', GMAP_API_VERSION) .'&key='. $key) .'" type="text/javascript"></script>');
-
-  drupal_add_js(array(
-    'gmap_init' => array(
-      'querypath' => base_path() .'map/query',
-    ),
-  ), 'setting');
 
   $gmap_initialized = TRUE;
 }
@@ -732,12 +731,6 @@ function gmap_filter_tips($delta, $format, $long = FALSE) {
 function gmap_menu($may_cache) {
   if ($may_cache) {
     $items = array();
-/*    $items[] = array(
-      'path' => 'map',
-      'type' => MENU_ITEM_GROUPING,
-      'title' => t('google maps'),
-      'access' => user_access('create macro')||user_access('show user map')||user_access('show node map'),
-    );  */
     $items[] = array(
       'path' => 'admin/settings/gmap',
       'title' => t('GMap'),
@@ -747,45 +740,25 @@ function gmap_menu($may_cache) {
       'access' => user_access('administer site configuration'),
       'type' => MENU_NORMAL_ITEM,
     );
-    $items[] = array(
-      'path' => 'map/query',
-      'type' => MENU_CALLBACK,
-      'access' => user_access('access content'),
-      'callback' => 'gmap_json_query',
-    );
-    $items[] = array(
-      'path' => 'map/markerdata.js',
-      'type' => MENU_CALLBACK,
-      'access' => user_access('access content'),
-      'callback' => 'gmap_markerdata_js',
-    );
     return $items;
   }
 }
 
 /**
- * Generate the markerdata file.
+ * Regenerate the markerdata file.
  */
-function gmap_markerdata_js() {
-  drupal_set_header('Content-Type: text/javascript');
-  echo "// GMap marker image data.\n";
-  echo "Drupal.gmap.iconpath = ". drupal_to_js(base_path() . drupal_get_path('module', 'gmap') .'/markers') .";\n";
-  echo "Drupal.gmap.icondata = ". drupal_to_js(gmap_get_icondata()) .";\n";
-}
+function gmap_regenerate_markers() {
+  $contents = '';
 
+  // Create the js/ within the files folder.
+  $jspath = file_create_path('js');
+  file_check_directory($jspath, FILE_CREATE_DIRECTORY);
 
-/**
- * JSON request interface.
- */
-function gmap_json_query() {
-  if (arg(2)=='markers') {
-    drupal_set_header('Content-Type: text/javascript');
-    echo drupal_to_js(array(
-      'path' => base_path() . drupal_get_path('module', 'gmap') .'/markers',
-      'markers' => gmap_get_icondata(TRUE),
-    ));
-    exit();
-  }
+  $contents .= "// GMap marker image data.\n";
+  $contents .= "Drupal.gmap.iconpath = ". drupal_to_js(base_path() . drupal_get_path('module', 'gmap') .'/markers') .";\n";
+  $contents .= "Drupal.gmap.icondata = ". drupal_to_js(gmap_get_icondata()) .";\n";
+
+  file_save_data($contents, "$jspath/gmap_markers.js", FILE_EXISTS_REPLACE);
 }
 
 /**

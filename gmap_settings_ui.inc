@@ -49,6 +49,17 @@ function _gmap_admin_settings() {
     $form['initialization']['gmap_load_zoom_plugin']['#description'] += '<br />'. t('<em>The mousewheel.js file was not found. Please download and place in the <b>thirdparty/</b> folder.</em>');
   }
 
+  $form['initialization']['rebuild'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Regenerate marker cache'),
+    '#description' => t('If you are having problems with markers, or have modified the .ini files in the markers folder, click here to rebuild the marker cache file.'),
+  );
+
+  $form['initialization']['rebuild']['rebuild_marker_js'] = array(
+    '#type' => 'submit',
+    '#value' => t('Regenerate'),
+  );
+
   $defaults = gmap_defaults();
 
   $form['gmap_default'] = array(
@@ -415,6 +426,11 @@ function _gmap_admin_settings() {
 }
 
 function gmap_admin_settings_validate($form_id, $form_values, $form) {
+  if ($form_values['op'] == t('Regenerate')) {
+    gmap_regenerate_markers();
+    drupal_set_message(t('Marker cache regenerated.'));
+  }
+
   $found = FALSE;
   foreach ($form_values['gmap_default']['baselayers'] as $l) {
     if ($l) {
