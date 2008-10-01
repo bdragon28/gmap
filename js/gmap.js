@@ -19,6 +19,10 @@ Drupal.gmap = new function() {
     return _maps[mapid];
   };
 
+  this.unloadMap = function(mapid) {
+    delete _maps[mapid];
+  };
+
   this.addHandler = function(handler,callback) {
     if (!_handlers[handler]) {
       _handlers[handler] = [];
