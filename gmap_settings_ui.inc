@@ -49,6 +49,18 @@ function gmap_admin_settings(&$form_state) {
     $form['initialization']['gmap_load_zoom_plugin']['#description'] += '<br />'. t('<em>The mousewheel.js file was not found. Please download and place in the <b>thirdparty/</b> folder.</em>');
   }
 
+  $form['initialization']['rebuild'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Regenerate marker cache'),
+    '#description' => t('If you are having problems with markers, or have modified the .ini files in the markers folder, click here to rebuild the marker cache file.'),
+  );
+
+  $form['initialization']['rebuild']['rebuild_marker_js'] = array(
+    '#type' => 'submit',
+    '#value' => t('Regenerate'),
+    '#submit' => array('_gmap_rebuild_marker_js_submit'),
+  );
+
   $defaults = gmap_defaults();
 
   $form['gmap_default'] = array(
@@ -431,4 +443,12 @@ function gmap_admin_settings_validate($form, &$form_state) {
   if (!$form_state['values']['gmap_default']['baselayers'][$form_state['values']['gmap_default']['maptype']]) {
     form_error($form['gmap_default']['baselayers']['maptype'], t('The default map type must be an enabled baselayer!'));
   }
+}
+
+/**
+ * Rebuild marker js.
+ */
+function _gmap_rebuild_marker_js_submit($form, &$form_state) {
+  gmap_regenerate_markers();
+  drupal_set_message(t('Marker cache regenerated.'));
 }
