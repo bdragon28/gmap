@@ -1105,7 +1105,7 @@ function theme_gmap($element) {
   $style[] = 'width: '. $map['width'];
   $style[] = 'height: '. $map['height'];
 
-  $element['#attributes']['class'] = trim($element['#attributes']['class'] .'gmap gmap-map gmap-'. $mapid .'-gmap');
+  $element['#attributes']['class'] = trim($element['#attributes']['class'] .' gmap gmap-map gmap-'. $mapid .'-gmap');
 
   // Some markup parsers (IE) don't handle empty inners well. Use the space to let users know javascript is required.
   // @@@ Bevan sez: Google static maps could be useful here.
