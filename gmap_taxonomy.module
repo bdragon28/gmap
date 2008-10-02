@@ -86,7 +86,7 @@ function gmap_taxonomy_taxonomy($op, $type, $array = NULL) {
 
           // Be a helpful module and make the change retroactive.
           db_query('DELETE FROM {gmap_taxonomy_node} WHERE tid = %d', $array['tid']);
-          db_query('INSERT INTO {gmap_taxonomy_node} (nid, vid, tid, marker) (SELECT n.nid, n.vid, t.tid, g.marker FROM {node_revisions} n INNER JOIN {term_node} t ON n.nid = t.nid INNER JOIN {gmap_taxonomy_term} g ON t.tid = g.tid WHERE t.tid = %d)', $array['tid']);
+          db_query('INSERT INTO {gmap_taxonomy_node} (nid, tid, marker) (SELECT t.nid, t.tid, g.marker FROM {term_node} t INNER JOIN {gmap_taxonomy_term} g ON t.tid = g.tid WHERE t.tid = %d)', $array['tid']);
         }
         break;
       case 'delete':
@@ -102,6 +102,10 @@ function gmap_taxonomy_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'insert':
     case 'update':
+      // Remove the marker association if present. We'll readd it later if it's
+      // still applicable.
+      db_query('DELETE FROM {gmap_taxonomy_node} WHERE nid = %d', $node->nid);
+
       $status = variable_get('gmap_taxonomy_vocabs', array());
       $marker = '';
       if (isset($node->taxonomy) && is_array($node->taxonomy)) {
@@ -121,17 +125,14 @@ function gmap_taxonomy_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
           }
         }
         if (!empty($marker)) {
-          db_query('DELETE FROM {gmap_taxonomy_node} WHERE vid = %d', $node->vid);
-          db_query("INSERT INTO {gmap_taxonomy_node} (nid, vid, tid, marker) VALUES (%d, %d, %d, '%s')", $node->nid, $node->vid, $markertid, $marker);
+          // There's an applicable taxonomy marker. Stash the association in the db.
+          db_query("INSERT INTO {gmap_taxonomy_node} (nid, tid, marker) VALUES (%d, %d, '%s')", $node->nid, $markertid, $marker);
         }
       }
       break;
 
     case 'delete':
       db_query('DELETE FROM {gmap_taxonomy_node} WHERE nid = %d', $node->nid);
-      break;
-    case 'delete revision':
-      db_query('DELETE FROM {gmap_taxonomy_node} WHERE vid = %d', $node->vid);
       break;
   }
 }
@@ -151,12 +152,21 @@ function gmap_taxonomy_views_tables() {
     'join' => array(
       'left' => array(
         'table' => 'node',
-        'field' => 'vid',
+        'field' => 'nid',
       ),
       'right' => array(
-        'field' => 'vid',
+        'field' => 'nid',
       ),
     ),
   );
   return $tables;
+}
+
+/**
+ * In case you were implementing support for gmap_taxonomy in your own modules,
+ * here's a canary function to go with the change so you can continue to support
+ * older snapshots if you wish. (Only applicable to D5, D6 has term_node revisions.)
+ */
+function gmap_taxonomy_vid_is_gone() {
+  return TRUE;
 }
