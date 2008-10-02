@@ -215,8 +215,15 @@ function _gmap_doheader() {
   drupal_add_js(array('gmap_markermanager' => $mms[$mm]), 'setting');
 // @@@
 drupal_add_js($gmap_path .'/js/poly.js');
-  $key = gmap_get_key();
-  drupal_set_html_head('<script src="'. check_url('http://maps.google.com/maps?file=api&v='. variable_get('gmap_api_version', GMAP_API_VERSION) .'&key='. $key) .'" type="text/javascript"></script>');
+
+  global $locale;
+  $query = array(
+    'file' => 'api',
+    'v' => variable_get('gmap_api_version', GMAP_API_VERSION),
+    'key' => gmap_get_key(),
+    'hl' => $locale,
+  );
+  drupal_set_html_head('<script src="'. url('http://maps.google.com/maps', drupal_query_string_encode($query)) .'" type="text/javascript"></script>');
 
   $gmap_initialized = TRUE;
 }
