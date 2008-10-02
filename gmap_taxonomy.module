@@ -100,7 +100,7 @@ function gmap_taxonomy_taxonomy($op, $type, $array = NULL) {
 
           // Be a helpful module and make the change retroactive.
           db_query('DELETE FROM {gmap_taxonomy_node} WHERE tid = %d', $array['tid']);
-          db_query('INSERT INTO {gmap_taxonomy_node} (nid, vid, tid, marker) (SELECT n.nid, n.vid, t.tid, g.marker FROM {node_revisions} n INNER JOIN {term_node} t ON n.nid = t.nid INNER JOIN {gmap_taxonomy_term} g ON t.tid = g.tid WHERE t.tid = %d)', $array['tid']);
+          db_query('INSERT INTO {gmap_taxonomy_node} (nid, vid, tid, marker) (SELECT t.nid, t.vid, t.tid, g.marker FROM {term_node} t INNER JOIN {gmap_taxonomy_term} g ON t.tid = g.tid WHERE t.tid = %d)', $array['tid']);
         }
         break;
       case 'delete':
@@ -116,6 +116,10 @@ function gmap_taxonomy_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'insert':
     case 'update':
+      // Remove the marker association if present. We'll readd it later if it's
+      // still applicable.
+      db_query('DELETE FROM {gmap_taxonomy_node} WHERE vid = %d', $node->vid);
+
       $status = variable_get('gmap_taxonomy_vocabs', array());
       $marker = '';
       if (isset($node->taxonomy) && is_array($node->taxonomy)) {
@@ -135,7 +139,6 @@ function gmap_taxonomy_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
           }
         }
         if (!empty($marker)) {
-          db_query('DELETE FROM {gmap_taxonomy_node} WHERE vid = %d', $node->vid);
           db_query("INSERT INTO {gmap_taxonomy_node} (nid, vid, tid, marker) VALUES (%d, %d, %d, '%s')", $node->nid, $node->vid, $markertid, $marker);
         }
       }

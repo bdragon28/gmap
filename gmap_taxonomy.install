@@ -54,13 +54,39 @@ function gmap_taxonomy_schema() {
  */
 function gmap_taxonomy_update_5001() {
   $ret = array();
-  // Add the new column.
-  // @@@ AFTER vid...
-  db_add_field($ret, 'gmap_taxonomy_node', 'tid', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+  // Removed because we just kill the table and recreate it in update 5002^H^H^H^H6001 anyway.
+  return $ret;
+}
 
+/**
+ * Rebuild {gmap_taxonomy_node}.
+ */
+function gmap_taxonomy_update_6001() {
+  $ret = array();
+
+  // Drop the existing table and rebuild it from scratch.
+  if (db_table_exists('gmap_taxonomy_node')) {
+    db_drop_table($ret, 'gmap_taxonomy_node');
+  }
+
+  $schema['gmap_taxonomy_node'] = array(
+    'fields' => array(
+      'nid'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'tid'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'marker' => array('type' => 'varchar', 'length' => 32),
+    ),
+    'primary key' => array('vid'),
+    'indexes' => array(
+      'nid' => array('nid'),
+    ),
+  );
+
+  db_create_table($ret, 'gmap_taxonomy_node', $schema['gmap_taxonomy_node']);
+
+  // Recreate the data.
   // Useful for repopulating in bulk... Copy to hook_enable()?
-  $ret[] = update_sql('DELETE FROM {gmap_taxonomy_node}');
-  $ret[] = update_sql("INSERT INTO {gmap_taxonomy_node} (nid, vid, tid, marker) (SELECT n.nid, n.vid, t.tid, g.marker FROM {node_revisions} n INNER JOIN {term_node} t ON n.nid = t.nid INNER JOIN {gmap_taxonomy_term} g ON t.tid = g.tid GROUP BY n.vid ORDER BY NULL)");
+  $ret[] = update_sql("INSERT INTO {gmap_taxonomy_node} (nid, vid, tid, marker) (SELECT n.nid, n.vid, t.tid, g.marker FROM {node_revisions} n INNER JOIN {term_node} t ON n.vid = t.vid INNER JOIN {gmap_taxonomy_term} g ON t.tid = g.tid GROUP BY n.vid ORDER BY NULL)");
 
   return $ret;
 }
