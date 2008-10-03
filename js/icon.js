@@ -188,7 +188,9 @@ Drupal.gmap.addHandler('gmap', function(elem) {
 
   obj.bind('ready', function() {
     // Compatibility event.
-    obj.deferChange('iconsready', -1);
+    if (Drupal.gmap.icondata) {
+      obj.deferChange('iconsready', -1);
+    }
   });
 
   if (!obj.vars.behavior.customicons) {
