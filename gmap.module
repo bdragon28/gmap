@@ -73,12 +73,25 @@ function gmap_gmap($op, &$map) {
         static $header_set = FALSE;
         if (!$header_set) {
           $header_set = TRUE;
-          $markerpath = file_create_path('js');
-          if (!$markerpath || !file_exists("$markerpath/gmap_markers.js")) {
-            gmap_regenerate_markers();
-            $markerpath = file_create_path('js');
+          // If the user is using private download method, it's up to them to get the path set up.
+          if (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) != FILE_DOWNLOADS_PUBLIC) {
+            $markerpath = variable_get('gmap_private_markerfile', '');
+            if (empty($markerpath) || !file_exists($markerpath)) {
+              drupal_set_message(t('GMap marker file settings are not configured properly for Private download method, markers will not work!'), 'error');
+            }
+            else {
+              drupal_add_js($markerpath, 'module', 'header', FALSE, TRUE, FALSE);
+            }
           }
-          drupal_add_js("$markerpath/gmap_markers.js", 'module', 'header', FALSE, TRUE, FALSE);
+          // With public method, we can handle all bookkeeping ourselves.
+          else {
+            $markerpath = file_create_path('js');
+            if (!$markerpath || !file_exists("$markerpath/gmap_markers.js")) {
+              gmap_regenerate_markers();
+              $markerpath = file_create_path('js');
+            }
+            drupal_add_js("$markerpath/gmap_markers.js", 'module', 'header', FALSE, TRUE, FALSE);
+          }
         }
 
         drupal_add_js($path .'icon.js');
