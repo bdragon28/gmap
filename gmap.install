@@ -18,6 +18,7 @@ function gmap_uninstall() {
   variable_del('gmap_markermanager');
   variable_del('gmap_markerfiles');
   variable_del('gmap_node_markers');
+  variable_del('gmap_private_markerfile');
 
   variable_del('googlemap_api_key');
 }
