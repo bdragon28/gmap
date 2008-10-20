@@ -49,7 +49,14 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       style = obj.vars.styles['line_default'].slice();
     }
     if (shape.style) {
-      style = shape.style.slice();
+      if (typeof shape.style == 'string') {
+        if (obj.vars.styles[shape.style]) {
+          style = obj.vars.styles[shape.style].slice();
+        }
+      }
+      else {
+        style = shape.style.slice();
+      }
     }
     style[0] = '#' + style[0];
     style[1] = Number(style[1]);
