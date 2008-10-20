@@ -65,6 +65,9 @@ function gmap_gmap($op, &$map) {
         'feed' => array(
           'multiple' => TRUE,
         ),
+        'style' => array(
+          'multiple' => TRUE,
+        ),
       );
     case 'pre_theme_map':
       $path = drupal_get_path('module', 'gmap') .'/js/';
@@ -116,7 +119,7 @@ function gmap_gmap($op, &$map) {
       }
       break;
     case 'macro_multiple':
-      return array('points', 'markers', 'feed', 'circle', 'rpolygon', 'polygon', 'line');
+      return array('points', 'markers', 'feed', 'circle', 'rpolygon', 'polygon', 'line', 'style');
     case 'behaviors':
       return array(
         'locpick' => array(
@@ -246,6 +249,10 @@ drupal_add_js($gmap_path .'/js/poly.js');
  * Example: #111111/1/100/#111111/1
  */
 function _gmap_parse_style($style) {
+  if (strpos($style, '/') === FALSE) {
+    // Style ref.
+    return $style;
+  }
   $styles = explode('/', $style);
 
   // @@@ Todo: Fix up old xmaps stuff. Possibly detect by looking for array length 7?
@@ -339,6 +346,15 @@ function gmap_parse_macro($instring, $ver = 2) {
         'url' => $temp[1],
       );
     }
+  }
+
+  // Add custom styles.
+  if (isset($m['style']) && is_array($m['style'])) {
+    foreach ($m['style'] as $k => $v) {
+      $temp = explode(':', $v);
+      $m['styles'][$temp[0]] = _gmap_parse_style($temp[1]);
+    }
+    unset($m['style']);
   }
 
   // Merge points and markers
@@ -1106,7 +1122,12 @@ function theme_gmap($element) {
   // Push the mapid back into #settings.
   $element['#settings']['id'] = $mapid;
 
-  $map = array_merge(gmap_defaults(), $element['#settings']);
+  $mapdefaults = gmap_defaults();
+  $map = array_merge($mapdefaults, $element['#settings']);
+  // Styles is a subarray.
+  if (isset($element['#settings']['styles'])) {
+    $map['styles'] = array_merge($mapdefaults['styles'], $element['#settings']['styles']);
+  }
   gmap_map_cleanup($map);
 
   switch (strtolower($map['align'])) {
