@@ -35,19 +35,6 @@ function _gmap_admin_settings() {
       '#value' => t("Managed by <a href='@url'>keys api</a>.", array('@url' => url('admin/settings/keys'))),
     );
   }
-  $form['initialization']['gmap_load_zoom_plugin'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Enable mousewheel zooming'),
-    '#default_value' => variable_get('gmap_load_zoom_plugin', FALSE),
-    '#description' => t('Enables the mousewheel.js jQuery plugin, which adds the ability to use the mouse wheel to zoom the map.'),
-  );
-  if (!file_exists(drupal_get_path('module', 'gmap') .'/thirdparty/mousewheel.js')) {
-    variable_set('gmap_load_zoom_plugin', FALSE);
-    $form['initialization']['gmap_load_zoom_plugin']['#default_value'] = FALSE;
-    $form['initialization']['gmap_load_zoom_plugin']['#value'] = FALSE;
-    $form['initialization']['gmap_load_zoom_plugin']['#disabled'] = TRUE;
-    $form['initialization']['gmap_load_zoom_plugin']['#description'] += '<br />'. t('<em>The mousewheel.js file was not found. Please download and place in the <b>thirdparty/</b> folder.</em>');
-  }
 
   if (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) != FILE_DOWNLOADS_PUBLIC) {
     $form['initialization']['gmap_private_markerfile'] = array(

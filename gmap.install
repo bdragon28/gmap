@@ -76,3 +76,12 @@ function gmap_update_5001() {
   menu_rebuild();
   return $ret;
 }
+
+/**
+ * Mini-update -- mousewheel.js no longer needed.
+ */
+function gmap_update_5002() {
+  $ret = array();
+  variable_del('gmap_load_zoom_plugin');
+  return $ret;
+}

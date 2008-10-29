@@ -104,9 +104,6 @@ function gmap_gmap($op, &$map) {
       if (isset($map['behavior']['locpick']) && $map['behavior']['locpick']) {
         drupal_add_js($path .'locpick.js');
       }
-      if (variable_get('gmap_load_zoom_plugin', FALSE) && !$map['behavior']['nomousezoom']) {
-        drupal_add_js(drupal_get_path('module', 'gmap') .'/thirdparty/mousewheel.js');
-      }
       if (!empty($map['markers']) || !empty($map['lines'])) {
         drupal_add_js($path .'markerloader_static.js');
       }
@@ -142,6 +139,11 @@ function gmap_gmap($op, &$map) {
           'title' => t('Disable mousezoom'),
           'default' => FALSE,
           'help' => t('Disable using the scroll wheel to zoom the map.'),
+        ),
+        'nocontzoom' => array(
+          'title' => t('Disable Continuous Zoom'),
+          'default' => FALSE,
+          'help' => t('Disable dynamically resizing images while waiting for tiles to load when zooming.'),
         ),
         'autozoom' => array(
           'title' => t('Use AutoZoom'),
