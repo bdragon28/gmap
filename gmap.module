@@ -241,7 +241,7 @@ drupal_add_js($gmap_path .'/js/poly.js');
     'key' => gmap_get_key(),
     'hl' => $locale,
   );
-  drupal_set_html_head('<script src="'. url('http://maps.google.com/maps', drupal_query_string_encode($query)) .'" type="text/javascript"></script>');
+  drupal_set_html_head('<script src="'. check_url(url('http://maps.google.com/maps', drupal_query_string_encode($query))) .'" type="text/javascript"></script>');
 
   $gmap_initialized = TRUE;
 }
