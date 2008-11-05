@@ -1099,6 +1099,13 @@ function theme_gmap_align($element) {
 function theme_gmap($element) {
   _gmap_doheader();
 
+  // Convert from raw map array if needed.
+  if (!isset($element['#settings'])) {
+    $element = array(
+      '#settings' => $element,
+    );
+  }
+
   $mapid = FALSE;
   if (isset($element['#map']) && $element['#map']) {
     // The default mapid is #map.
