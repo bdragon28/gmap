@@ -34,7 +34,7 @@ Each attribute of a macro is separated by a "|" and uses an "=" to define that a
 
 You can convert a macro into a GMap array with the function gmap_parse_macro(). If you need to parse a macro generated with an old version of GMap where the point format was longitude, latitude, set $version to 1: gmap_parse_macro($my_macro, 1); otherwise, you may omit it.
 
-<?php 
+<?php
 /**
  * function gmap_parse_macro()
  * Convert a macro string into a GMap array.
@@ -76,7 +76,7 @@ Once you build a GMap array, you can render it as a map using a theme function p
     'maptype' => "Map",       // baselayer type
     'controltype' => "Small"  // size of map controls
   );
-  $output1 = theme('gmap', $map_array);
+  $output1 = theme('gmap', array('#settings' => $map_array));
 
   // a more elaborate example
   $map_array2 = array(
@@ -90,7 +90,7 @@ Once you build a GMap array, you can render it as a map using a theme function p
     'align' => 'left',
     'controltype' => 'Small',
     'mtc' => 'standard',
-  
+
     'behavior' => array(
       'locpick' => FALSE,
       'nodrag' => FALSE,
@@ -98,7 +98,7 @@ Once you build a GMap array, you can render it as a map using a theme function p
       'overview' => TRUE,
       'scale' => TRUE,
     ),
-  
+
     'markers' => array(
       array(
         'text' => 'First Marker',
@@ -113,7 +113,7 @@ Once you build a GMap array, you can render it as a map using a theme function p
         'markername' => "Orange",
       ),
     ),
-  
+
     'shapes' => array(
       array(
         'type' => "polygon",
@@ -132,7 +132,7 @@ Once you build a GMap array, you can render it as a map using a theme function p
         'center' => array(39.3739522204, -81.5681648254),
       ),
     ),
-  
+
     'feeds' => array(
       array(
         'url' => 'http://earthquake.usgs.gov/eqcenter/catalogs/eqs7day-M5.xml',
@@ -140,8 +140,8 @@ Once you build a GMap array, you can render it as a map using a theme function p
       ),
     ),
   );
-  
-  $output2 = theme('GMap', $map_array2);
+
+  $output2 = theme('gmap', array('#settings' => $map_array2));
 ?>
 
 
