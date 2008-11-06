@@ -425,6 +425,12 @@ Addon modules can add more types of overlays.
 
 <h3>MARKERS</h3>
 
+<p>Markers are point features on a map. They are placed somewhere on the globe and can
+optionally be programmed to show an information window when clicked.</p>
+
+<p>Any additional keys / values you put in a marker array will be passed to the
+javascript side automatically. This is very useful when writing custom code.</p>
+
 <pre>
   $marker = array(
     '<a href="#ma-lat"    >latitude</a>' => 0.000,            // Marker latitude.
@@ -439,7 +445,6 @@ Addon modules can add more types of overlays.
     '<a href="#ma-options">options</a>' => array(),           // Misc. behavior modifications.
   );
 </pre>
-
 
 <p>Here is a description of the keys of a marker array.</p>
 <ul>
@@ -615,9 +620,32 @@ Addon modules can add more types of overlays.
 </dl>
 </li>
 
-opts
-
-options
+<li><a name="ma-options">options</a>
+<dl>
+<dt>Values:</dt>
+<dd>
+  array('',...)
+</dd>
+<dt>Description:</dt>
+<dd>
+  This is used similar to how <a href="#tl-behavior">behavior</a> works at the map level.
+</dd>
+<dt>Example:</dt>
+<dd>
+<pre>
+  array('autoclick');
+</pre>
+</dd>
+<dt>Notes:</dt>
+<dd>
+  Available options:
+  <dl>
+  <dt>autoclick</dt> <dd>Automatically causes a click event on this marker.
+    Useful when you want to automatically show an info window.</dd>
+  </dl>
+</dd>
+</dl>
+</li>
 
 <!--
 <li><a name="ma-foo">foo</a>
@@ -636,13 +664,9 @@ options
 
 </ul>
 
-
-
-
-
-
-
-
+<hr />
+TODO STUFF BELOW THIS POINT
+<hr />
 
 
 
