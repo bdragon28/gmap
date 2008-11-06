@@ -1,40 +1,34 @@
-$Id$
+<!-- $Id$ -->
+<em>This documentation is still in flux.</em>
 
-API.txt
-GMap API Documentation
+<p>The GMap API is a simple way to create Google Maps from a macro or PHP code. It allows other modules to integrate Google Maps into their Drupal site. Among other things, the GMap API can be used by theme developers to integrate Google maps into portions of their theme, or by developers to insert a map into any block of PHP.</p>
 
-The GMap API is a simple way to create Google Maps from a macro or PHP code. It allows other modules to integrate Google Maps into their Drupal site. Among other things, the GMap API can be used by theme developers to integrate Google maps into portions of their theme, or by developers to insert a map into any block of PHP.
+<h2>CONCEPTS</h2>
 
---------
-CONCEPTS
---------
+<dl>
+<dt>Baselayer</dt>
+<dd>The actual map (Street map, topological map, satellite imagery, etc.) that everything is being displayed upon. This may also be referred to as the "map type".</dd>
 
-Baselayer
-  The actual map (Street map, topological map, satellite imagery, etc.) that everything is being displayed upon. This may also be referred to as the "map type".
+<dt>GMap macro</dt>
+<dd>A GMap-specific text-based representation of a Google Map.</dd>
 
-GMap macro
-  A GMap-specific text-based representation of a Google Map.
+<dt>Overlay</dt>
+<dd>A transparent layer drawn on top of the baselayer.</dd>
+</dl>
 
-Overlay
-  A transparent layer drawn on top of the baselayer.
-
----------------
-PROGRAMMING API
----------------
+<h2>PROGRAMMING API</h2>
 
 There are two methods of inserting a Google Map using the GMap API. You may either describe your map with an associative array, or you may use a GMap macro (introduced in README.txt). GMap macros are appropriate for creating maps via the web interface; GMap arrays are more appropriate if you are writing code to generate a complex map.
 
-------
-Macros
-------
+<h2>Macros</h2>
 
-Each attribute of a macro is separated by a "|" and uses an "=" to define that attribute. Possible attributes are center, width, height, zoom, type, control, align, id, markers, feed, line, circle, polygon, and rpolygon.
+<p>Each attribute of a macro is separated by a "|" and uses an "=" to define that attribute. Possible attributes are center, width, height, zoom, type, control, align, id, markers, feed, line, circle, polygon, and rpolygon.</p>
 
-**See the MACRO-DICTIONARY.txt for an explaination of each of these attributes.
+<p>**See the MACRO-DICTIONARY.txt for an explaination of each of these attributes.</p>
 
-You can convert a macro into a GMap array with the function gmap_parse_macro(). If you need to parse a macro generated with an old version of GMap where the point format was longitude, latitude, set $version to 1: gmap_parse_macro($my_macro, 1); otherwise, you may omit it.
+<p>You can convert a macro into a GMap array with the function gmap_parse_macro(). If you need to parse a macro generated with an old version of GMap where the point format was longitude, latitude, set $version to 1: gmap_parse_macro($my_macro, 1); otherwise, you may omit it.</p>
 
-<?php
+<pre>
 /**
  * function gmap_parse_macro()
  * Convert a macro string into a GMap array.
@@ -51,20 +45,18 @@ You can convert a macro into a GMap array with the function gmap_parse_macro(). 
   // usage
   $macro_text = "[gmap zoom=7 |center=41.9023,-87.5391 |width=600px |height=400px |control=Small |type=Map]";
   $map_array = gmap_parse_macro($macro_text);
-?>
+</pre>
 
-----------
-GMap Array
-----------
+<h2>GMap Array</h2>
 
-The main map array is quite complex. Most of the features have a macro equivilent, but some of the more powerful constructs do not. The map array is processed and converted to a javascript object. Shapes are parsed by gmap_shapes.js and loaded by shapeloader_static.js.
+<p>The main map array is quite complex. Most of the features have a macro equivilent, but some of the more powerful constructs do not. The map array is processed and converted to a javascript object. Shapes are parsed by gmap_shapes.js and loaded by shapeloader_static.js.</p>
 
-Using the GMap Array
-Once you build a GMap array, you can render it as a map using a theme function provided by GMap. Anything left out of your GMap array will be filled in with the default map settings, which can be changed on the GMap settings page at admin/settings/GMap
+<h3>Using the GMap Array</h3>
+<p>Once you build a GMap array, you can render it as a map using a theme function provided by GMap. Anything left out of your GMap array will be filled in with the default map settings, which can be changed on the <a href="base_url:admin/settings/gmap">GMap settings page</a>.</p>
 
-**See GMAP-ARRAY-DICTIONARY.txt for explainations of each of the GMap array options.
+<p>**See GMAP-ARRAY-DICTIONARY.txt for explainations of each of the GMap array options.</p>
 
-<?php
+<pre>
   // a simple GMap array
   $map_array1 = array(
     'id' => "my-map",         // id attribute for the map
@@ -142,15 +134,16 @@ Once you build a GMap array, you can render it as a map using a theme function p
   );
 
   $output2 = theme('gmap', array('#settings' => $map_array2));
-?>
+</pre>
 
 
-------- STUFF ABOVE THIS POINT HAS BEEN REVIEWED AND UPDATED -------
------------------- FOR THE UPCOMING GMAP RELEASE -------------------
---------------------------- JULY 7 2008 ----------------------------
+<!--
 
-GMAP VIEWS API
---------------
+STUFF ABOVE THIS POINT HAS BEEN REVIEWED AND UPDATED
+FOR THE UPCOMING GMAP RELEASE
+JULY 7 2008
+
+<h2>GMAP VIEWS API</h2>
 
 The GMap_views module also provides a small API for providing additional
 overlay data to the produced map. By defining:
@@ -182,12 +175,11 @@ From this data you should return an array with keys "lat" and "lon".
 Gmap_views will use this array to plot the node on the map.
 
 
------------ STUFF AFTER THIS POINT IS MISCELLANEOUS DOCS -----------
---------- PRESUMABLY CREATED FOR THE UPCOMING GMAP RELEASE ---------
------------------------- STILL NEEDS REVIEW ------------------------
+STUFF AFTER THIS POINT IS MISCELLANEOUS DOCS
+PRESUMABLY CREATED FOR THE UPCOMING GMAP RELEASE
+STILL NEEDS REVIEW
 
-HOOK_GMAP
----------
+<h2>HOOK_GMAP</h2>
 
 *hook_GMap()* is a general hook for easily extending GMap.
 
@@ -209,8 +201,7 @@ Test test test
 
 Test test test
 
-GMAP_VIEWS EXTENSIONS
----------------------
+<h2>GMAP_VIEWS EXTENSIONS</h2>
 
 In Views 1.x, you need to use the "argument handling code" box to apply settings to a map view.
 
@@ -305,7 +296,7 @@ Extensions to core map object:
  *
  */
 
-UPDATING OLD MACROS
--------------------
+<h2>UPDATING OLD MACROS</h2>
 
 This section still needs to be written.
+-->
