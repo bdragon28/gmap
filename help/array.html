@@ -276,7 +276,7 @@ The top level of a GMap array will look something like this:
   Currently, 'line_default' and 'poly_default' are predefined, and apply to lines and
   filled polygons that do not have style information assigned.
   You can override these two defaults on the map level if you wish.<br />
-  See "Style definitions" below for more information on styles.
+  See the <a href="#sh-style">shape style</a> definition for more information on styles.
 </dd>
 </dl>
 </li>
@@ -387,15 +387,45 @@ array(
 <dt>Values:</dt>
 <dd>array(array(...), ...)</dd>
 <dt>Description:</dt>
-<dd></dd>
+<dd>
+  <p>An array of shapes to place on the map.</p>
+  <p>The format of the shape arrays depends on the type.</p>
+</dd>
 <dt>Example:</dt>
-<dd></dd>
+<dd>
+<pre>
+  array(
+    array(
+    )
+    array(
+      'type' => 'polygon',
+      'points' => array(
+        array(0.000, 0.000),            // First point.
+        array(0.000, 0.000),            // Second point.
+        array(0.000, 0.000),            // Third point.
+      ),
+      'style' => array("ff0000", 5, 80, "00ff00", 60),
+    ),
+    array(
+      'type' => 'circle',
+      'center' => array(0.000, 0.000),  // Center coordinate of the circle.
+      'radius' => 100,                  // Radius of the circle in kilometers.
+      'style' => array(),               // Style to use.
+    ),
+    array(
+      'type' => 'rpolygon',
+      'center' => array(0.000, 0.000),  // Center coordinate of the regular polygon.
+      'numpoints' => 4,                 // Number of vertices the polygon should have.
+      'point2' => array(0.000, 0.000),  // One of the vertex coordinates.
+      'style' => array(),               // Style to use.
+    ),
+  );
+</pre>
+</dd>
 <dt>Notes:</dt>
 <dd></dd>
 </dl>
 </li>
-
-
 
 <!--
 <li><a name="tl-foo">foo</a>
@@ -664,83 +694,181 @@ javascript side automatically. This is very useful when writing custom code.</p>
 
 </ul>
 
-<hr />
-TODO STUFF BELOW THIS POINT
-<hr />
+<h3>SHAPES</h3>
 
+<p>Shapes are the non point features on the map.</p>
 
-
-
-Attribute:		shapes
-Values:				array()
-Description:	an array of shapes to place on the map
-
-A "line" or "polygon" shape will be described by an array that looks like this:
-<?php
+<pre>
   $shape = array(
-    'type' => "polygon",
-    'points' => array(
-      array(0.000, 0.000),
-      array(0.000, 0.000),
-      array(0.000, 0.000),
-    ),
-    'style' => array("ff0000", 5, 80, "00ff00", 60),
+    '<a href="#sh-type"  >type</a>' => '',
+    '<a href="#sh-points">points</a>' => array(),
+    '<a href="#sh-center">center</a>' => array(0,0),
+    '<a href="#sh-radius">radius</a>' => 0,
+    '<a href="#sh-point2">point2</a>' => array(0,0),
+    '<a href="#sh-numpt" >numpoints</a>' => 10,
+    '<a href="#sh-style" >style</a>' => array(),
   );
-?>
+</pre>
+
+<ul>
+
+<li><a name="sh-type">type</a>
+<dl>
+<dt>Values:</dt>
+<dd>"circle", "polygon", "rpolygon", "line" (String)</dd>
+<dt>Description:</dt>
+<dd>
+  Determines how the shape is processed. Circles and rpolygons are converted into
+  lines with javascript math.
+</dd>
+<dt>Example:</dt>
+<dd>"circle"</dd>
+<dt>Notes:</dt>
+<dd>
+  "line" is drawn as a GPolyline.<br />
+  "polygon" is drawn as a GPolygon.<br />
+  "circle" and "rpolygon" (regular polygon) are special cases of "polygon".
+</dd>
+</dl>
+</li>
+
+<li><a name="sh-points">points</a>
+<dl>
+<dt>Values:</dt>
+<dd>array(array(lat1, lon1), array(lat2, lon2), ... , array(latN, lonN))</dd>
+<dt>Description:</dt>
+<dd>
+  <p>An array of points defining the shape.</p>
+  <p>Used by the <em>line</em> and <em>polygon</em> types.</p>
+</dd>
+<dt>Example:</dt>
+<dd>
+<pre>
+  array(
+    array(44.205835001, -70.3674316406),
+    array(44.3159879052, -68.6096191406),
+  ),
+</pre>
+</dd>
+<dt>Notes:</dt>
+<dd>
+  <p>Each point itself is an array with two elements (latitude, longitude). The different shapes have different requirements with respect to points.</p>
+  <p>"line" must have at least two points. It is best to break up long lines into shorter segments, because long lines can be buggy--sometimes beginning and ending points are switched.</p>
+  <p>"polygon" should have at least three points; the first and last points should have the same coordinates.</p>
+</dd>
+</dl>
+</li>
+
+<li><a name="sh-center">center</a>
+<dl>
+<dt>Values:</dt>
+<dd>array(lat, lon)</dd>
+<dt>Description:</dt>
+<dd>Center point of <em>circle</em> or <em>rpolygon</em>.</dd>
+<dt>Example:</dt>
+<dd>array(44.213, -96.411)</dd>
+<dt>Notes:</dt>
+<dd></dd>
+</dl>
+</li>
+
+<li><a name="sh-radius">radius</a>
+<dl>
+<dt>Values:</dt>
+<dd>Float</dd>
+<dt>Description:</dt>
+<dd>
+  <p>The radius of the circle, in km.</p>
+  <p>Only used for the <em>circle</em> type.</p>
+</dd>
+<dt>Example:</dt>
+<dd>100</dd>
+<dt>Notes:</dt>
+<dd>
+  Big circles look more like ovals. This is due to the mercator projection
+  used by Google Maps.
+</dd>
+</dl>
+</li>
+
+<li><a name="sh-point2">point2</a>
+<dl>
+<dt>Values:</dt>
+<dd>array(lat, lon)</dd>
+<dt>Description:</dt>
+<dd>
+  <p>The coordinate of a vertex on the rim of the <em>rpolygon</em>.</p>
+  <p>Only used for the <em>rpolygon</em> type.</p>
+</dd>
+<dt>Example:</dt>
+<dd>array(12.66, -55.23)</dd>
+<dt>Notes:</dt>
+<dd>
+  Changing both the latitude and longitude in respect to the center point will make the
+  polygon "rotate."
+</dd>
+</dl>
+</li>
+
+<li><a name="sh-numpt">numpoints</a>
+<dl>
+<dt>Values:</dt>
+<dd>Integer</dd>
+<dt>Description:</dt>
+<dd>
+  <p>Sets the number of points used to draw the <em>circle</em> or <em>rpolygon</em>.</p>
+  <p>Only used for the <em>circle</em> and <em>rpolygon</em> types.</p>
+</dd>
+<dt>Example:</dt>
+<dd>20</dd>
+<dt>Notes:</dt>
+<dd>
+  Don't use a very large number, it will slow down the map drawing.
+</dd>
+</dl>
+</li>
 
 
-  Attribute:		type
-  Values:				"line", "polygon", "circle", "rpolygon"
-  Description:	the type of shape to draw
-  Example:			"line"
-  Notes:        "line" is drawn as a GPolyline.
-                "polygon" is drawn as a GPolygon.
-                "circle" and "rpolygon" (regular polygon) are special cases of "polygon"; points are calculated on the fly. The array defining circles and regular polygons looks different from the arrays defining lines and polygons; see below.
+<li><a name="sh-style">style</a>
+<dl>
+<dt>Values:</dt>
+<dd>array(stroke color, stroke weight, stroke opacity, fill color, fill opacity) OR String</dd>
+<dt>Description:</dt>
+<dd>
+  <p>A <em>style array</em>, or a key to the <a href="#tl-styles">styles array on the map</a>.</p>
+  <p>This is the same format used for the map level styles array.</p>
+</dd>
+<dt>Example:</dt>
+<dd>array("ff0000", 5, 80, "00ff00", 60)</dd>
+<dt>Notes:</dt>
+<dd>
+  <p>The elements of this array MUST be in the specified order.</p>
+  <p>Stroke and fill colors should be hex color codes (without the leading "#"); Google Maps does not accept named colors.</p>
+  <p>The stroke weight is the width of the line or polygon border in pixels.</p>
+  <p>Stroke and fill opacities should be a percentage between 0 and 100.</p>
+  <p>Fill color and fill opacity are not used for type "line".</p>
+  <p>If shapes of type "line" don't have styles defined, the 'line_default' style will be used; shapes of type "polygon", "circle", and "rpolygon" will use 'poly_defalt'.</p>
+  <p>In previous versions of GMap (Specifically, all Drupal 4.6 and 4.7 versions), opacity was specified as a number between 0 and 1. It is now a number between 0 and 100.</p>
+  <p>On backwards compatibility: there were originally more style options, but they were dependant on xmaps; xmaps is no longer compatible with Google Maps, so these options are now ignored. They are: 'pattern', 'text', 'fillcolor', 'fillopacity'; all except for 'pattern' are now available with different syntax.</p>
+</dd>
+</dl>
+</li>
 
-  Attribute:		points
-  Values:				array(array(lat1, lon1), array(lat2, lon2), ... , array(latN, lonN))
-  Description:	an array of points defining the shape
-  Example:			array(array(44.205835001, -70.3674316406), array(44.3159879052, -68.6096191406))
-  Notes:        Each point itself is an array with two elements (latitude, longitude). The different shapes have different requirements with respect to points.
 
-                "line" must have at least two points. It is best to break up long lines into shorter segments, because long lines can be buggy--sometimes beginning and ending points are switched.
 
-                "polygon" should have at least three points; the first and last points should have the same coordinates.
+<!--
+<li><a name="sh-foo">foo</a>
+<dl>
+<dt>Values:</dt>
+<dd></dd>
+<dt>Description:</dt>
+<dd></dd>
+<dt>Example:</dt>
+<dd></dd>
+<dt>Notes:</dt>
+<dd></dd>
+</dl>
+</li>
+-->
 
-  Attribute:		style
-  Values:				array(stroke color, stroke weight, stroke opacity, fill color, fill opacity)
-  Description:	a "style array"
-  Example:			array("ff0000", 5, 80, "00ff00", 60)
-  Notes:        The elements of this array MUST be in the specified order.
-
-                Stroke and fill colors should be hex color codes (without the leading "#"); Google Maps does not accept named colors.
-
-                The stroke weight is the width of the line or polygon border in pixels.
-
-                Stroke and fill opacities should be a percentage between 0 and 100.
-
-                Fill color and fill opacity are not used for type "line".
-
-                If shapes of type "line" don't have styles defined, the 'line_default' style will be used; shapes of type "polygon", "circle", and "rpolygon" will use 'poly_defalt'.
-
-                In previous versions of GMap, opacity was specified as a number between 0 and 1; it is now a number between 0 and 100.
-
-                On backwards compatibility: there were originally more style options, but they were dependant on xmaps; xmaps is no longer compatible with Google Maps, so these options are now ignored. They are: 'pattern', 'text', 'fillcolor', 'fillopacity'; all except for 'pattern' are now available with different syntax.
-
-  Circles and regular polygons are special cases of "polygon" and have significantly different shape arrays:
-  <?php
-    $shape1 = array(
-      'type' => 'circle',
-      'center' => array(0.000, 0.000),  // center coordinate of the circle
-      'radius' => 100,                  // radius of the circle in kilmeters
-      'style' => array(),               // uses 'poly_default' if not defined
-    );
-
-    $shape2 = array(
-      'type' => 'rpolygon',
-      'center' => array(0.000, 0.000),  // center coordinate of the circle
-      'numpoints' => 4,                 // number of vertices the polygon should have
-      'point2' => array(0.000, 0.000),  // one vertice of the polygon
-      'style' => array(),               // uses 'poly_default' if not defined
-    );
-  ?>
+</ul>
