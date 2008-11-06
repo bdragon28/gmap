@@ -1,0 +1,577 @@
+<!-- $Id$ -->
+
+<em>This is a port of GMAP-ARRAY-DICTIONARY.txt to advanced_help. It's a work in progress.</em>
+
+<p>This file defines the attributes available in GMap arrays. This is fairly similar to the GMAP-MACRO-DICTIONARY.txt, but distinct in that it addresses array keys and syntax specific to GMap arrays.</p>
+
+<p>Defaults for map attributes can be set on the <a href="base_url:admin/settings/gmap">GMap settings page</a>.</p>
+
+<h2>TOP LEVEL ATTRIBUTES</h2>
+
+The top level of a GMap array will look something like this:
+<pre>
+  $map = array(
+    '<a href="#tl-id"      >id</a>' =>                  // id attribute for the map
+    '<a href="#tl-width"   >width</a>' =>               // map width in pixels or %
+    '<a href="#tl-height"  >height</a>' =>              // map height in pixels
+    '<a href="#tl-lat"     >latitude</a>' =>            // map center latitude
+    '<a href="#tl-lon"     >longitude</a>' =>           // map center longitude
+    '<a href="#tl-zoom"    >zoom</a>' =>                // zoom level
+    '<a href="#tl-mz"      >maxzoom</a>' =>             // Maximum zoom level for autozoom.
+    '<a href="#tl-extent"  >extent</a> =>               // map bounds
+    '<a href="#tl-mt"      >maptype</a>' =>             // baselayer type
+    '<a href="#tl-ct"      >controltype</a>' =>         // size of map controls
+    '<a href="#tl-align"   >align</a>' =>               // CSS alignment for map div.
+    '<a href="#tl-mtc"     >mtc</a>' =>                 // Map type control.
+    '<a href="#tl-bl"      >baselayers</a>' => array(), // Enabled map baselayers.
+    '<a href="#tl-styles"  >styles</a>' => array(),     // Shape style definitions.
+    '<a href="#tl-behavior">behavior</a>' => array(),   // various map behavior flags
+    '<a href="#tl-markers" >markers</a>' => array(),    // array of points on the map
+    '<a href="#tl-shapes"  >shapes</a>' => array(),     // array of shapes to overlay on the map
+  );
+</pre>
+
+<p>Here is a description of the top level keys of the map array.</p>
+<ul>
+
+<li><a name="tl-id">id</a>
+<dl>
+<dt>Values:</dt>
+<dd>Identifier (String)</dd>
+<dt>Description:</dt>
+<dd>A unique identifier, used to distinguish a map from other maps on the page, and as a key to tie controls to a map.</dd>
+<dt>Example:</dt>
+<dd>
+  "mymap"
+</dd>
+<dt>Notes:</dt>
+<dd>
+  Assign this if you are planning on using external controls with a map.
+  One will be automatically assigned if you don't specify an id.
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-width">width</a>
+<dl>
+<dt>Values:</dt>
+<dd>CSS Dimension (String)</dd>
+<dt>Description:</dt>
+<dd>Width of map div, in valid css dimensions (generally pixels or percent).</dd>
+<dt>Example:</dt>
+<dd>"100%"</dd>
+</dl>
+</li>
+
+<li><a name="tl-height">height</a>
+<dl>
+<dt>Values:</dt>
+<dd>CSS Dimension (String)</dd>
+<dt>Description:</dt>
+<dd>Height of map div, in valid css dimensions (generally pixels).</dd>
+<dt>Example:</dt>
+<dd>"400px"</dd>
+<dt>Notes:</dt>
+<dd>
+  Using a percentage for height will most likely lead to a buggy map. Google's javascript
+  must be able to determine the actual height of the map div for proper operation.
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-lat">latitude</a>
+<dl>
+<dt>Values:</dt>
+<dd>Latitude of map center in degrees decimal format. (Float)</dd>
+<dt>Description:</dt>
+<dd>Map center point latitude, as a signed float.</dd>
+<dt>Example:</dt>
+<dd>39.36827914916013</dd>
+<dt>Notes:</dt>
+<dd>
+  Cast to float if you are unsure what type your latitude variable is; some parts of
+  Google Maps do not operate correctly if latitude is passed as a string.
+  See "extent" if you wish to provide a bounding rectangle instead.
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-lon">longitude</a>
+<dl>
+<dt>Values:</dt>
+<dd>Longitude of map center in degrees decimal format. (Float)</dd>
+<dt>Description:</dt>
+<dd>Map center point longitude, as a signed float.</dd>
+<dt>Example:</dt>
+<dd>-81.5625</dd>
+<dt>Notes:</dt>
+<dd>
+  Cast to float if you are unsure what type your latitude variable is; some parts of
+  Google Maps do not operate correctly if latitude is passed as a string.
+  See "extent" if you wish to provide a bounding rectangle instead.
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-zoom">zoom</a>
+<dl>
+<dt>Values:</dt>
+<dd>0-17 (Integer)</dd>
+<dt>Description:</dt>
+<dd>Initial map zoom level. (This may be modified after map load by the user / autozoom / etc.)</dd>
+<dt>Example:</dt>
+<dd>7</dd>
+<dt>Notes:</dt>
+<dd>
+  0 is the furthest out zoom level, 17 is the closest up zoom level (but is subject to change.)
+  Some areas do not have satellite data all the way to 17, you may want to stay zoomed out a few clicks.
+  See "extent" if you wish to provide a bounding rectangle instead.
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-mz">maxzoom</a>
+<dl>
+<dt>Values:</dt>
+<dd>0-17 (Integer)</dd>
+<dt>Description:</dt>
+<dd>
+  Sets the maximum level of zoom the 'autozoom' behavior flag will zoom to.
+  Useful to prevent single-marker maps from zooming in too far.
+</dd>
+<dt>Example:</dt>
+<dd>7</dd>
+<dt>Notes:</dt>
+<dd></dd>
+</dl>
+</li>
+
+<li><a name="tl-extent">extent</a>
+<dl>
+<dt>Values:</dt>
+<dd>array(array(float, float), array(float, float))</dd>
+<dt>Description:</dt>
+<dd>
+  Initial bounding box for map. The first inner array is the southwest corner,
+  the second inner array is the northeast corner.
+  All units are degrees decimal.
+  Make sure to cast coordinate components to float as needed.
+</dd>
+<dt>Example:</dt>
+<dd>array(array(43.19, -104.06), array(46.01, -96.76))</dd>
+<dt>Notes:</dt>
+<dd>
+  Setting extent will cause the map to disregard latitude, longitude, and zoom.
+  The actual map extent may vary slightly from the requested extent due to the
+  tiled zoom level based nature of Google Maps.
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-mt">maptype</a>
+<dl>
+<dt>Values:</dt>
+<dd>"Map", "Satellite", "Hybrid", "Terrain", ... (String)</dd>
+<dt>Description:</dt>
+<dd>
+  Initial baselayer of map. The set of allowable baselayers can be extended,
+  see the gmap_extrabaselayers in the gmap_addons project for examples of how to
+  add additional baselayers.
+</dd>
+<dt>Example:</dt>
+<dd>"Map"</dd>
+<dt>Notes:</dt>
+<dd>
+  The most common values are "Map" and "Hybrid". Addon modules that add additional
+  baselayers must use identfiers that won't conflict with other modules. (The
+  four "core" maptypes are poorly named due to legacy macros.)
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-ct">controltype</a>
+<dl>
+<dt>Values:</dt>
+<dd>"None", "Micro", "Small", "Large" (String)</dd>
+<dt>Description:</dt>
+<dd>Set the pan/zoom control type.</dd>
+<dt>Example:</dt>
+<dd>"Small"</dd>
+<dt>Notes:</dt>
+<dd>"Micro" corresponds to GSmallZoomControl, which only provides zoom control.</dd>
+</dl>
+</li>
+
+<li><a name="tl-align">align</a>
+<dl>
+<dt>Values:</dt>
+<dd>"Right", "Left", "Center" (String)</dd>
+<dt>Description:</dt>
+<dd>Sets the css alignment of the map div, using classes provided by gmap.css.</dd>
+<dt>Example:</dt>
+<dd>"Center"</dd>
+<dt>Notes:</dt>
+<dd>
+  The limited flexibility of align is a holdover from the early days. If you
+  need to position a map div more accurately, consider using a mapid and targeting
+  the div yourself with css.
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-mtc">mtc</a>
+<dl>
+<dt>Values:</dt>
+<dd>"none", "standard", "hier", "menu" (String)</dd>
+<dt>Description:</dt>
+<dd>The "map type control" widget used to select different baselayers.</dd>
+<dt>Example:</dt>
+<dd>"standard"</dd>
+<dt>Notes:</dt>
+<dd>
+  "standard" -- buttons ('GMapTypeControl' widget)<br />
+  "hier"     -- buttons + dropdown menu ('GHierarchicalMapTypeControl' widget)<br />
+  "menu"     -- dropdown menu ('GMenuMapTypeControl' widget)<br />
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-bl">baselayers</a>
+<dl>
+<dt>Values:</dt>
+<dd>array(string, ...)</dd>
+<dt>Description:</dt>
+<dd>Enabled baselayers.</dd>
+<dt>Example:</dt>
+<dd>array("Map", "Satellite", "Hybrid", "Terrain")</dd>
+<dt>Notes:</dt>
+<dd>
+  The "traditional" set of baselayers is [Map, Satellite, Hybrid].
+  Other modules, such as gmap_extrabaselayers (from gmap_addons) may provide
+  additional possibilities.<br />
+  The example shows the four "core" baselayers.
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-styles">styles</a>
+<dl>
+<dt>Values:</dt>
+<dd>array(string => array(...), ...)</dd>
+<dt>Description:</dt>
+<dd>An array of style names and definitions.</dd>
+<dt>Example:</dt>
+<dd>
+<pre>
+  array(
+    'line_default' => array('0000ff',5,45,'',0,0),
+    'poly_default' => array('000000',3,25,'ff0000',45),
+    'green' => array('00ff00', 5, 100)
+  );
+</pre>
+</dd>
+<dt>Notes:</dt>
+<dd>
+  Currently, 'line_default' and 'poly_default' are predefined, and apply to lines and
+  filled polygons that do not have style information assigned.
+  You can override these two defaults on the map level if you wish.<br />
+  See "Style definitions" below for more information on styles.
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-behavior">behavior</a>
+<dl>
+<dt>Values:</dt>
+<dd>array(string, ...)</dd>
+<dt>Description:</dt>
+<dd>
+  Map behavior flags.<br />
+  Any that aren't set on the map level will be inherited from the defaults.
+</dd>
+<dt>Example:</dt>
+<dd>array('autozoom', 'overview')</dd>
+<dt>Notes:</dt>
+<dd>
+  <p>There are several behavior flags recognized by gmap.module, and other modules
+  may choose to add their own behavior flags as well.</p>
+  <p>All behavior flags recognized are documented on the <a href="base_url:admin/settings/gmap">GMap settings page</a>.</p>
+  <em>Core behavior flags:</em>
+    <dl>
+    <dt>locpick</dt>      <dd>Puts the map into "locpick" mode, which is used to choose a coordinate using the map.</dd>
+    <dt>nodrag</dt>       <dd>Disables map dragging. Also disables keyboard shortcuts.</dd>
+    <dt>nokeyboard</dt>   <dd>Disables the keyboard handler (arrow keys, etc.)</dd>
+    <dt>nomousezoom</dt>  <dd>Disables the ability to zoom with the mouse wheel.</dt>
+    <dt>autozoom</dt>     <dd>Enables automatic map bounds calculation, based on the markers added to the map.</dd>
+    <dt>dynmarkers</dt>   <dd>Ensures the marker system is loaded. Use this if you will be dynamically adding markers
+      to an empty map.</dd>
+    <dt>overview</dt>     <dd>Enables the miniature overview map in the bottom right corner.</dd>
+    <dt>collapsehack</dt> <dd>Attempts to work around a resize bug when placing maps inside collapsible fieldsets.<br />
+      This does not work in all themes.</dd>
+    <dt>scale</dt>        <dd>Adds a map scale legend to the map.</dd>
+    <dt>fatmarkers</dt>   <dd>If enabled on a View, this will cause the gmap_views code to
+      serialize the views fields and pass it through the map object. This is useful
+      if you wish to use custom marker handling code.  Since you can't currently
+      use map arrays with GMap Views (only macros), there's usually no point in setting it.</dd>
+    </dl>
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-markers">markers</a>
+<dl>
+<dt>Values:</dt>
+<dd>array(array(...), ...)</dd>
+<dt>Description:</dt>
+<dd>An array of marker arrays to place on the map.</dd>
+<dt>Example:</dt>
+<dd>
+<pre>
+array(
+  array(
+    'options' => array(),
+    'text' => 'start',
+    'longitude' => 12.196,
+    'latitude' => -58.13,
+    'markername' => 'route',
+    'offset' => 0,
+  ),
+  array(
+    'options' => array(),
+    'text' => 'finish',
+    'longitude' => 12.196,
+    'latitude' => -58.523,
+    'markername' => 'route',
+    'offset' => 1,
+  ),
+);
+</pre>
+</dd>
+<dt>Notes:</dt>
+<dd>
+  <p>There are three types of overlays you can place on a map: markers, shapes, and feeds.
+  Each of these classes is represented by a sub-array in the GMap array.</p>
+
+  <p>This is not the only way to put markers on the map. It is, however, the easiest
+  way. The markers specified here are loaded through the "static marker loader."</p>
+
+  <p>You can also set arbitrary keys in the array. They will be passed to the javascript
+  side automatically.</p>
+</dd>
+</dl>
+</li>
+
+<li><a name="tl-shapes">shapes</a>
+<dl>
+<dt>Values:</dt>
+<dd>array(array(...), ...)</dd>
+<dt>Description:</dt>
+<dd></dd>
+<dt>Example:</dt>
+<dd></dd>
+<dt>Notes:</dt>
+<dd></dd>
+</dl>
+</li>
+
+
+
+<!--
+<li><a name="tl-foo">foo</a>
+<dl>
+<dt>Values:</dt>
+<dd></dd>
+<dt>Description:</dt>
+<dd></dd>
+<dt>Example:</dt>
+<dd></dd>
+<dt>Notes:</dt>
+<dd></dd>
+</dl>
+</li>
+-->
+
+</ul>
+
+
+<h2>OVERLAYS</h2>
+
+<p>There are three types of overlays you can place on a map by default: markers, shapes, and feeds.
+Each of these classes is represented by a sub-array in the GMap array.
+Addon modules can add more types of overlays.
+</p>
+
+
+<h3>MARKERS</h3>
+
+<pre>
+  $marker = array(
+    '<a href="ma-lat"    >latitude</a>' => 0.000,
+    '<a href="ma-lon"    >longitude</a>' => 0.000,
+    '<a href="ma-options">options</a>' => array(),
+    '<a href="ma-text"   >text</a>' => 'popup text',
+    '<a href="ma-mn"     >markername</a>' =>
+    '<a href="ma-offset" >offset</a>' => 0,
+  );
+</pre>
+
+
+<p>Here is a description of the keys of a marker array.</p>
+<ul>
+
+<li><a name="ma-lat">latitude</a>
+<dl>
+<dt>Values:</dt>
+<dd>Latitude of point in degrees decimal format. (Float)</dd>
+<dt>Description:</dt>
+<dd>Marker latitude, as a signed float</dd>
+<dt>Example:</dt>
+<dd>39.36827914916013</dd>
+<dt>Notes:</dt>
+<dd>
+    Cast to float if you are unsure what type your latitude variable is; some parts of
+    Google Maps do not operate correctly if latitude is passed as a string.
+</dd>
+</dl>
+</li>
+
+<li><a name="ma-lon">longitude</a>
+<dl>
+<dt>Values:</dt>
+<dd>Longitude of point in degrees decimal format. (Float)</dd>
+<dt>Description:</dt>
+<dd>Marker longitude, as a signed float.</dd>
+<dt>Example:</dt>
+<dd>-81.5625</dd>
+<dt>Notes:</dt>
+<dd>
+    Cast to float if you are unsure what type your latitude variable is; some parts of
+    Google Maps do not operate correctly if latitude is passed as a string.
+</dd>
+</dl>
+</li>
+
+
+
+  Attribute:
+    markername
+  Values:
+    The name of the icon set to use (String)
+  Description:
+    Marker icons are located in the GMap module's 'markers' directory.
+    GMap reads the .ini files to find available markers.
+  Example:
+    "Light Blue"
+  Notes:
+    Some marker sets
+  sequential markers are available; for example, if the markername is set to "number", then the icons in the marker directory named 'number1.png', 'number2.png' etc.  will be used. If these don't exist 'number.png' would be used.  If that doesn't exist then the default marker will be used.
+
+  Attribute:		text
+  Values:				"map bubble text"
+  Description:	text and/or HTML to be displayed in the map bubble when the marker is clicked
+  Example:			"Point A"
+  Notes:        @@@ Bdragon mentioned an "array tabs trick"??
+
+
+
+<!--
+<li><a name="ma-foo">foo</a>
+<dl>
+<dt>Values:</dt>
+<dd></dd>
+<dt>Description:</dt>
+<dd></dd>
+<dt>Example:</dt>
+<dd></dd>
+<dt>Notes:</dt>
+<dd></dd>
+</dl>
+</li>
+-->
+
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+Attribute:		shapes
+Values:				array()
+Description:	an array of shapes to place on the map
+
+A "line" or "polygon" shape will be described by an array that looks like this:
+<?php
+  $shape = array(
+    'type' => "polygon",
+    'points' => array(
+      array(0.000, 0.000),
+      array(0.000, 0.000),
+      array(0.000, 0.000),
+    ),
+    'style' => array("ff0000", 5, 80, "00ff00", 60),
+  );
+?>
+
+
+  Attribute:		type
+  Values:				"line", "polygon", "circle", "rpolygon"
+  Description:	the type of shape to draw
+  Example:			"line"
+  Notes:        "line" is drawn as a GPolyline.
+                "polygon" is drawn as a GPolygon.
+                "circle" and "rpolygon" (regular polygon) are special cases of "polygon"; points are calculated on the fly. The array defining circles and regular polygons looks different from the arrays defining lines and polygons; see below.
+
+  Attribute:		points
+  Values:				array(array(lat1, lon1), array(lat2, lon2), ... , array(latN, lonN))
+  Description:	an array of points defining the shape
+  Example:			array(array(44.205835001, -70.3674316406), array(44.3159879052, -68.6096191406))
+  Notes:        Each point itself is an array with two elements (latitude, longitude). The different shapes have different requirements with respect to points.
+
+                "line" must have at least two points. It is best to break up long lines into shorter segments, because long lines can be buggy--sometimes beginning and ending points are switched.
+
+                "polygon" should have at least three points; the first and last points should have the same coordinates.
+
+  Attribute:		style
+  Values:				array(stroke color, stroke weight, stroke opacity, fill color, fill opacity)
+  Description:	a "style array"
+  Example:			array("ff0000", 5, 80, "00ff00", 60)
+  Notes:        The elements of this array MUST be in the specified order.
+
+                Stroke and fill colors should be hex color codes (without the leading "#"); Google Maps does not accept named colors.
+
+                The stroke weight is the width of the line or polygon border in pixels.
+
+                Stroke and fill opacities should be a percentage between 0 and 100.
+
+                Fill color and fill opacity are not used for type "line".
+
+                If shapes of type "line" don't have styles defined, the 'line_default' style will be used; shapes of type "polygon", "circle", and "rpolygon" will use 'poly_defalt'.
+
+                In previous versions of GMap, opacity was specified as a number between 0 and 1; it is now a number between 0 and 100.
+
+                On backwards compatibility: there were originally more style options, but they were dependant on xmaps; xmaps is no longer compatible with Google Maps, so these options are now ignored. They are: 'pattern', 'text', 'fillcolor', 'fillopacity'; all except for 'pattern' are now available with different syntax.
+
+  Circles and regular polygons are special cases of "polygon" and have significantly different shape arrays:
+  <?php
+    $shape1 = array(
+      'type' => 'circle',
+      'center' => array(0.000, 0.000),  // center coordinate of the circle
+      'radius' => 100,                  // radius of the circle in kilmeters
+      'style' => array(),               // uses 'poly_default' if not defined
+    );
+
+    $shape2 = array(
+      'type' => 'rpolygon',
+      'center' => array(0.000, 0.000),  // center coordinate of the circle
+      'numpoints' => 4,                 // number of vertices the polygon should have
+      'point2' => array(0.000, 0.000),  // one vertice of the polygon
+      'style' => array(),               // uses 'poly_default' if not defined
+    );
+  ?>
