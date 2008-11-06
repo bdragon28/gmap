@@ -1,34 +1,34 @@
 <!-- $Id$ -->
 
-<em>This is a port of GMAP-ARRAY-DICTIONARY.txt to advanced_help. It's a work in progress.</em>
-
-<p>This file defines the attributes available in GMap arrays. This is fairly similar to the GMAP-MACRO-DICTIONARY.txt, but distinct in that it addresses array keys and syntax specific to GMap arrays.</p>
+<p>A GMap array is used to define and render a map inside PHP code. This is useful
+for things like creating a map based on a database query, or doing things that you
+can't do with a macro.</p>
 
 <p>Defaults for map attributes can be set on the <a href="base_url:admin/settings/gmap">GMap settings page</a>.</p>
 
 <h2>TOP LEVEL ATTRIBUTES</h2>
 
-The top level of a GMap array will look something like this:
+<p>These are all of the (by default) recognized keys for a map array. You usually will only use a subset of them.</p>
 <pre>
   $map = array(
-    '<a href="#tl-id"      >id</a>' =>                  // id attribute for the map
-    '<a href="#tl-width"   >width</a>' =>               // map width in pixels or %
-    '<a href="#tl-height"  >height</a>' =>              // map height in pixels
-    '<a href="#tl-lat"     >latitude</a>' =>            // map center latitude
-    '<a href="#tl-lon"     >longitude</a>' =>           // map center longitude
-    '<a href="#tl-zoom"    >zoom</a>' =>                // zoom level
+    '<a href="#tl-id"      >id</a>' =>                  // "Map ID" -- used to associate a map with other controls.
+    '<a href="#tl-width"   >width</a>' =>               // Map width as a CSS dimension.
+    '<a href="#tl-height"  >height</a>' =>              // Map height as a CSS dimension (usually px).
+    '<a href="#tl-lat"     >latitude</a>' =>            // Map center latitude.
+    '<a href="#tl-lon"     >longitude</a>' =>           // Map center longitude.
+    '<a href="#tl-zoom"    >zoom</a>' =>                // Zoom level.
     '<a href="#tl-mz"      >maxzoom</a>' =>             // Maximum zoom level for autozoom.
-    '<a href="#tl-extent"  >extent</a> =>               // map bounds
-    '<a href="#tl-mt"      >maptype</a>' =>             // baselayer type
-    '<a href="#tl-ct"      >controltype</a>' =>         // size of map controls
+    '<a href="#tl-extent"  >extent</a> =>               // Map bounds.
+    '<a href="#tl-mt"      >maptype</a>' =>             // Initial baselayer type.
+    '<a href="#tl-ct"      >controltype</a>' =>         // Size of map controls.
     '<a href="#tl-align"   >align</a>' =>               // CSS alignment for map div.
     '<a href="#tl-mtc"     >mtc</a>' =>                 // Map type control.
     '<a href="#tl-bl"      >baselayers</a>' => array(), // Enabled map baselayers.
     '<a href="#tl-styles"  >styles</a>' => array(),     // Shape style definitions.
-    '<a href="#tl-behavior">behavior</a>' => array(),   // various map behavior flags
+    '<a href="#tl-behavior">behavior</a>' => array(),   // Various map behavior flags.
     '<a href="#tl-rmtcb"   >rmtcallback</a>' =>         // Remote callback for ahah info windows.
-    '<a href="#tl-markers" >markers</a>' => array(),    // array of points on the map
-    '<a href="#tl-shapes"  >shapes</a>' => array(),     // array of shapes to overlay on the map
+    '<a href="#tl-markers" >markers</a>' => array(),    // Array of markers to place on the map.
+    '<a href="#tl-shapes"  >shapes</a>' => array(),     // Array of shapes to place on the map.
   );
 </pre>
 
@@ -444,7 +444,6 @@ array(
 
 </ul>
 
-
 <h2>OVERLAYS</h2>
 
 <p>There are three types of overlays you can place on a map by default: markers, shapes, and feeds.
@@ -828,7 +827,6 @@ javascript side automatically. This is very useful when writing custom code.</p>
 </dl>
 </li>
 
-
 <li><a name="sh-style">style</a>
 <dl>
 <dt>Values:</dt>
@@ -854,8 +852,6 @@ javascript side automatically. This is very useful when writing custom code.</p>
 </dl>
 </li>
 
-
-
 <!--
 <li><a name="sh-foo">foo</a>
 <dl>
@@ -872,3 +868,10 @@ javascript side automatically. This is very useful when writing custom code.</p>
 -->
 
 </ul>
+
+<h2>USING A MAP ARRAY</h2>
+
+<pre>
+$map = array(...); // Set up your map array.
+$output = theme('gmap', array('#settings' => $map));
+</pre>
