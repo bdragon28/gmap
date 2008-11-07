@@ -10,12 +10,18 @@
  * html and javascript code required to insert a google map.
  */
 
-// Current minimum version: 2.113
-// Minimum version last changed on: June 9 2008
-// Reason: G_SATELLITE_3D_MAP support in gmap_addons. See http://code.google.com/apis/earth/.
-//
-// See http://groups.google.com/group/Google-Maps-API/web/api-version-changes
-// for details on using other version numbers.
+/**
+ * Define the Google Maps API version being used.
+ *
+ * Current minimum version: 2.113
+ *
+ * Minimum version last changed on: June 9 2008
+ *
+ * Reason: G_SATELLITE_3D_MAP support in gmap_addons. See http://code.google.com/apis/earth/.
+ *
+ * See http://groups.google.com/group/Google-Maps-API/web/api-version-changes
+ * for details on using other version numbers.
+ */
 define('GMAP_API_VERSION', '2.115');
 
 /**
@@ -210,6 +216,8 @@ function gmap_gmap($op, &$map) {
 
 /**
  * Set up the HTML header for GMap.
+ * If you are going to include a custom JS file that extends GMap, you probabaly
+ * want to call this first to ensure that the core js files have been added.
  */
 function _gmap_doheader() {
   static $gmap_initialized = FALSE;
@@ -249,6 +257,7 @@ drupal_add_js($gmap_path .'/js/poly.js');
 /**
  * Parse a macro style definition.
  * Example: #111111/1/100/#111111/1
+ * @internal
  */
 function _gmap_parse_style($style) {
   if (strpos($style, '/') === FALSE) {
@@ -593,6 +602,7 @@ function gmap_parse_macro($instring, $ver = 2) {
 
 /**
  * Parse "x.xxxxx , y.yyyyyy (+ x.xxxxx, y.yyyyy ...)" into an array of points.
+ * @internal
  */
 function _gmap_str2coord($str) {
   // Explode along + axis
@@ -609,6 +619,7 @@ function _gmap_str2coord($str) {
 /**
  * Theme a marker popup.
  * This will get called for markers embedded in macros.
+ * @ingroup themeable
  */
 function theme_gmap_marker_popup($label) {
   return $label;
@@ -919,6 +930,7 @@ function process_gmap_style($element) {
 
 /**
  * Theme a gmap_style fieldset.
+ * @ingroup themeable
  */
 function theme_gmap_style($element) {
   // Fieldsets print #value at the end, so we need to empty it out.
@@ -1041,6 +1053,7 @@ function process_gmap_markerchooser($element) {
 
 /**
  * Overlay editor theme function.
+ * @ingroup themeable
  */
 function theme_gmap_overlay_edit($element) {
   $path = drupal_get_path('module', 'gmap');
