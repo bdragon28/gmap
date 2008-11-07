@@ -235,8 +235,9 @@ function theme_gmap_location_user_page($header, $map, $footer) {
 /**
  * Draws a page with a google map with the node on it, or if no node is set all of the nodes on it.
  *
- * @param $nn
- * The node nid to draw on the map.  If this is not set, or is null then all of the nodes will be drawn.
+ * @param $nid
+ *   The node nid to draw on the map.
+ *   If this is not set, or is null then all of the nodes will be drawn.
  */
 function gmap_location_node_page($nid = NULL) {
 

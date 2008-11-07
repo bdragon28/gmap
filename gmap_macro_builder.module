@@ -45,6 +45,8 @@ function gmap_macro_builder_menu($may_cache) {
 
 /**
  * Macro builder form.
+ * @param &$form_state
+ *   The $form_state array.
  * @param $settings
  *   Additional settings to apply to the macro map.
  * @param $hide
