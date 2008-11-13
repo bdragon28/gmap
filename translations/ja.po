@@ -607,7 +607,7 @@ msgstr "マーカーまたはセグメントをクリック"
 
 #: gmap.module:650
 msgid "Remove"
-msgstr "削除"
+msgstr "除去"
 
 #: gmap.module:653
 msgid "Edit Info"
@@ -680,7 +680,7 @@ msgstr "無効"
 
 #: gmap_location.module:396
 msgid "User settings"
-msgstr "ユーザ設定"
+msgstr "ユーザの設定"
 
 #: gmap_location.module:404
 msgid "User Map (<em>map/user</em>)"
