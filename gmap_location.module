@@ -195,7 +195,7 @@ function gmap_location_user_page() {
 function gmap_location_user_point() {
   $uid = arg(3);
   if (is_numeric($uid) && $account = user_load(array('uid' => $uid))) {
-    echo theme('gmap_location_user_html', $account);
+    echo theme('gmap_location_infowindow_user', $account);
     exit();
   }
 }
