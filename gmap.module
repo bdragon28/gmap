@@ -105,7 +105,15 @@ function gmap_gmap($op, &$map) {
 
         drupal_add_js($path .'icon.js');
         drupal_add_js($path .'marker.js');
-        drupal_add_js($path . variable_get('gmap_mm_type', 'gmap') .'_marker.js');
+
+        $mm = variable_get('gmap_mm_type', 'gmap');
+        // If you really really want to override the marker manager, implement
+        // this, take $mm by ref, and have fun. --Bdragon
+        if (function_exists('_gmap_markermanager_override')) {
+          _gmap_markermanager_override($mm);
+        }
+
+        drupal_add_js($path . $mm .'_marker.js');
       }
       if (isset($map['behavior']['locpick']) && $map['behavior']['locpick']) {
         drupal_add_js($path .'locpick.js');
