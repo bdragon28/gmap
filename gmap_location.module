@@ -537,8 +537,14 @@ function gmap_location_admin_settings() {
 function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
   switch ($op) {
     case 'list':
-      $blocks[0]['info'] = t('Location map');
-      $blocks[1]['info'] = t('Author map');
+      $blocks[0] = array(
+        'info' => t('Location map'),
+        'cache' => BLOCK_NO_CACHE, // As it injects JS.
+      );
+      $blocks[1] = array(
+        'info' => t('Author map'),
+        'cache' => BLOCK_NO_CACHE, // As it injects JS.
+      );
       return $blocks;
 
     case 'configure':
