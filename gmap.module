@@ -404,13 +404,13 @@ function gmap_dimension_validate(&$elem) {
 function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
   switch ($op) {
     case 'list':
-      return (array(0 => t('GMap filter')));
+      return (array(0 => t('GMap macro expander')));
 
     case 'name':
       return t('Google map filter');
 
     case 'description':
-      return t('converts a google map  macro into the html required for inserting a google map.');
+      return t('Converts a Google Map macro into the HTML required for inserting a Google Map.');
 
     case 'process':
       $gmaps = _gmap_prepare($text);   //returns an array of $tables[0] = table macro $table[1]= table html
