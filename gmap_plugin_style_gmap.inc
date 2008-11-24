@@ -41,6 +41,9 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     if ($this->options['markers'] == 'nodetype') {
       $this->view->query->add_field('node', 'type', 'gmap_node_type');
     }
+    else if ($this->options['markers'] == 'taxonomy') {
+      $this->view->query->add_field('gmap_taxonomy_node', 'marker', 'gmap_node_marker');
+    }
 
   }
 
@@ -72,6 +75,9 @@ class gmap_plugin_style_gmap extends views_plugin_style {
         if (!empty($lat) && !empty($lon)) {
           if ($this->options['markers'] == 'nodetype') {
             $markername = isset($markertypes[$row->gmap_node_type]) ? $markertypes[$row->gmap_node_type] : 'drupal';
+          }
+          else if ($this->options['markers'] == 'taxonomy') {
+            $markername = !empty($row->gmap_node_marker) ? $row->gmap_node_marker : 'drupal'; // @@@ Fallback?
           }
           if (!isset($offsets[$markername])) {
             $offsets[$markername] = 0;
@@ -126,11 +132,16 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       // @@@ Detect view type automatically?
       '#options' => array(
         'nodetype' => t('By content type (for node views)'),
-        //'taxonomy' => t('By term (for node views)'),
+        'taxonomy' => t('By term (for node views)'),
         'static' => t('Use single marker type'),
       ),
       '#default_value' => $this->options['markers'],
     );
+
+    // Hide the taxonomy handling if gmap_taxonomy.module isn't installed.
+    if (!module_exists('gmap_taxonomy')) {
+      unset($form['markers']['#options']['taxonomy']);
+    }
 
     if ($this->options['markers'] == 'static') {
       $form['markertype'] = array(
