@@ -11,7 +11,7 @@
  */
 function gmap_macro_builder_update_5100() {
   $ret = array();
-  $result = db_query('SELECT pid, perm FROM {permission}');
+  $result = db_query('SELECT rid, perm FROM {permission}');
   while ($row = db_fetch_object($result)) {
     // We leave "create macro" in for now just in case someone else already had that permission.
     // It should get removed automatically the next time an admin tweaks the permissions.
@@ -20,7 +20,7 @@ function gmap_macro_builder_update_5100() {
       $permissions[] = 'create gmap macro';
     }
     $permissions = implode(', ', $permissions);
-    db_query("UPDATE {permission} SET perm = '%s' WHERE pid = %d", $permissions, $row->pid);
+    db_query("UPDATE {permission} SET perm = '%s' WHERE rid = %d", $permissions, $row->rid);
   }
   return $ret;
 }
