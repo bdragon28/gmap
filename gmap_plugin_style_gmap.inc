@@ -27,7 +27,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     );
 
     $options['markers'] = array('default' => 'static');
-    $options['markertype'] = array('default' => 'default');
+    $options['markertype'] = array('default' => 'drupal');
 
     return $options;
   }
@@ -44,7 +44,6 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     else if ($this->options['markers'] == 'taxonomy') {
       $this->view->query->add_field('gmap_taxonomy_node', 'marker', 'gmap_node_marker');
     }
-
   }
 
   function render() {
@@ -53,7 +52,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       return;
     }
 
-    $markername = 'drupal';
+    $markername = isset($this->options['markertype']) ? $this->options['markertype'] : 'drupal';
 
     $markertypes = variable_get('gmap_node_markers', array());
     if ($this->options['markers'] == 'nodetype') {
@@ -74,10 +73,14 @@ class gmap_plugin_style_gmap extends views_plugin_style {
         $lon = (float)$row->gmap_lon;
         if (!empty($lat) && !empty($lon)) {
           if ($this->options['markers'] == 'nodetype') {
-            $markername = isset($markertypes[$row->gmap_node_type]) ? $markertypes[$row->gmap_node_type] : 'drupal';
+            if (isset($markertypes[$row->gmap_node_type])) {
+              $markername = $markertypes[$row->gmap_node_type];
+            }
           }
           else if ($this->options['markers'] == 'taxonomy') {
-            $markername = !empty($row->gmap_node_marker) ? $row->gmap_node_marker : 'drupal'; // @@@ Fallback?
+            if (!empty($row->gmap_node_marker)) {
+              $markername = $row->gmap_node_marker;
+            }
           }
           if (!isset($offsets[$markername])) {
             $offsets[$markername] = 0;
@@ -143,13 +146,10 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       unset($form['markers']['#options']['taxonomy']);
     }
 
-    if ($this->options['markers'] == 'static') {
-      $form['markertype'] = array(
-        '#type' => 'gmap_markerchooser',
-        '#title' => t('Marker type to use'),
-        '#default_value' => $this->options['markertype'],
-      );
-    }
-
+    $form['markertype'] = array(
+      '#type' => 'gmap_markerchooser',
+      '#title' => t('Marker / fallback marker to use'),
+      '#default_value' => $this->options['markertype'],
+    );
   }
 }
