@@ -433,7 +433,7 @@ function gmap_filter($op, $delta = 0, $format = -1, $text = '') {
  * Implementation of hook_filter_tips().
  */
 function gmap_filter_tips($delta, $format, $long = FALSE) {
-  if (user_access('create macro')) { // only display macro if user can create one
+  if (user_access('create gmap macro')) { // only display macro if user can create one
     return t('Insert Google Map macro.') .'<a href="'. url('map/macro') .'" target="_blank" >'. t('Create a macro') .'</a>';
   }
   else {

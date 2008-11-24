@@ -22,7 +22,7 @@ function gmap_macro_builder_help($section) {
  * Implementation of hook_perm().
  */
 function gmap_macro_builder_perm() {
-  return array('create macro');
+  return array('create gmap macro');
 }
 
 /**
@@ -35,7 +35,7 @@ function gmap_macro_builder_menu($may_cache) {
       'path' => 'map/macro',
       'type' => MENU_NORMAL_ITEM,
       'title' => t('Build a GMap macro'),
-      'access' => user_access('create macro'),
+      'access' => user_access('create gmap macro'),
       'callback' => 'drupal_get_form',
       'callback arguments' => 'gmap_macro_builder_form',
     );
