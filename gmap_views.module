@@ -61,6 +61,9 @@ function gmap_views_validate($type, $view, $form) {
  * Display the results of a view in a Google Map.
  */
 function theme_views_view_gmap($view, $results) {
+  // Work when multiple views are displayed at once.
+  $mapid = "view_gmap_{$view->name}_{$view->build_type}";
+
   // Fields are used to render the markers.
   $fields = _views_get_fields();
 
@@ -69,7 +72,7 @@ function theme_views_view_gmap($view, $results) {
 
   if (isset($view->gmap_macro) && $view->gmap_macro) {
     $thismap = array(
-      '#map' => 'view_gmap',
+      '#map' => $mapid,
       '#settings' => array_merge(gmap_defaults(), gmap_parse_macro($view->gmap_macro)),
     );
     if ($thismap['#settings']['behavior']['views_autocenter']) {
@@ -91,7 +94,7 @@ function theme_views_view_gmap($view, $results) {
   }
   else {
     $thismap = array(
-      '#map' => 'view_gmap',
+      '#map' => $mapid,
       '#settings' => gmap_defaults(),
     );
   }

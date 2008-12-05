@@ -777,6 +777,9 @@ function theme_gmap_align($element) {
  * Gmap element theme hook
  */
 function theme_gmap($element) {
+  // Track the mapids we've used already.
+  static $mapids = array();
+
   _gmap_doheader();
 
   // Convert from raw map array if needed.
@@ -846,6 +849,14 @@ function theme_gmap($element) {
   foreach (module_implements('gmap') as $module) {
     call_user_func_array($module .'_gmap', array('pre_theme_map', &$map));
   }
+
+  if (isset($mapids[$element['#map']])) {
+    drupal_set_message(t('Duplicate map detected! GMap does not support multiplexing maps onto one MapID! GMap MapID: %mapid', array('%mapid' => $element['#map'])), 'error');
+    // Return the div anyway. All but one map for a given id will be a graymap,
+    // because obj.map gets stomped when trying to multiplex maps!
+    return $o;
+  }
+  $mapids[$element['#map']] = TRUE;
 
   // Inline settings extend.
   $o .= '<script type="text/javascript">'."\n";
