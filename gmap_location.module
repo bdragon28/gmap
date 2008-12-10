@@ -772,7 +772,7 @@ function theme_gmap_location_infowindow_node($node) {
   // directory and add theme_hook_gmapnodelabel($node, $location) to it.
   // Be sure to enable your 'flexinode_#.module'.
   return '<div class="gmapnodelabel gmapnodelabel-'. form_clean_id($node->type) .
-    '">'. strtr(theme('node', $node, TRUE), "'\n\r", '"  ') .'</div>'; // make sure it all goes on one line.
+    '">'. strtr(node_view($node, TRUE, FALSE, FALSE), "'\n\r", '"  ') .'</div>'; // make sure it all goes on one line.
 }
 
 /**
