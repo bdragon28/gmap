@@ -848,15 +848,15 @@ function theme_og_gmapnodelabel($node, $opt) {
  * Theme a node info window.
  * @ingroup themable
  */
-function theme_gmapnodelabel($n) {
+function theme_gmapnodelabel($node) {
   // Allow a module (where the module name matches the node type name)
   // to define a custom display for the google map label.
   // For this to work with flexinode defined data types,
   // a module called 'flexinode_#.module' in your site's module
   // directory and add theme_hook_gmapnodelabel($node, $location) to it.
   // Be sure to enable your 'flexinode_#.module'.
-  return '<div class="gmapnodelabel gmapnodelabel-'. form_clean_id($n->type) .
-    '">'. strtr(theme('node', $n, TRUE), "'\n\r", '"  ') .'</div>'; // make sure it all goes on one line.
+  return '<div class="gmapnodelabel gmapnodelabel-'. form_clean_id($node->type) .
+    '">'. strtr(node_view($node, TRUE, FALSE, FALSE), "'\n\r", '"  ') .'</div>'; // make sure it all goes on one line.
 }
 
 function theme_gmap_location_user_html($account) {
