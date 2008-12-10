@@ -252,7 +252,7 @@ function gmap_location_node_page($nid = NULL) {
   $map['rmtcallback'] = url('map/node/load');
   $map['markermode'] = $nodemap['markermode'];
 
-  if (!is_array($map['markers'])) {
+  if (!isset($map['markers']) || !is_array($map['markers'])) {
     $map['markers'] = array();
   }
 
