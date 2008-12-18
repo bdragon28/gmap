@@ -58,7 +58,7 @@ Drupal.gmap = new function() {
       var mapid = obj.id.split('-');
       var instanceid = mapid.pop();
       mapid.shift();
-      mapid.join('-');
+      mapid = mapid.join('-');
       var control = instanceid.replace(/\d+$/, '');
 
       // Lazy init the map object.
