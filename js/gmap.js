@@ -38,6 +38,7 @@ Drupal.gmap = new function() {
 
   this.setup = function() {
     var obj = this;
+    var hls;
 
     var initcallback = function(mapid) {
       return (function() {
@@ -71,7 +72,8 @@ Drupal.gmap = new function() {
 
       if (_handlers[control]) {
         for (var i=0; i<_handlers[control].length; i++) {
-          _handlers[control][i].call(_maps[mapid], obj);
+          hls = {};
+          _handlers[control][i].call(_maps[mapid], obj, hls);
         }
       }
       else {
