@@ -472,9 +472,12 @@ function gmap_regenerate_markers() {
 
   $contents .= "// GMap marker image data.\n";
   $contents .= "Drupal.gmap.iconpath = ". drupal_to_js(base_path() . drupal_get_path('module', 'gmap') .'/markers') .";\n";
-  $contents .= "Drupal.gmap.icondata = ". drupal_to_js(gmap_get_icondata()) .";\n";
+  $contents .= "Drupal.gmap.icondata = ". drupal_to_js(gmap_get_icondata(TRUE)) .";\n";
 
   file_save_data($contents, "$jspath/gmap_markers.js", FILE_EXISTS_REPLACE);
+
+  // Also regenerate the cached marker titles array
+  gmap_get_marker_titles(TRUE);
 }
 
 /**
@@ -935,19 +938,23 @@ function gmap_get_auto_mapid() {
  */
 function gmap_get_marker_titles($reset = FALSE) {
   static $titles;
-  if (is_array($titles) && !$reset) {
-    return $titles;
+
+  if (!reset) {
+    if (is_array($titles)) {
+      return $titles;
+    }
+
+    $cached = cache_get('gmap_marker_titles', 'cache');
+    if (!empty($cached)) {
+      $titles = unserialize($cached->data);
+      if (is_array($titles)) {
+        return $titles;
+      }
+    }
   }
 
-  $titles = cache_get('gmap_marker_titles');
-  if ($titles) {
-    $titles = unserialize($titles->data);
-  }
-
-  if ($reset || !$titles) {
-    require_once(drupal_get_path('module', 'gmap') .'/gmap_markerinfo.inc');
-    $titles = _gmap_get_marker_titles();
-  }
+  require_once(drupal_get_path('module', 'gmap') .'/gmap_markerinfo.inc');
+  $titles = _gmap_get_marker_titles();
   cache_set('gmap_marker_titles', 'cache', serialize($titles));
   return $titles;
 }
