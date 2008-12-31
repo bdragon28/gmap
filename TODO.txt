@@ -11,12 +11,6 @@ Drupal 5 todo:
 
 * Lots more documentation
 
-* QA triage
-
-* Final release!
-
-
-
 Legacy 4.7 todo:
 
 - rationalize all of the different default map variables, so that most of them
