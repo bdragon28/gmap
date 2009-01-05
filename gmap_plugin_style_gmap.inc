@@ -29,6 +29,10 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     $options['markers'] = array('default' => 'static');
     $options['markertype'] = array('default' => 'drupal');
 
+    $options['latfield'] = array('default' => '');
+    $options['lonfield'] = array('default' => '');
+    $options['markerfield'] = array('default' => '');
+
     return $options;
   }
 
@@ -53,6 +57,20 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       return;
     }
 
+    $lat_field = 'gmap_lat';
+    $lon_field = 'gmap_lon';
+
+    // Determine fieldname for latitude and longitude fields.
+    if ($this->options['datasource'] == 'fields') {
+      $lat_field = $this->view->display_handler->get_handler('field', $this->options['latfield'])->field_alias;
+      $lon_field = $this->view->display_handler->get_handler('field', $this->options['lonfield'])->field_alias;
+    }
+
+    // Determine fieldname for marker field.
+    if ($this->options['markers'] == 'field') {
+      $marker_field = $this->view->display_handler->get_handler('field', $this->options['markerfield'])->field_alias;
+    }
+
     $markername = isset($this->options['markertype']) ? $this->options['markertype'] : 'drupal';
 
     $markertypes = variable_get('gmap_node_markers', array());
@@ -70,8 +88,8 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       $markers = array();
       $offsets = array();
         foreach ($records as $label => $row) {
-        $lat = (float)$row->gmap_lat;
-        $lon = (float)$row->gmap_lon;
+        $lat = (float)$row->{$lat_field};
+        $lon = (float)$row->{$lon_field};
         if (!empty($lat) && !empty($lon)) {
           if ($this->options['markers'] == 'nodetype') {
             if (isset($markertypes[$row->gmap_node_type])) {
@@ -81,6 +99,11 @@ class gmap_plugin_style_gmap extends views_plugin_style {
           else if ($this->options['markers'] == 'taxonomy') {
             if (!empty($row->gmap_node_marker)) {
               $markername = $row->gmap_node_marker;
+            }
+          }
+          else if ($this->options['markers'] == 'field') {
+            if (!empty($row->{$marker_field})) {
+              $markername = $row->{$marker_field};
             }
           }
           if (!isset($offsets[$markername])) {
@@ -119,27 +142,65 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     );
 
     $form['datasource'] = array(
-      '#type' => 'radios',
+      '#type' => 'select',
       '#title' => t('Data Source'),
       '#options' => array(
         'location' => t('Location.module'),
-        'autodetect' => t('Fields named "latitude" and "longitude" @@@TODO'),
+        'fields' => t('Choose latitude and longitude fields'),
       //'geocode' => t('Just-in-time geocoding on field named "address"'),
       ),
       '#default_value' => $this->options['datasource'],
       '#multiple' => FALSE,
     );
 
+    $options = array();
+    // @@@ Fix this when I'm not having a monday morning.
+    // There's likely a more "correct" way.
+    foreach ($this->display->display_options['fields'] as $id => $handler) {
+      $data = views_fetch_data($handler['table']);
+      $options[$id] = $handler['label'];
+    }
+
+    $form['latfield'] = array(
+      '#title' => t('Latitude field'),
+      '#description' => t('Format must be degrees decimal.'),
+      '#type' => 'select',
+      '#options' => $options,
+      '#default_value' => $this->options['latfield'],
+      '#process' => array('views_process_dependency'),
+      '#dependency' => array('edit-style-options-datasource' => array('fields')),
+    );
+    $form['lonfield'] = array(
+      '#title' => t('Longitude field'),
+      '#description' => t('Format must be degrees decimal.'),
+      '#type' => 'select',
+      '#options' => $options,
+      '#default_value' => $this->options['lonfield'],
+      '#process' => array('views_process_dependency'),
+      '#dependency' => array('edit-style-options-datasource' => array('fields')),
+    );
+
     $form['markers'] = array(
-      '#type' => 'radios',
+      '#type' => 'select',
       '#title' => t('Marker handling'),
       // @@@ Detect view type automatically?
       '#options' => array(
         'nodetype' => t('By content type (for node views)'),
         'taxonomy' => t('By term (for node views)'),
+        'field' => t('Use marker field'),
         'static' => t('Use single marker type'),
       ),
       '#default_value' => $this->options['markers'],
+    );
+
+    $form['markerfield'] = array(
+      '#type' => 'select',
+      '#title' => t('Marker field'),
+      '#description' => t('You can use a views field to set the <em>markername</em> property of the markers.'),
+      '#options' => $options,
+      '#default_value' => $this->options['markerfield'],
+      '#process' => array('views_process_dependency'),
+      '#dependency' => array('edit-style-options-markers' => array('field')),
     );
 
     // Hide the taxonomy handling if gmap_taxonomy.module isn't installed.
