@@ -34,8 +34,9 @@ class gmap_plugin_style_gmap extends views_plugin_style {
 
   function query() {
     if ($this->options['datasource'] == 'location') {
-      $this->view->query->add_field('location', 'latitude', 'gmap_lat');
-      $this->view->query->add_field('location', 'longitude', 'gmap_lon');
+      $table = $this->view->query->ensure_table('location');
+      $this->view->query->add_field($table, 'latitude', 'gmap_lat');
+      $this->view->query->add_field($table, 'longitude', 'gmap_lon');
     }
 
     if ($this->options['markers'] == 'nodetype') {
