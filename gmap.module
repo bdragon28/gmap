@@ -471,7 +471,7 @@ function gmap_regenerate_markers() {
   file_check_directory($jspath, FILE_CREATE_DIRECTORY);
 
   $contents .= "// GMap marker image data.\n";
-  $contents .= "Drupal.gmap.iconpath = ". drupal_to_js(base_path() . drupal_get_path('module', 'gmap') .'/markers') .";\n";
+  $contents .= "Drupal.gmap.iconpath = ". drupal_to_js(base_path() . variable_get('gmap_markerfiles', drupal_get_path('module', 'gmap') .'/markers')) .";\n";
   $contents .= "Drupal.gmap.icondata = ". drupal_to_js(gmap_get_icondata(TRUE)) .";\n";
 
   file_save_data($contents, "$jspath/gmap_markers.js", FILE_EXISTS_REPLACE);
