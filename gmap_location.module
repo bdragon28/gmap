@@ -748,9 +748,11 @@ function gmap_location_block_view($nid) {
   if ($node->locations) {
     $markertypes = variable_get('gmap_node_markers', array());
     $markers = array();
+    $count = 0;
     foreach ($node->locations as $loc) {
       // @@@ Todo: Client side geocoding
       if ($loc['latitude'] || $loc['longitude']) {
+        $count++;
         $markername = isset($markertypes[$node->type]) ? $markertypes[$node->type] : 'drupal';
         if (module_exists('gmap_taxonomy')) {
           $t = db_result(db_query('SELECT marker FROM {gmap_taxonomy_node} WHERE nid = %d', $node->nid));
@@ -759,10 +761,17 @@ function gmap_location_block_view($nid) {
           }
         }
 
+        $markertitle = $node->title;
+        if (!empty($loc['name'])) {
+          $markertitle = $loc['name'];
+        }
+
         $markers[] = array(
           'latitude' => $loc['latitude'],
           'longitude' => $loc['longitude'],
           'markername' => $markername,
+          'offset' => $count-1,
+          'opts' => array('title' => $markertitle),
         );
       }
     }
@@ -776,7 +785,7 @@ function gmap_location_block_view($nid) {
       $map['longitude'] = $markers[0]['longitude'];
       $map['markers'] = $markers;
       $block['subject'] = t('Location');
-      $block['content'] = theme('gmap', array('#settings' => $map));
+      $block['content'] = theme('gmap', array('#settings' => $map)); // @@@ Better theme
     }
   }
   return $block;
@@ -786,37 +795,38 @@ function gmap_location_author_block_view($nid) {
   $block = array();
   $node = node_load($nid);
   if (in_array($node->type, variable_get('gmap_location_author_block_types', array()))) {
-    if (function_exists('location_newapi')) {
-      $result = db_fetch_array(db_query("SELECT latitude, longitude FROM {location} l INNER JOIN {location_instance} i ON l.lid = i.lid WHERE i.uid = %d", $node->uid));
-    }
-    else {
-      $result = db_fetch_array(db_query("SELECT latitude, longitude FROM {location} WHERE eid = %d AND type = 'user'", $node->uid));
-    }
-    if (!$result) {
-      // Location not set at all.
-      return;
-    }
-    if (empty($result['latitude']) && empty($result['longitude'])) {
-      // Coordinates not set.
-      return;
-    }
-    $macro = variable_get('gmap_location_author_block_macro', '[gmap |width=100% |height=200px |control=None |behavior=+autozoom +notype]');
-    $map = array(
-      '#map' => 'gmap_location_authorblock',
-      '#settings' => gmap_parse_macro($macro),
-    );
-    $map['#settings']['markers'] = array();
-    $map['#settings']['markers'][] = array(
-      'latitude' => $result['latitude'],
-      'longitude' => $result['longitude'],
-      'markername' => variable_get('gmap_location_author_block_marker', 'drupal'),
-      'label' => check_plain($node->name),
-    );
-    $map['#settings']['latitude'] = $result['latitude'];
-    $map['#settings']['longitude'] = $result['longitude'];
+    $markername = variable_get('gmap_location_author_block_marker', 'drupal');
+    $author = user_load(array('uid' => $node->uid));
+    $markers = array();
+    $count = 0;
+    foreach ($author->locations as $loc) {
+      // @@@ Todo: Client side geocoding
+      if ($loc['latitude'] || $loc['longitude']) {
+        $count++;
+      }
 
-    $block['subject'] = t('Author Location');
-    $block['content'] = theme('gmap', $map);
+      $markertitle = $author->name;
+      if (!empty($loc['name'])) {
+        $markertitle = $loc['name'];
+      }
+
+      $markers[] = array(
+        'latitude' => $loc['latitude'],
+        'longitude' => $loc['longitude'],
+        'markername' => $markername,
+        'offset' => $count-1,
+        'opts' => array('title' => $markertitle),
+      );
+    }
+    if (!empty($markers)) {
+      $macro = variable_get('gmap_location_author_block_macro', '[gmap |width=100% |height=200px |control=None |behavior=+autozoom +notype]');
+      $map = gmap_parse_macro($macro);
+      $map['latitude'] = $markers[0]['latitude'];
+      $map['longitude'] = $markers[0]['longitude'];
+      $map['markers'] = $markers;
+      $block['subject'] = t('Author Location');
+      $block['content'] = theme('gmap', array('#settings' => $map)); // @@@ Better theme
+    }
   }
   return $block;
 }
