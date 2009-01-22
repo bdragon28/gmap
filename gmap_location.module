@@ -715,7 +715,7 @@ function gmap_location_author_block_view($nid) {
   $node = node_load($nid);
   if (in_array($node->type, variable_get('gmap_location_author_block_types', array()))) {
     $markername = variable_get('gmap_location_author_block_marker', 'drupal');
-    $author = user_load($node->uid);
+    $author = user_load(array('uid' => $node->uid));
     $markers = array();
     $count = 0;
     foreach ($author->locations as $loc) {
