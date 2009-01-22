@@ -120,6 +120,8 @@ function gmap_location_user_page() {
       WHERE
         u.status = 1
       AND
+        u.access != 0
+      AND
         (l.latitude != 0 OR l.longitude != 0)
       GROUP BY
         i.uid");
@@ -142,6 +144,8 @@ function gmap_location_user_page() {
         l.type = '%s'
       AND
         u.status = 1
+      AND
+        u.access != 0
       AND
         (l.latitude != 0 OR l.longitude != 0)
       GROUP BY
