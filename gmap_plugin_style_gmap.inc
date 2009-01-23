@@ -122,7 +122,6 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       if (!empty($markers)) { // Don't draw empty maps.
         $map = gmap_parse_macro($this->options['macro']);
         $map['markers'] = $markers;
-        $map['id'] = gmap_get_auto_mapid();
         $output .= theme($this->theme_functions(), $this->view, $this->options, $map, $title);
       }
     }
