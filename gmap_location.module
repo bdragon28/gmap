@@ -109,7 +109,7 @@ function gmap_location_user_page() {
 
   $result = db_query("
     SELECT
-      u.name, MAX(r.rid) as role, i.uid, l.latitude, l.longitude
+      u.name, MAX(r.rid) as role, i.uid, i.lid, l.latitude, l.longitude
     FROM
       {users} u
     INNER JOIN
@@ -131,7 +131,7 @@ function gmap_location_user_page() {
     AND
       (l.latitude != 0 OR l.longitude != 0)
     GROUP BY
-      i.uid");
+      i.uid, i.lid");
 
   while ($row = db_fetch_object($result)) {
     // Determine marker type to show.
