@@ -277,7 +277,7 @@ Drupal.gmap.addHandler('gmap',function(elem) {
       map.enableDoubleClickZoom();
       map.enableContinuousZoom();
     }
-    if (!obj.vars.nomousezoom) {
+    if (!obj.vars.behavior.nomousezoom) {
       map.enableScrollWheelZoom();
     }
 
