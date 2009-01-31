@@ -870,6 +870,11 @@ function theme_gmap($element) {
   }
   gmap_map_cleanup($map);
 
+  // Add a class around map bubble contents.
+  foreach ($map['markers'] as $i => $marker) {
+    $map['markers'][$i]['text'] = '<div class="gmap-popup">' . $marker['text'] . '</div>';
+  }
+
   switch (strtolower($map['align'])) {
     case 'left':
       $element['#attributes']['class'] .= ' gmap-left';
