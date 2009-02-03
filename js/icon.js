@@ -12,8 +12,8 @@
  * The marker set wraps around when reaching the end of the sequence.
  * @@@ TODO: Move this directly into the preparemarker event binding.
  */
-Drupal.gmap.getIcon = function(setname, sequence) {
-  var othimg = ['printImage','mozPrintImage','printShadow','transparent'];
+Drupal.gmap.getIcon = function (setname, sequence) {
+  var othimg = ['printImage', 'mozPrintImage', 'printShadow', 'transparent'];
   // If no setname, return google's default icon.
   if (!setname) {
     return G_DEFAULT_ICON;
@@ -37,12 +37,12 @@ Drupal.gmap.getIcon = function(setname, sequence) {
 
   if (!this.gicons[setname]) {
     if (!Drupal.gmap.icons[setname]) {
-      alert('Request for invalid marker set '+setname+'!');
+      alert('Request for invalid marker set ' + setname + '!');
     }
     this.gicons[setname] = [];
     var q = Drupal.gmap.icons[setname];
     var p, t;
-    for (var i=0; i<q.sequence.length; i++) {
+    for (var i = 0; i < q.sequence.length; i++) {
       t = new GIcon();
       p = Drupal.gmap.iconpath + q.path;
       t.image = p + q.sequence[i].f;
@@ -50,10 +50,10 @@ Drupal.gmap.getIcon = function(setname, sequence) {
         t.shadow = p + q.shadow.f;
         t.shadowSize = new GSize(q.shadow.w, q.shadow.h);
       }
-      t.iconSize = new GSize(q.sequence[i].w,q.sequence[i].h);
+      t.iconSize = new GSize(q.sequence[i].w, q.sequence[i].h);
       t.iconAnchor = new GPoint(q.anchorX, q.anchorY);
       t.infoWindowAnchor = new GPoint(q.infoX, q.infoY);
-      for (var j=0; j<othimg.length; j++) {
+      for (var j = 0; j < othimg.length; j++) {
         if (q[othimg[j]] !== '') {
           t[othimg[j]] = p + q[othimg[j]];
         }
@@ -72,33 +72,37 @@ Drupal.gmap.getIcon = function(setname, sequence) {
  * When doing the JSON call, the data comes back in a packed format.
  * We need to expand it and file it away in a more useful format.
  */
-Drupal.gmap.iconSetup = function() {
+Drupal.gmap.iconSetup = function () {
   Drupal.gmap.icons = {};
   var m = Drupal.gmap.icondata;
   var filef, filew, fileh, files;
-  for (var path in m) {if (m.hasOwnProperty(path)) {
-    // Reconstitute files array
-    filef = m[path].f;
-    filew = Drupal.gmap.expandArray(m[path].w,filef.length);
-    fileh = Drupal.gmap.expandArray(m[path].h,filef.length);
-    files = [];
-    for (var i = 0; i < filef.length; i++) {
-      files[i] = {f : filef[i], w : filew[i], h : fileh[i]};
-    }
+  for (var path in m) {
+    if (m.hasOwnProperty(path)) {
+      // Reconstitute files array
+      filef = m[path].f;
+      filew = Drupal.gmap.expandArray(m[path].w, filef.length);
+      fileh = Drupal.gmap.expandArray(m[path].h, filef.length);
+      files = [];
+      for (var i = 0; i < filef.length; i++) {
+        files[i] = {f : filef[i], w : filew[i], h : fileh[i]};
+      }
 
-    for (var ini in m[path].i) {if (m[path].i.hasOwnProperty(ini)) {
-      $.extend(Drupal.gmap.icons,Drupal.gmap.expandIconDef(m[path].i[ini],path,files));
-    }}
-  }}
+      for (var ini in m[path].i) {
+        if (m[path].i.hasOwnProperty(ini)) {
+          $.extend(Drupal.gmap.icons, Drupal.gmap.expandIconDef(m[path].i[ini], path, files));
+        }
+      }
+    }
+  }
 };
 
 /**
  * Expand a compressed array.
  * This will pad arr up to len using the last value of the old array.
  */
-Drupal.gmap.expandArray = function(arr,len) {
+Drupal.gmap.expandArray = function (arr, len) {
   var d = arr[0];
-  for (var i=0; i<len; i++) {
+  for (var i = 0; i < len; i++) {
     if (!arr[i]) {
       arr[i] = d;
     }
@@ -114,11 +118,13 @@ Drupal.gmap.expandArray = function(arr,len) {
  * This helper function is the reverse of the packer function found in
  * gmap_markerinfo.inc.
  */
-Drupal.gmap.expandIconDef = function(c,path,files) {
-  var decomp = ['key','name','sequence','anchorX','anchorY','infoX','infoY','shadow',
-    'printImage','mozPrintImage','printShadow','transparent'];
-  var fallback = ['','',[],0,0,0,0,{f: '', h: 0, w: 0},'','','',''];
-  var imagerep = ['shadow','printImage','mozPrintImage','printShadow','transparent'];
+Drupal.gmap.expandIconDef = function (c, path, files) {
+  var decomp = ['key', 'name', 'sequence', 'anchorX', 'anchorY', 'infoX',
+    'infoY', 'shadow', 'printImage', 'mozPrintImage', 'printShadow',
+    'transparent'];
+  var fallback = ['', '', [], 0, 0, 0, 0, {f: '', h: 0, w: 0}, '', '', '', ''];
+  var imagerep = ['shadow', 'printImage', 'mozPrintImage', 'printShadow',
+    'transparent'];
   var defaults = {};
   var sets = [];
   var i, j;
@@ -128,7 +134,7 @@ Drupal.gmap.expandIconDef = function(c,path,files) {
     if (!c[0][i]) {
       c[0][i] = [ fallback[i] ];
     }
-    c[0][i] = Drupal.gmap.expandArray(c[0][i],c[0][0].length);
+    c[0][i] = Drupal.gmap.expandArray(c[0][i], c[0][0].length);
   }
   for (i = 0; i < c[0][0].length; i++) {
     for (j = 0; j < decomp.length; j++) {
@@ -136,10 +142,10 @@ Drupal.gmap.expandIconDef = function(c,path,files) {
         defaults[decomp[j]] = c[0][j][i];
       }
       else {
-        if (!sets[i-1]) {
-          sets[i-1] = {};
+        if (!sets[i - 1]) {
+          sets[i - 1] = {};
         }
-        sets[i-1][decomp[j]] = c[0][j][i];
+        sets[i - 1][decomp[j]] = c[0][j][i];
       }
     }
   }
@@ -161,7 +167,7 @@ Drupal.gmap.expandIconDef = function(c,path,files) {
       icons[key].sequence[j] = files[icons[key].sequence[j]];
     }
     for (j = 0; j < imagerep.length; j++) {
-      if (typeof(icons[key][imagerep[j]])==='number') {
+      if (typeof(icons[key][imagerep[j]]) === 'number') {
         icons[key][imagerep[j]] = files[icons[key][imagerep[j]]];
       }
     }
@@ -174,17 +180,17 @@ Drupal.gmap.expandIconDef = function(c,path,files) {
  * Note: Since we broadcast our ready event to all maps, it doesn't
  * matter which one we attached to!
  */
-Drupal.gmap.addHandler('gmap', function(elem) {
+Drupal.gmap.addHandler('gmap', function (elem) {
   var obj = this;
 
-  obj.bind('init', function() {
+  obj.bind('init', function () {
     // Only expand once.
     if (!Drupal.gmap.icons) {
       Drupal.gmap.iconSetup();
     }
   });
 
-  obj.bind('ready', function() {
+  obj.bind('ready', function () {
     // Compatibility event.
     if (Drupal.gmap.icondata) {
       obj.deferChange('iconsready', -1);
@@ -193,8 +199,8 @@ Drupal.gmap.addHandler('gmap', function(elem) {
 
   if (!obj.vars.behavior.customicons) {
     // Provide icons to markers.
-    obj.bind('preparemarker', function(marker) {
-      marker.opts.icon = Drupal.gmap.getIcon(marker.markername,marker.offset);
+    obj.bind('preparemarker', function (marker) {
+      marker.opts.icon = Drupal.gmap.getIcon(marker.markername, marker.offset);
     });
   }
 });
