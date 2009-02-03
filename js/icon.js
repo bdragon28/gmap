@@ -41,11 +41,12 @@ Drupal.gmap.getIcon = function(setname, sequence) {
     }
     this.gicons[setname] = [];
     var q = Drupal.gmap.icons[setname];
+    var p, t;
     for (var i=0; i<q.sequence.length; i++) {
-      var t = new GIcon();
-      var p = Drupal.gmap.iconpath + q.path;
+      t = new GIcon();
+      p = Drupal.gmap.iconpath + q.path;
       t.image = p + q.sequence[i].f;
-      if (q.shadow.f != '') {
+      if (q.shadow.f !== '') {
         t.shadow = p + q.shadow.f;
         t.shadowSize = new GSize(q.shadow.w, q.shadow.h);
       }
@@ -53,14 +54,13 @@ Drupal.gmap.getIcon = function(setname, sequence) {
       t.iconAnchor = new GPoint(q.anchorX, q.anchorY);
       t.infoWindowAnchor = new GPoint(q.infoX, q.infoY);
       for (var j=0; j<othimg.length; j++) {
-        if ((typeof(q[othimg[j]])=='string') && (q[othimg[j]] != '')) {
+        if (q[othimg[j]] !== '') {
           t[othimg[j]] = p + q[othimg[j]];
         }
       }
       // @@@ imageMap?
       this.gicons[setname][i] = t;
     }
-    delete q;
     delete Drupal.gmap.icons[setname];
   }
   // TODO: Random, other cycle methods.
@@ -75,23 +75,21 @@ Drupal.gmap.getIcon = function(setname, sequence) {
 Drupal.gmap.iconSetup = function() {
   Drupal.gmap.icons = {};
   var m = Drupal.gmap.icondata;
-  for (var path in m) {
+  var filef, filew, fileh, files;
+  for (var path in m) {if (m.hasOwnProperty(path)) {
     // Reconstitute files array
-    var filef = m[path].f;
-    var filew = Drupal.gmap.expandArray(m[path].w,filef.length);
-    var fileh = Drupal.gmap.expandArray(m[path].h,filef.length);
-    var files = [];
+    filef = m[path].f;
+    filew = Drupal.gmap.expandArray(m[path].w,filef.length);
+    fileh = Drupal.gmap.expandArray(m[path].h,filef.length);
+    files = [];
     for (var i = 0; i < filef.length; i++) {
       files[i] = {f : filef[i], w : filew[i], h : fileh[i]};
     }
-    delete filef;
-    delete filew;
-    delete fileh;
 
-    for (var ini in m[path].i) {
+    for (var ini in m[path].i) {if (m[path].i.hasOwnProperty(ini)) {
       $.extend(Drupal.gmap.icons,Drupal.gmap.expandIconDef(m[path].i[ini],path,files));
-    }
-  }
+    }}
+  }}
 };
 
 /**
@@ -134,7 +132,7 @@ Drupal.gmap.expandIconDef = function(c,path,files) {
   }
   for (i = 0; i < c[0][0].length; i++) {
     for (j = 0; j < decomp.length; j++) {
-      if (i == 0) {
+      if (i === 0) {
         defaults[decomp[j]] = c[0][j][i];
       }
       else {
@@ -147,7 +145,7 @@ Drupal.gmap.expandIconDef = function(c,path,files) {
   }
   for (i = 0; i < sets.length; i++) {
     for (j = 0; j < decomp.length; j++) {
-      if (sets[i][decomp[j]] == fallback[j]) {
+      if (sets[i][decomp[j]] === fallback[j]) {
         sets[i][decomp[j]] = defaults[decomp[j]];
       }
     }
@@ -163,7 +161,7 @@ Drupal.gmap.expandIconDef = function(c,path,files) {
       icons[key].sequence[j] = files[icons[key].sequence[j]];
     }
     for (j = 0; j < imagerep.length; j++) {
-      if (typeof(icons[key][imagerep[j]])=='number') {
+      if (typeof(icons[key][imagerep[j]])==='number') {
         icons[key][imagerep[j]] = files[icons[key][imagerep[j]]];
       }
     }
