@@ -12,7 +12,7 @@
  * Provide a shared geocoder.
  * Lazy initialize it so it's not resident until needed.
  */
-Drupal.gmap.geocoder = function() {
+Drupal.gmap.geocoder = function () {
   var theGeocoder;
   if (!theGeocoder) {
     theGeocoder = new GClientGeocoder();
@@ -20,15 +20,15 @@ Drupal.gmap.geocoder = function() {
   return theGeocoder;
 };
 
-Drupal.gmap.addHandler('gmap', function(elem) {
+Drupal.gmap.addHandler('gmap', function (elem) {
   var obj = this;
 
-  obj.bind('geocode_pan', function(addr) {
-    Drupal.gmap.geocoder().getLatLng(addr,function(point) {
-      if(point) {
+  obj.bind('geocode_pan', function (addr) {
+    Drupal.gmap.geocoder().getLatLng(addr, function (point) {
+      if (point) {
         obj.vars.latitude = point.lat();
         obj.vars.longitude = point.lng();
-        obj.change("move",-1);
+        obj.change("move", -1);
       }
       else {
         // Error condition?
@@ -36,9 +36,9 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     });
   });
 
-  obj.bind('geocode_panzoom', function(addr) {
-    Drupal.gmap.geocoder().getLocations(addr, function(response) {
-      if (response && response.Status.code == 200) {
+  obj.bind('geocode_panzoom', function (addr) {
+    Drupal.gmap.geocoder().getLocations(addr, function (response) {
+      if (response && response.Status.code === 200) {
         var place = response.Placemark[0];
         obj.vars.latitude = place.Point.coordinates[1];
         obj.vars.longitude = place.Point.coordinates[0];
@@ -62,14 +62,14 @@ Drupal.gmap.addHandler('gmap', function(elem) {
           case 8: // Address level accuracy. (Since 2.59)
             obj.vars.zoom = 12;
         }
-        obj.change('move',-1);
+        obj.change('move', -1);
       }
     });
   });
 
-  obj.bind('preparemarker', function(marker) {
+  obj.bind('preparemarker', function (marker) {
     if (marker.address && (!marker.latitude || !marker.longitude)) {
-      Drupal.gmap.geocoder().getLatLng(marker.address,function(point) {
+      Drupal.gmap.geocoder().getLatLng(marker.address, function (point) {
         if (point) {
           marker.latitude = point.lat();
           marker.longitude = point.lng();
@@ -83,28 +83,28 @@ Drupal.gmap.addHandler('gmap', function(elem) {
 ////////////////////////////////////////
 //         Address widget             //
 ////////////////////////////////////////
-Drupal.gmap.addHandler('address', function(elem) {
+Drupal.gmap.addHandler('address', function (elem) {
   var obj = this;
 
   // Respond to focus event.
-  $(elem).focus(function() {
+  $(elem).focus(function () {
     this.value = '';
   });
 
   // Respond to incoming movements.
   // Clear the box when the coords change...
-  var binding = obj.bind("move", function(){
+  var binding = obj.bind("move", function () {
     elem.value = 'Enter an address';
   });
   // Send out outgoing movements.
   // This happens ASYNC!!!
-  $(elem).change(function() {
+  $(elem).change(function () {
     if (elem.value.length > 0) {
-      Drupal.gmap.geocoder().getLatLng(elem.value, function(point) {
+      Drupal.gmap.geocoder().getLatLng(elem.value, function (point) {
         if (point) {
           obj.vars.latitude = point.lat();
           obj.vars.longitude = point.lng();
-          obj.change("move",binding);
+          obj.change("move", binding);
         }
         else {
           // Todo: Get translated value using settings.
@@ -123,27 +123,27 @@ Drupal.gmap.addHandler('address', function(elem) {
 ////////////////////////////////////////
 //  Locpick address handler (testing) //
 ////////////////////////////////////////
-Drupal.gmap.addHandler('locpick_address', function(elem) {
+Drupal.gmap.addHandler('locpick_address', function (elem) {
   var obj = this;
 
   // Respond to focus event.
-  $(elem).focus(function() {
+  $(elem).focus(function () {
     this.value = '';
   });
 
   // Respond to incoming movements.
   // Clear the box when the coords change...
-  var binding = obj.bind("locpickchange", function(){
+  var binding = obj.bind("locpickchange", function () {
     elem.value = 'Enter an address';
   });
   // Send out outgoing movements.
   // This happens ASYNC!!!
-  $(elem).change(function() {
+  $(elem).change(function () {
     if (elem.value.length > 0) {
-      Drupal.gmap.geocoder().getLatLng(elem.value,function(point) {
+      Drupal.gmap.geocoder().getLatLng(elem.value, function (point) {
         if (point) {
           obj.locpick_coord = point;
-          obj.change("locpickchange",binding);
+          obj.change("locpickchange", binding);
         }
         else {
           // Todo: Get translated value using settings.
