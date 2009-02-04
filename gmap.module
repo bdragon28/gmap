@@ -824,9 +824,13 @@ function theme_gmap($element) {
     $map['styles'] = array_merge($mapdefaults['styles'], $element['#settings']['styles']);
   }
   gmap_map_cleanup($map);
-  
-  foreach ($map['markers'] as $i => $marker) {
-    $map['markers'][$i]['text'] = '<div class="gmap-popup">' . $marker['text'] . '</div>';
+
+  // Add a class around map bubble contents.
+  // @@@ Bdragon sez: Becw, this doesn't belong here. Theming needs to get fixed instead..
+  if (isset($map['markers'])) {
+    foreach ($map['markers'] as $i => $marker) {
+      $map['markers'][$i]['text'] = '<div class="gmap-popup">' . $marker['text'] . '</div>';
+    }
   }
 
   switch (strtolower($map['align'])) {
