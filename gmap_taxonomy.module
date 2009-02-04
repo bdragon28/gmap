@@ -46,7 +46,7 @@ function gmap_taxonomy_form_alter($form_id, &$form) {
       $form['gmap_taxonomy_marker'] = array(
         '#title' => t('GMap Marker'),
         '#type' => 'select',
-        '#options' => array('' => '') + gmap_get_marker_titles(),
+        '#options' => array('' => t('No Marker')) + gmap_get_marker_titles(),
         '#description' => t('If you would like nodes tagged as this term to have a special marker, choose one here.'),
         '#default_value' => $temp,
       );
@@ -80,17 +80,24 @@ function gmap_taxonomy_taxonomy($op, $type, $array = NULL) {
     switch ($op) {
       case 'insert':
       case 'update':
-        if (isset($array['gmap_taxonomy_marker']) && !empty($array['gmap_taxonomy_marker'])) {
+        $vocabs = variable_get('gmap_taxonomy_vocabs', array());
+        if (isset($vocabs[$array['vid']]) && $vocabs[$array['vid']]) {
           db_query('DELETE FROM {gmap_taxonomy_term} WHERE tid = %d', $array['tid']);
-          db_query("INSERT INTO {gmap_taxonomy_term} (tid, marker) VALUES (%d, '%s')", $array['tid'], $array['gmap_taxonomy_marker']);
+          // Do we have an assigned marker?
+          if (!empty($array['gmap_taxonomy_marker'])) {
+            db_query("INSERT INTO {gmap_taxonomy_term} (tid, marker) VALUES (%d, '%s')", $array['tid'], $array['gmap_taxonomy_marker']);
+            // Update name changes in the gmap_taxonomy_node table.
+            db_query("UPDATE {gmap_taxonomy_node} SET marker = '%s' WHERE tid = %d", $array['gmap_taxonomy_marker'], $array['tid']);
+          }
 
-          // Be a helpful module and make the change retroactive.
-          db_query('DELETE FROM {gmap_taxonomy_node} WHERE tid = %d', $array['tid']);
-          db_query('INSERT INTO {gmap_taxonomy_node} (nid, tid, marker) (SELECT t.nid, t.tid, g.marker FROM {term_node} t INNER JOIN {gmap_taxonomy_term} g ON t.tid = g.tid WHERE t.tid = %d)', $array['tid']);
+          gmap_taxonomy_reassign_marker($array['tid']);
         }
         break;
       case 'delete':
+        // Delete and reassign even if the term isn't currently gmap_taxonomy enabled.
         db_query('DELETE FROM {gmap_taxonomy_term} WHERE tid = %d', $array['tid']);
+        // Use gmap_taxonomy_node for search because term_node rows are already gone.
+        gmap_taxonomy_reassign_marker($array['tid'], 'gmap_taxonomy_node');
     }
   }
 }
@@ -134,6 +141,24 @@ function gmap_taxonomy_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     case 'delete':
       db_query('DELETE FROM {gmap_taxonomy_node} WHERE nid = %d', $node->nid);
       break;
+  }
+}
+
+/**
+ * Reassign markers associated with a term that's going away.
+ */
+function gmap_taxonomy_reassign_marker($tid, $table = 'term_node') {
+  $result = db_query('SELECT nid FROM {'. db_escape_table($table) .'} WHERE tid = %d', $tid);
+  while ($node = db_fetch_object($result)) {
+    $markers = db_query('SELECT t.tid, gt.marker FROM {term_node} r INNER JOIN {gmap_taxonomy_term} gt ON r.tid = gt.tid INNER JOIN {term_data} t ON r.tid = t.tid INNER JOIN {vocabulary} v ON t.vid = v.vid WHERE r.nid = %d ORDER BY v.weight DESC, t.weight DESC, t.name DESC', $node->nid);
+    if ($marker = db_fetch_object($markers)) {
+      // Fallback found.
+      db_query("UPDATE {gmap_taxonomy_node} SET tid = %d, marker = '%s' WHERE nid = %d", $marker->tid, $marker->marker, $node->nid);
+    }
+    else {
+      // No replacement marker, delete the row.
+      db_query("DELETE FROM {gmap_taxonomy_node} WHERE nid = %d", $marker->nid);
+    }
   }
 }
 
