@@ -750,12 +750,15 @@ function gmap_location_block_view($nid) {
   $block = array();
   $node = node_load($nid);
   if ($node->locations) {
+    if (!function_exists('location_newapi')) {
+      require_once 'gmap_location.compat.inc';
+    }
     $markertypes = variable_get('gmap_node_markers', array());
     $markers = array();
     $count = 0;
     foreach ($node->locations as $loc) {
       // @@@ Todo: Client side geocoding
-      if ($loc['latitude'] || $loc['longitude']) {
+      if (location_has_coordinates($loc)) {
         $count++;
         $markername = isset($markertypes[$node->type]) ? $markertypes[$node->type] : 'drupal';
         if (module_exists('gmap_taxonomy')) {
