@@ -21,6 +21,14 @@ function gmap_location_uninstall() {
   variable_del('gmap_node_map');
   variable_del('gmap_node_markers');
   variable_del('gmap_role_markers');
+  variable_del('gmap_location_block_macro');
+  variable_del('gmap_location_author_block_macro');
+  variable_del('gmap_location_author_block_types');
+  variable_del('gmap_location_author_block_marker');
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'gmap_location_block_macro_%%'");
+  while ($row = db_fetch_object($result)) {
+    variable_del($row->name);
+  }
 }
 
 function gmap_location_update_1() {
@@ -34,7 +42,7 @@ function gmap_location_update_2() {
 // 5.x-0.8 first update
 function gmap_location_update_5080() {
   // Convert role markers to single variable.
-  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'gmap_role_map_marker_%'");
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'gmap_role_map_marker_%%'");
   $markers = array();
   while ($row = db_fetch_object($result)) {
     $num = (int)substr($row->name, 21);
@@ -46,7 +54,7 @@ function gmap_location_update_5080() {
   variable_del('gmap_user_map_marker');
 
   // Convert node type markers to single variable.
-  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'gmap_node_marker_%'");
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'gmap_node_marker_%%'");
   $markers = array();
   while ($row = db_fetch_object($result)) {
     $type = substr($row->name, 17);
