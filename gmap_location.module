@@ -449,17 +449,6 @@ function theme_gmap_location_node_page($count, $header, $map, $footer) {
  *
  */
 function gmap_location_admin_settings() {
-  $form['geocoding'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Geocode Locations'),
-  );
-  $form['geocoding']['gmap_geocode'] = array(
-    '#type' => 'radios',
-    '#title' => t('Enable the Google Map API geocoding'),
-    '#default_value' => variable_get('gmap_geocode', 1),
-    '#options' => array(1 => t('Enabled'), 0 => t('Disabled')),
-  );
-
   // Location 3.x manages user settings by itself.
   if (!function_exists('location_newapi')) {
     $form['userloc'] = array(
@@ -967,16 +956,6 @@ function gmap_location_user($op, &$edit, &$user, $category = NULL) {
           $tmp = variable_get('gmap_user_map', _gmap_location_user_map_defaults());
 
           $form['coordinates']['gmap_node']['#value'] = gmap_set_location($tmp['macro'], $form['coordinates'], array('latitude' => 'gmap_location_latitude', 'longitude' => 'gmap_location_longitude'));
-
-/*
-          if (variable_get('gmap_geocode', 1)) {
-            $form['coordinates']['gmap_location_address'] = array(
-              '#type' => 'textfield',
-              '#title' => t('Address'),
-              '#description' => t('The address to be found on the map.  Enter an address and then hit "TAB" and the current location will be updated.  Please note that this address is not saved for the node, it is only used for finding a location.'),
-            );
-          }
-*/
         }
         return $form;
     }

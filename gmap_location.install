@@ -145,3 +145,13 @@ function gmap_location_update_5100() {
 
   return $ret;
 }
+
+/**
+ * 5.x-1.0 update 2. (Post-release)
+ * Delete unneeded variable.
+ */
+function gmap_location_update_5101() {
+  $ret = array();
+  variable_del('gmap_geocode');
+  return $ret;
+}
