@@ -603,7 +603,7 @@ function gmap_location_admin_settings() {
       '#title' => t('Marker for %type', array('%type' => $value->name)),
       '#default_value' => isset($defaults[$key]) ? $defaults[$key] : 'drupal',
     );
-    $settings = variable_get("location_settings_$key", FALSE);
+    $settings = variable_get("location_settings_node_$key", FALSE);
     if (!((isset($settings['multiple']['max']) && $settings['multiple']['max']) || variable_get("location_maxnum_$key", 0))) {
       $form['node']['gmap_node_markers'][$key]['#description'] = t('This content type is not currently Location enabled.');
     }
@@ -635,7 +635,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
 
         $ntypes = node_get_types();
         foreach ($ntypes as $key => $value) {
-          $settings = variable_get("location_settings_$key", FALSE);
+          $settings = variable_get("location_settings_node_$key", FALSE);
           if ((isset($settings['multiple']['max']) && $settings['multiple']['max']) || variable_get("location_maxnum_$key", 0)) {
             $form["gmap_location_block_macro_$key"] = array(
               '#type' => 'textfield',
@@ -688,7 +688,7 @@ function gmap_location_block($op = 'list', $delta = 0, $edit = array()) {
         // Save node type specific macros.
         $ntypes = node_get_types();
         foreach ($ntypes as $key => $value) {
-          $settings = variable_get("location_settings_$key", FALSE);
+          $settings = variable_get("location_settings_node_$key", FALSE);
           if ((isset($settings['multiple']['max']) && $settings['multiple']['max']) || variable_get("location_maxnum_$key", 0)) {
             $val = trim($edit["gmap_location_block_macro_$key"]);
             if (empty($val)) {
