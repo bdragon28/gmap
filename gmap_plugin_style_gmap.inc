@@ -49,6 +49,9 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     else if ($this->options['markers'] == 'taxonomy') {
       $this->view->query->add_field('gmap_taxonomy_node', 'marker', 'gmap_node_marker');
     }
+    else if ($this->options['markers'] == 'userrole') {
+      $this->view->query->add_field('users_roles', 'rid', 'gmap_role_marker');
+    }
   }
 
   function render() {
@@ -77,6 +80,9 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     if ($this->options['markers'] == 'nodetype') {
       $markertypes = variable_get('gmap_node_markers', array());
     }
+    else if ($this->options['markers'] == 'userrole') {
+      $markertypes = variable_get('gmap_role_markers', array(DRUPAL_AUTHENTICATED_RID => 'drupal'));
+    }
 
     // Group the rows according to the grouping field, if specified.
     $sets = $this->render_grouping($this->view->result, $this->options['grouping']);
@@ -99,6 +105,14 @@ class gmap_plugin_style_gmap extends views_plugin_style {
           else if ($this->options['markers'] == 'taxonomy') {
             if (!empty($row->gmap_node_marker)) {
               $markername = $row->gmap_node_marker;
+            }
+          }
+          else if ($this->options['markers'] == 'userrole') {
+            if (!empty($row->gmap_role_marker)) {
+              $markername = $markertypes[DRUPAL_AUTHENTICATED_RID];
+              if (isset($markertypes[$row->gmap_role_marker])) {
+                $markername = $markertypes[$row->gmap_role_marker];
+              }
             }
           }
           else if ($this->options['markers'] == 'field') {
@@ -186,6 +200,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       '#options' => array(
         'nodetype' => t('By content type (for node views)'),
         'taxonomy' => t('By term (for node views)'),
+        'userrole' => t('By user role (for user views)'),
         'field' => t('Use marker field'),
         'static' => t('Use single marker type'),
       ),
