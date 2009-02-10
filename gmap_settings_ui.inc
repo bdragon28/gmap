@@ -40,7 +40,7 @@ function _gmap_admin_settings() {
     $form['initialization']['gmap_private_markerfile'] = array(
       '#type' => 'textfield',
       '#title' => t('Path to gmap_markers.js'),
-      '#description' => t('You are using the <em>Private</em> download method. For markers to work properly. you must press the <em>Regenerate</em> button, manually copy js/gmap_markers.js from the files directory to a location accessible by the webserver, and enter the file path relative to the Drupal root in this field.'),
+      '#description' => t('You are using the <em>Private</em> download method. For markers to work properly. you must press the <em>Regenerate</em> button, manually copy js/gmap_markers.js from the files directory to a location accessible by the webserver, and enter the file path relative to the Drupal root (including the filename) in this field. Example: <em>sites/default/misc/gmap_markers.js</em>'),
       '#default_value' => variable_get('gmap_private_markerfile', ''),
     );
   }
