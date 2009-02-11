@@ -24,7 +24,17 @@
      * Be a good GMap citizen! Remember to send change()s after modifying variables!
      */
     getMap: function (mapid) {
-      return maps[mapid];
+      if (maps[mapid]) {
+        return maps[mapid];
+      }
+      else {
+        // Perhaps the user passed a widget id instead?
+        mapid = mapid.split('-').slice(1, -1).join('-');
+        if (maps[mapid]) {
+          return maps[mapid];
+        }
+      }
+      return false;
     },
 
     unloadMap: function (mapid) {
