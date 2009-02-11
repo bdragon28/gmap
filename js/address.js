@@ -1,12 +1,11 @@
 /* $Id$ */
 
 /**
+ * @file
  * Address widget and GMap geocoder routines.
  */
 
-////////////////////////////////////////
-//             GEOCODING              //
-////////////////////////////////////////
+/*global $, Drupal, GClientGeocoder */
 
 /**
  * Provide a shared geocoder.
