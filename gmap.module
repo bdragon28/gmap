@@ -194,6 +194,18 @@ function gmap_gmap($op, &$map) {
           'help' => t('Adds a scale control to the map in the default position.'),
           'previewable' => TRUE,
         ),
+        'extramarkerevents' => array(
+          'title' => t('Enable extra marker events.'),
+          'default' => FALSE,
+          'help' => t('Used for advanced javascript work, this will enable the <em>mouseovermarker</em>, <em>mouseoutmarker</em>, and <em>dblclickmarker</em> events.'),
+          'internal' => TRUE,
+        ),
+        'clickableshapes' => array(
+          'title' => t('Enable clickable shapes.'),
+          'default' => FALSE,
+          'help' => t('Used for advanced javascript work, this will enable the <em>clickshape</em> event.'),
+          'internal' => TRUE,
+        ),
       );
       break;
 

@@ -98,10 +98,12 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     }
     obj.vars.shapes.push(shape);
     obj.map.addOverlay(shape.shape);
-    //if (obj.vars.behavior.autozoom) {
-    //  obj.bounds.extend(marker.marker.getPoint());
-    //  obj.map.setCenter(obj.bounds.getCenter(),obj.map.getBoundsZoomLevel(obj.bounds));
-    //}
+
+    if (obj.vars.behavior.clickableshapes) {
+      GEvent.addListener(shape.shape, 'click', function () {
+        obj.change('clickshape', -1, shape);
+      });
+    }
   });
 
   obj.bind('delshape', function (shape) {
