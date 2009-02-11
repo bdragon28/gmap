@@ -120,12 +120,12 @@ Drupal.gmap.map = function (v) {
     var c;
     if (_bindings[name]) {
       for (c = 0; c < _bindings[name].length; c++) {
-        if (c != id) {
+        if (c !== id) {
           _bindings[name][c](userdata);
         }
       }
     }
-    if (name != 'all') {
+    if (name !== 'all') {
       this.change('all', -1, name, userdata);
     }
   };
@@ -166,7 +166,7 @@ Drupal.gmap.addHandler('gmap', function (elem) {
   _ib.mtc = obj.bind("maptypechange", function () {
     var i;
     for (i = 0; i < obj.opts.mapTypeNames.length; i++) {
-      if (obj.opts.mapTypeNames[i] == obj.vars.maptype) {
+      if (obj.opts.mapTypeNames[i] === obj.vars.maptype) {
         obj.map.setMapType(obj.opts.mapTypes[i]);
         break;
       }
@@ -193,13 +193,13 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     if (obj.currentcontrol) {
       obj.map.removeControl(obj.currentcontrol);
     }
-    if (obj.vars.controltype == 'Micro') {
+    if (obj.vars.controltype === 'Micro') {
       obj.map.addControl(obj.currentcontrol = new GSmallZoomControl());
     }
-    else if (obj.vars.controltype == 'Small') {
+    else if (obj.vars.controltype === 'Small') {
       obj.map.addControl(obj.currentcontrol = new GSmallMapControl());
     }
-    else if (obj.vars.controltype == 'Large') {
+    else if (obj.vars.controltype === 'Large') {
       obj.map.addControl(obj.currentcontrol = new GLargeMapControl());
     }
   });
@@ -216,19 +216,19 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     opts.mapTypeNames = [];
 
     // Load google map types.
-    if (obj.vars.baselayers['Map']) {
+    if (obj.vars.baselayers.Map) {
       opts.mapTypes.push(G_NORMAL_MAP);
       opts.mapTypeNames.push('Map');
     }
-    if (obj.vars.baselayers['Satellite']) {
+    if (obj.vars.baselayers.Satellite) {
       opts.mapTypes.push(G_SATELLITE_MAP);
       opts.mapTypeNames.push('Satellite');
     }
-    if (obj.vars.baselayers['Hybrid']) {
+    if (obj.vars.baselayers.Hybrid) {
       opts.mapTypes.push(G_HYBRID_MAP);
       opts.mapTypeNames.push('Hybrid');
     }
-    if (obj.vars.baselayers['Physical']) {
+    if (obj.vars.baselayers.Physical) {
       opts.mapTypes.push(G_PHYSICAL_MAP);
       opts.mapTypeNames.push('Physical');
     }
@@ -243,13 +243,13 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     var map = obj.map;
 
     // Map type control
-    if (obj.vars.mtc == 'standard') {
+    if (obj.vars.mtc === 'standard') {
       map.addControl(new GMapTypeControl());
     }
-    else if (obj.vars.mtc == 'hier') {
+    else if (obj.vars.mtc === 'hier') {
       map.addControl(new GHierarchicalMapTypeControl());
     }
-    else if (obj.vars.mtc == 'menu') {
+    else if (obj.vars.mtc === 'menu') {
       map.addControl(new GMenuMapTypeControl());
     }
 
@@ -317,7 +317,7 @@ Drupal.gmap.addHandler('gmap', function (elem) {
         var type = map.getCurrentMapType();
         var i;
         for (i = 0; i < obj.opts.mapTypes.length; i++) {
-          if (obj.opts.mapTypes[i] == type) {
+          if (obj.opts.mapTypes[i] === type) {
             obj.vars.maptype = obj.opts.mapTypeNames[i];
           }
         }
