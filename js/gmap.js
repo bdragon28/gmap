@@ -1,11 +1,18 @@
 /* $Id$ */
 
 /**
+ * @file
  * Drupal to Google Maps API bridge.
  */
 
+/*global $, Drupal, GLatLng, GSmallZoomControl, GLargeMapControl, GMap2 */
+/*global GMapTypeControl, GSmallMapControl, G_HYBRID_MAP, G_NORMAL_MAP */
+/*global G_PHYSICAL_MAP, G_SATELLITE_MAP, GHierarchicalMapTypeControl */
+/*global GKeyboardHandler, GLatLngBounds, GMenuMapTypeControl, GEvent */
+/*global GOverviewMapControl, GScaleControl, GUnload */
+
 // GMap overseer singleton
-Drupal.gmap = new function() {
+Drupal.gmap = new function () {
   var _handlers = {};
   var _maps = {};
 
@@ -17,7 +24,7 @@ Drupal.gmap = new function() {
    */
   this.getMap = function(mapid) {
     if (_maps[mapid]) {
-      return _maps[mapid];
+    return _maps[mapid];
     }
     else {
       // Perhaps the user passed a widget id instead?
@@ -29,20 +36,22 @@ Drupal.gmap = new function() {
     return false;
   };
 
-  this.unloadMap = function(mapid) {
+  this.unloadMap = function (mapid) {
     delete _maps[mapid];
   };
 
-  this.addHandler = function(handler,callback) {
+  this.addHandler = function (handler, callback) {
     if (!_handlers[handler]) {
       _handlers[handler] = [];
     }
     _handlers[handler].push(callback);
   };
 
-  this.globalChange = function(name,userdata) {
+  this.globalChange = function (name, userdata) {
     for (var mapid in Drupal.settings.gmap) {
-      _maps[mapid].change(name,-1,userdata);
+      if (Drupal.settings.gmap.hasOwnProperty(mapid)) {
+        _maps[mapid].change(name, -1, userdata);
+      }
     }
   };
 
@@ -87,7 +96,7 @@ Drupal.gmap = new function() {
 
 Drupal.gmap.factory = {};
 
-Drupal.gmap.map = function(v) {
+Drupal.gmap.map = function (v) {
   this.vars = v;
   this.map = undefined;
   this.ready = false;
@@ -96,7 +105,7 @@ Drupal.gmap.map = function(v) {
   /**
    * Register interest in a change.
    */
-  this.bind = function(name,callback) {
+  this.bind = function (name, callback) {
     if (!_bindings[name]) {
       _bindings[name] = [];
     }
@@ -107,7 +116,7 @@ Drupal.gmap.map = function(v) {
    * Change notification.
    * Interested parties can act on changes.
    */
-  this.change = function(name,id,userdata) {
+  this.change = function (name, id, userdata) {
     var c;
     if (_bindings[name]) {
       for (c = 0; c < _bindings[name].length; c++) {
@@ -117,7 +126,7 @@ Drupal.gmap.map = function(v) {
       }
     }
     if (name != 'all') {
-      this.change('all',-1,name,userdata);
+      this.change('all', -1, name, userdata);
     }
   };
 
@@ -125,11 +134,11 @@ Drupal.gmap.map = function(v) {
    * Deferred change notification.
    * This will cause a change notification to be tacked on to the *end* of the event queue.
    */
-  this.deferChange = function(name,id,userdata) {
+  this.deferChange = function (name, id, userdata) {
     var obj = this;
     // This will move the function call to the end of the event loop.
-    setTimeout(function(){
-      obj.change(name,id,userdata);
+    setTimeout(function () {
+      obj.change(name, id, userdata);
     }, 0);
   };
 };
@@ -137,24 +146,24 @@ Drupal.gmap.map = function(v) {
 ////////////////////////////////////////
 //             Map widget             //
 ////////////////////////////////////////
-Drupal.gmap.addHandler('gmap',function(elem) {
+Drupal.gmap.addHandler('gmap', function (elem) {
   var obj = this;
 
   var _ib = {};
 
 
   // Respond to incoming zooms
-  _ib.zoom = obj.bind("zoom",function(){
+  _ib.zoom = obj.bind("zoom", function () {
     obj.map.setZoom(obj.vars.zoom);
   });
 
   // Respond to incoming moves
-  _ib.move = obj.bind("move", function(){
-    obj.map.panTo(new GLatLng(obj.vars.latitude,obj.vars.longitude));
+  _ib.move = obj.bind("move", function () {
+    obj.map.panTo(new GLatLng(obj.vars.latitude, obj.vars.longitude));
   });
 
   // Respond to incoming map type changes
-  _ib.mtc = obj.bind("maptypechange", function() {
+  _ib.mtc = obj.bind("maptypechange", function () {
     var i;
     for (i = 0; i < obj.opts.mapTypeNames.length; i++) {
       if (obj.opts.mapTypeNames[i] == obj.vars.maptype) {
@@ -165,14 +174,14 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   });
 
   // Respond to incoming width changes.
-  _ib.width = obj.bind("widthchange",function(w){
+  _ib.width = obj.bind("widthchange", function (w) {
     obj.map.getContainer().style.width = w;
     obj.map.checkResize();
   });
   // Send out outgoing width changes.
   // N/A
   // Respond to incoming height changes.
-  _ib.height = obj.bind("heightchange",function(h){
+  _ib.height = obj.bind("heightchange", function (h) {
     obj.map.getContainer().style.height = h;
     obj.map.checkResize();
   });
@@ -180,18 +189,24 @@ Drupal.gmap.addHandler('gmap',function(elem) {
   // N/A
 
   // Respond to incoming control type changes.
-  _ib.ctc = obj.bind("controltypechange",function() {
-    if(obj.currentcontrol) {
+  _ib.ctc = obj.bind("controltypechange", function () {
+    if (obj.currentcontrol) {
       obj.map.removeControl(obj.currentcontrol);
     }
-    if (obj.vars.controltype=='Micro') {obj.map.addControl(obj.currentcontrol = new GSmallZoomControl());}
-    if (obj.vars.controltype=='Small') {obj.map.addControl(obj.currentcontrol = new GSmallMapControl());}
-    if (obj.vars.controltype=='Large') {obj.map.addControl(obj.currentcontrol = new GLargeMapControl());}
+    if (obj.vars.controltype == 'Micro') {
+      obj.map.addControl(obj.currentcontrol = new GSmallZoomControl());
+    }
+    else if (obj.vars.controltype == 'Small') {
+      obj.map.addControl(obj.currentcontrol = new GSmallMapControl());
+    }
+    else if (obj.vars.controltype == 'Large') {
+      obj.map.addControl(obj.currentcontrol = new GLargeMapControl());
+    }
   });
   // Send out outgoing control type changes.
   // N/A
 
-  obj.bind("bootstrap_options", function() {
+  obj.bind("bootstrap_options", function () {
     // Bootup options.
     var opts = {}; // Object literal GMapOptions
     obj.opts = opts;
@@ -220,11 +235,11 @@ Drupal.gmap.addHandler('gmap',function(elem) {
 
   });
 
-  obj.bind("boot", function() {
+  obj.bind("boot", function () {
     obj.map = new GMap2(elem, obj.opts);
   });
 
-  obj.bind("init",function() {
+  obj.bind("init", function () {
     var map = obj.map;
 
     // Map type control
@@ -261,17 +276,17 @@ Drupal.gmap.addHandler('gmap',function(elem) {
       // Modify collapsable fieldsets to make maps check dom state when the resize handle
       // is clicked. This may not necessarily be the correct thing to do in all themes,
       // hence it being a behavior.
-      setTimeout(function(){
-        var r = function() {
+      setTimeout(function () {
+        var r = function () {
           map.checkResize();
-          map.setCenter(new GLatLng(obj.vars.latitude,obj.vars.longitude), obj.vars.zoom);
+          map.setCenter(new GLatLng(obj.vars.latitude, obj.vars.longitude), obj.vars.zoom);
         };
         $(elem).parents('fieldset.collapsible').children('legend').children('a').click(r);
         // Would be nice, but doesn't work.
         //$(elem).parents('fieldset.collapsible').children('.fieldset-wrapper').scroll(r);
-      },0);
+      }, 0);
     }
-    map.setCenter(new GLatLng(obj.vars.latitude,obj.vars.longitude), obj.vars.zoom);
+    map.setCenter(new GLatLng(obj.vars.latitude, obj.vars.longitude), obj.vars.zoom);
 
     if (!obj.vars.nocontzoom) {
       map.enableDoubleClickZoom();
@@ -282,13 +297,13 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     }
 
     // Send out outgoing zooms
-    GEvent.addListener(map, "zoomend", function(oldzoom,newzoom) {
+    GEvent.addListener(map, "zoomend", function (oldzoom, newzoom) {
       obj.vars.zoom = newzoom;
       obj.change("zoom", _ib.zoom);
     });
 
     // Send out outgoing moves
-    GEvent.addListener(map,"moveend",function() {
+    GEvent.addListener(map, "moveend", function () {
       var coord = map.getCenter();
       obj.vars.latitude = coord.lat();
       obj.vars.longitude = coord.lng();
@@ -296,7 +311,7 @@ Drupal.gmap.addHandler('gmap',function(elem) {
     });
 
     // Send out outgoing map type changes.
-    GEvent.addListener(map,"maptypechanged",function() {
+    GEvent.addListener(map, "maptypechanged", function () {
       // If the map isn't ready yet, ignore it.
       if (obj.ready) {
         var type = map.getCurrentMapType();
@@ -316,14 +331,14 @@ Drupal.gmap.addHandler('gmap',function(elem) {
 ////////////////////////////////////////
 //            Zoom widget             //
 ////////////////////////////////////////
-Drupal.gmap.addHandler('zoom', function(elem) {
+Drupal.gmap.addHandler('zoom', function (elem) {
   var obj = this;
   // Respond to incoming zooms
-  var binding = obj.bind("zoom", function(){
+  var binding = obj.bind("zoom", function () {
     elem.value = obj.vars.zoom;
   });
   // Send out outgoing zooms
-  $(elem).change(function() {
+  $(elem).change(function () {
     obj.vars.zoom = parseInt(elem.value, 10);
     obj.change("zoom", binding);
   });
@@ -332,14 +347,14 @@ Drupal.gmap.addHandler('zoom', function(elem) {
 ////////////////////////////////////////
 //          Latitude widget           //
 ////////////////////////////////////////
-Drupal.gmap.addHandler('latitude', function(elem) {
+Drupal.gmap.addHandler('latitude', function (elem) {
   var obj = this;
   // Respond to incoming movements.
-  var binding = obj.bind("move", function(){
+  var binding = obj.bind("move", function () {
     elem.value = '' + obj.vars.latitude;
   });
   // Send out outgoing movements.
-  $(elem).change(function() {
+  $(elem).change(function () {
     obj.vars.latitude = Number(this.value);
     obj.change("move", binding);
   });
@@ -348,14 +363,14 @@ Drupal.gmap.addHandler('latitude', function(elem) {
 ////////////////////////////////////////
 //         Longitude widget           //
 ////////////////////////////////////////
-Drupal.gmap.addHandler('longitude', function(elem) {
+Drupal.gmap.addHandler('longitude', function (elem) {
   var obj = this;
   // Respond to incoming movements.
-  var binding = obj.bind("move", function(){
+  var binding = obj.bind("move", function () {
     elem.value = '' + obj.vars.longitude;
   });
   // Send out outgoing movements.
-  $(elem).change(function() {
+  $(elem).change(function () {
     obj.vars.longitude = Number(this.value);
     obj.change("move", binding);
   });
@@ -364,14 +379,14 @@ Drupal.gmap.addHandler('longitude', function(elem) {
 ////////////////////////////////////////
 //          Latlon widget             //
 ////////////////////////////////////////
-Drupal.gmap.addHandler('latlon', function(elem) {
+Drupal.gmap.addHandler('latlon', function (elem) {
   var obj = this;
   // Respond to incoming movements.
-  var binding = obj.bind("move", function(){
+  var binding = obj.bind("move", function () {
     elem.value = '' + obj.vars.latitude + ',' + obj.vars.longitude;
   });
   // Send out outgoing movements.
-  $(elem).change(function() {
+  $(elem).change(function () {
     var t = this.value.split(',');
     obj.vars.latitude = Number(t[0]);
     obj.vars.longitude = Number(t[1]);
@@ -382,85 +397,85 @@ Drupal.gmap.addHandler('latlon', function(elem) {
 ////////////////////////////////////////
 //          Maptype widget            //
 ////////////////////////////////////////
-Drupal.gmap.addHandler('maptype', function(elem) {
+Drupal.gmap.addHandler('maptype', function (elem) {
   var obj = this;
   // Respond to incoming movements.
-  var binding = obj.bind("maptypechange", function(){
+  var binding = obj.bind("maptypechange", function () {
     elem.value = obj.vars.maptype;
   });
   // Send out outgoing movements.
-  $(elem).change(function() {
+  $(elem).change(function () {
     obj.vars.maptype = elem.value;
     obj.change("maptypechange", binding);
   });
 });
 
-(function() { // BEGIN CLOSURE
+(function () { // BEGIN CLOSURE
   var re = /([0-9.]+)\s*(em|ex|px|in|cm|mm|pt|pc|%)/;
-  var normalize = function(str) {
+  var normalize = function (str) {
     var ar;
     if ((ar = re.exec(str.toLowerCase()))) {
       return ar[1] + ar[2];
     }
     return null;
   };
-////////////////////////////////////////
-//           Width widget             //
-////////////////////////////////////////
-Drupal.gmap.addHandler('width', function(elem) {
-  var obj = this;
-  // Respond to incoming width changes.
-  var binding = obj.bind("widthchange", function(w){
-    elem.value = normalize(w);
+  ////////////////////////////////////////
+  //           Width widget             //
+  ////////////////////////////////////////
+  Drupal.gmap.addHandler('width', function (elem) {
+    var obj = this;
+    // Respond to incoming width changes.
+    var binding = obj.bind("widthchange", function (w) {
+      elem.value = normalize(w);
+    });
+    // Send out outgoing width changes.
+    $(elem).change(function () {
+      var n;
+      if ((n = normalize(elem.value))) {
+        elem.value = n;
+        obj.change('widthchange', binding, n);
+      }
+    });
+    obj.bind('init', function () {
+      $(elem).change();
+    });
   });
-  // Send out outgoing width changes.
-  $(elem).change(function() {
-    var n;
-    if ((n = normalize(elem.value))) {
-      elem.value = n;
-      obj.change('widthchange', binding, n);
-    }
-  });
-  obj.bind('init',function(){
-    $(elem).change();
-  });
-});
 
-////////////////////////////////////////
-//           Height widget            //
-////////////////////////////////////////
-Drupal.gmap.addHandler('height', function(elem) {
-  var obj = this;
-  // Respond to incoming height changes.
-  var binding = obj.bind("heightchange",function(h){
-    elem.value = normalize(h);
+  ////////////////////////////////////////
+  //           Height widget            //
+  ////////////////////////////////////////
+  Drupal.gmap.addHandler('height', function (elem) {
+    var obj = this;
+    // Respond to incoming height changes.
+    var binding = obj.bind("heightchange", function (h) {
+      elem.value = normalize(h);
+    });
+    // Send out outgoing height changes.
+    $(elem).change(function () {
+      var n;
+      if ((n = normalize(elem.value))) {
+        elem.value = n;
+        obj.change('heightchange', binding, n);
+      }
+    });
+    obj.bind('init', function () {
+      $(elem).change();
+    });
   });
-  // Send out outgoing height changes.
-  $(elem).change(function() {
-    var n;
-    if ((n = normalize(elem.value))) {
-      elem.value = n;
-      obj.change('heightchange', binding, n);
-    }
-  });
-  obj.bind('init',function(){
-    $(elem).change();
-  });
-});
 
 })(); // END CLOSURE
 
 ////////////////////////////////////////
 //        Control type widget         //
 ////////////////////////////////////////
-Drupal.gmap.addHandler('controltype', function(elem) {
+Drupal.gmap.addHandler('controltype', function (elem) {
   var obj = this;
   // Respond to incoming height changes.
-  var binding = obj.bind("controltypechange", function(){
+  var binding = obj.bind("controltypechange", function () {
     elem.value = obj.vars.controltype;
   });
   // Send out outgoing height changes.
-  $(elem).change(function() {
+  $(elem).change(function () {
     obj.vars.controltype = elem.value;
     obj.change("controltypechange", binding);
   });
