@@ -11,88 +11,90 @@
 /*global GKeyboardHandler, GLatLngBounds, GMenuMapTypeControl, GEvent */
 /*global GOverviewMapControl, GScaleControl, GUnload */
 
-// GMap overseer singleton
-Drupal.gmap = new function () {
-  var _handlers = {};
-  var _maps = {};
+(function () { // BEGIN closure
+  var handlers = {};
+  var maps = {};
 
-  /**
-   * Retrieve a map object for use by a non-widget.
-   * Use this if you need to be able to fire events against a certain map
-   * which you have the mapid for.
-   * Be a good GMap citizen! Remember to send change()s after modifying variables!
-   */
-  this.getMap = function(mapid) {
-    if (_maps[mapid]) {
-    return _maps[mapid];
-    }
-    else {
-      // Perhaps the user passed a widget id instead?
-      mapid = mapid.split('-').slice(1,-1).join('-');
-      if (_maps[mapid]) {
-        return _maps[mapid];
+  Drupal.gmap = {
+
+    /**
+     * Retrieve a map object for use by a non-widget.
+     * Use this if you need to be able to fire events against a certain map
+     * which you have the mapid for.
+     * Be a good GMap citizen! Remember to send change()s after modifying variables!
+     */
+    getMap: function (mapid) {
+      if (maps[mapid]) {
+        return maps[mapid];
       }
-    }
-    return false;
-  };
-
-  this.unloadMap = function (mapid) {
-    delete _maps[mapid];
-  };
-
-  this.addHandler = function (handler, callback) {
-    if (!_handlers[handler]) {
-      _handlers[handler] = [];
-    }
-    _handlers[handler].push(callback);
-  };
-
-  this.globalChange = function (name, userdata) {
-    for (var mapid in Drupal.settings.gmap) {
-      if (Drupal.settings.gmap.hasOwnProperty(mapid)) {
-        _maps[mapid].change(name, -1, userdata);
-      }
-    }
-  };
-
-  this.setup = function() {
-    if (Drupal.settings && Drupal.settings.gmap) {
-      for (var mapid in Drupal.settings.gmap) {
-        _maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
-
-        for (var control in _handlers) {
-          var s = 0;
-          do {
-            var o = $('#gmap-'+mapid+'-'+control+s);
-            o.each(function() {
-                for (var i=0; i<_handlers[control].length; i++) {
-                  _handlers[control][i].call(_maps[mapid],this);
-                }
-            });
-            s++;
-          }
-          while (o.length>0);
+      else {
+        // Perhaps the user passed a widget id instead?
+        mapid = mapid.split('-').slice(1, -1).join('-');
+        if (maps[mapid]) {
+          return maps[mapid];
         }
+      }
+      return false;
+    },
 
-        _maps[mapid].change("bootstrap_options",-1);
+    unloadMap: function (mapid) {
+      delete maps[mapid];
+    },
 
-        _maps[mapid].change("boot",-1);
+    addHandler: function (handler, callback) {
+      if (!handlers[handler]) {
+        handlers[handler] = [];
+      }
+      handlers[handler].push(callback);
+    },
 
-        _maps[mapid].change("init",-1);
+    globalChange: function (name, userdata) {
+      for (var mapid in Drupal.settings.gmap) {
+        if (Drupal.settings.gmap.hasOwnProperty(mapid)) {
+          maps[mapid].change(name, -1, userdata);
+        }
+      }
+    },
 
-        // Send some changed events to fire up the rest of the initial settings..
-        _maps[mapid].change("maptypechange",-1);
-        _maps[mapid].change("controltypechange",-1);
-        _maps[mapid].change("alignchange",-1);
+    setup: function () {
+      if (Drupal.settings && Drupal.settings.gmap) {
+        for (var mapid in Drupal.settings.gmap) {
+          maps[mapid] = new Drupal.gmap.map(Drupal.settings.gmap[mapid]);
 
-        // Set ready to put the event system into action.
-        _maps[mapid].ready = true;
-        _maps[mapid].change("ready",-1);
+          for (var control in handlers) {
+            var s = 0;
+            do {
+              var o = $('#gmap-' + mapid + '-' + control + s);
+              o.each(function () {
+                for (var i = 0; i < handlers[control].length; i++) {
+                  handlers[control][i].call(maps[mapid], this);
+                }
+              });
+              s++;
+            }
+            while (o.length > 0);
+          }
 
+          maps[mapid].change("bootstrap_options", -1);
+
+          maps[mapid].change("boot", -1);
+
+          maps[mapid].change("init", -1);
+
+          // Send some changed events to fire up the rest of the initial settings..
+          maps[mapid].change("maptypechange", -1);
+          maps[mapid].change("controltypechange", -1);
+          maps[mapid].change("alignchange", -1);
+
+          // Set ready to put the event system into action.
+          maps[mapid].ready = true;
+          maps[mapid].change("ready", -1);
+
+        }
       }
     }
   };
-}();
+})(); // END closure
 
 Drupal.gmap.factory = {};
 
@@ -483,7 +485,7 @@ Drupal.gmap.addHandler('controltype', function (elem) {
 
 // Map setup / teardown.
 if (Drupal.jsEnabled) {
-  $(document).ready(Drupal.gmap.setup).unload(function() {
+  $(document).ready(Drupal.gmap.setup).unload(function () {
     //Google cleanup.
     GUnload();
   });
