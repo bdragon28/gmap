@@ -1,40 +1,43 @@
 /* $Id$ */
 
 /**
+ * @file
  * Common marker routines.
  */
 
-Drupal.gmap.addHandler('gmap', function(elem) {
+/*global $, Drupal, GEvent, GInfoWindowTab, GLatLng, GLatLngBounds */
+
+Drupal.gmap.addHandler('gmap', function (elem) {
   var obj = this;
 
-  obj.bind('init', function() {
+  obj.bind('init', function () {
     if (obj.vars.behavior.autozoom) {
       obj.bounds = new GLatLngBounds();
     }
   });
 
-  obj.bind('addmarker',function(marker) {
-    var m = Drupal.gmap.factory.marker(new GLatLng(marker.latitude,marker.longitude), marker.opts);
+  obj.bind('addmarker', function (marker) {
+    var m = Drupal.gmap.factory.marker(new GLatLng(marker.latitude, marker.longitude), marker.opts);
     marker.marker = m;
-    GEvent.addListener(m,'click',function() {
-      obj.change('clickmarker',-1,marker);
+    GEvent.addListener(m, 'click', function () {
+      obj.change('clickmarker', -1, marker);
     });
     if (obj.vars.behavior.extramarkerevents) {
-      GEvent.addListener(m,'mouseover',function() {
-        obj.change('mouseovermarker',-1,marker);
+      GEvent.addListener(m, 'mouseover', function () {
+        obj.change('mouseovermarker', -1, marker);
       });
-      GEvent.addListener(m,'mouseout',function() {
-        obj.change('mouseoutmarker',-1,marker);
+      GEvent.addListener(m, 'mouseout', function () {
+        obj.change('mouseoutmarker', -1, marker);
       });
-      GEvent.addListener(m,'dblclick',function() {
-        obj.change('dblclickmarker',-1,marker);
+      GEvent.addListener(m, 'dblclick', function () {
+        obj.change('dblclickmarker', -1, marker);
       });
     }
     /**
      * Perform a synthetic marker click on this marker on load.
      */
     if (marker.autoclick || (marker.options && marker.options.autoclick)) {
-      obj.deferChange('clickmarker',-1,marker);
+      obj.deferChange('clickmarker', -1, marker);
     }
     if (obj.vars.behavior.autozoom) {
       obj.bounds.extend(marker.marker.getPoint());
@@ -42,7 +45,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
   });
 
   // Default marker actions.
-  obj.bind('clickmarker',function(marker) {
+  obj.bind('clickmarker', function (marker) {
     // Local/stored content
     if (marker.text) {
       marker.marker.openInfoWindowHtml(marker.text);
@@ -62,7 +65,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
       //if (!marker.text && Drupal.settings.loadingImage) {
       //  marker.marker.openInfoWindowHtml(Drupal.settings.loadingImage);
       //}
-      $.get(uri, {}, function(data) {
+      $.get(uri, {}, function (data) {
         marker.marker.openInfoWindowHtml(data);
       });
     }
@@ -70,17 +73,19 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     else if (marker.tabs) {
       var infoWinTabs = [];
       for (var m in marker.tabs) {
-        infoWinTabs.push(new GInfoWindowTab(m,marker.tabs[m]));
+        if (marker.tabs.hasOwnProperty(m)) {
+          infoWinTabs.push(new GInfoWindowTab(m, marker.tabs[m]));
+        }
       }
       marker.marker.openInfoWindowTabsHtml(infoWinTabs);
     }
     // No content -- marker is a link
     else if (marker.link) {
-        open(marker.link,'_self');
+      open(marker.link, '_self');
     }
   });
 
-  obj.bind('markersready', function() {
+  obj.bind('markersready', function () {
     // If we are autozooming, set the map center at this time.
     if (obj.vars.behavior.autozoom) {
       if (!obj.bounds.isEmpty()) {
@@ -89,7 +94,7 @@ Drupal.gmap.addHandler('gmap', function(elem) {
     }
   });
 
-  obj.bind('clearmarkers', function() {
+  obj.bind('clearmarkers', function () {
     // Reset bounds if autozooming
     // @@@ Perhaps we should have a bounds for both markers and shapes?
     if (obj.vars.behavior.autozoom) {
