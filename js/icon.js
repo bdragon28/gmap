@@ -1,10 +1,12 @@
 /* $Id$ */
 
 /**
+ * @file
  * GIcon manager for GMap.
- *
  * Required for markers to operate properly.
  */
+
+/*global $, Drupal, GIcon, GPoint, GSize, G_DEFAULT_ICON */
 
 /**
  * Get the GIcon corresponding to a setname / sequence.
