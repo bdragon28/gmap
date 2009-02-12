@@ -761,7 +761,11 @@ function process_gmap_address($element) {
  */
 function process_gmap_markerchooser($element) {
   $element['#type'] = 'select';
-  $element['#options'] = gmap_get_marker_titles();
+  $options = gmap_get_marker_titles();
+  if (!isset($element['#required']) || !$element['#required']) {
+    $options = array('' => t('Default')) + $options;
+  }
+  $element['#options'] = $options;
   $element += _element_info('select');
   return $element;
 }
