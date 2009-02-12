@@ -60,7 +60,6 @@ function _gmap_location_node_map_defaults() {
  */
 function gmap_location_menu() {
   $items['map/user'] = array(
-    'path' => 'map/user',
     'type' => MENU_NORMAL_ITEM,
     'title' => 'User locations',
     'access arguments' => array('show user map'),
