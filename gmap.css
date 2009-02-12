@@ -1,16 +1,15 @@
-/* IE VML Security issue fix.
- * For more details, see:
- * http://googlemapsapi.blogspot.com/2006/09/vml-security-issue.html
+/* $Id$ */
+
+/**
+ * @file
+ * GMap CSS rules.
  */
-v\:* {
-  behavior:url(#default#VML);
-}
 
-.gmap-popup{
+.gmap-popup {
 
 }
 
-.gmap-tooltip{
+.gmap-tooltip {
    padding: 2px;
    margin: 0;
    border: solid black 1px;
