@@ -248,21 +248,24 @@ function _gmap_doheader() {
   drupal_add_css($gmap_path .'/gmap.css');
   drupal_add_js($gmap_path .'/js/gmap.js');
   $mm = variable_get('gmap_mm_type', 'gmap');
-  // If you really really want to override the marker manager, implement
-  // this, take $mm by ref, and have fun. --Bdragon
-  if (function_exists('_gmap_markermanager_override')) {
-    _gmap_markermanager_override($mm);
-  }
-  if ($mm=='clusterer') {
-    drupal_add_js($gmap_path .'/js/icon.js');
-    drupal_add_js($gmap_path .'/thirdparty/Clusterer2.js');
-  }
-  drupal_add_js($gmap_path .'/js/marker.js');
-  drupal_add_js($gmap_path .'/js/'. $mm .'_marker.js');
   $mms = variable_get('gmap_markermanager', array());
   if (empty($mms[$mm])) {
     $mms[$mm] = array();
   }
+  // If you really really want to override the marker manager, implement
+  // this, take $mm by ref, and have fun. --Bdragon
+  if (function_exists('_gmap_markermanager_override')) {
+    _gmap_markermanager_override($mm, $mms);
+  }
+  if ($mm == 'clusterer' || $mm == 'clustermarker') {
+    // Needed for access to clusterer marker.
+    drupal_add_js($gmap_path .'/js/icon.js');
+  }
+  if (isset($mms[$mm]['filename'])) {
+    drupal_add_js($gmap_path .'/thirdparty/'. $mms[$mm]['filename']);
+  }
+  drupal_add_js($gmap_path .'/js/marker.js');
+  drupal_add_js($gmap_path .'/js/'. $mm .'_marker.js');
   drupal_add_js(array('gmap_markermanager' => $mms[$mm]), 'setting');
 // @@@
 drupal_add_js($gmap_path .'/js/poly.js');

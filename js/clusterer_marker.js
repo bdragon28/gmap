@@ -20,15 +20,15 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     obj.clusterer = new Clusterer(obj.map);
     var s = Drupal.settings.gmap_markermanager;
     if (s) {
-      obj.clusterer.SetMaxVisibleMarkers(s.max_nocluster);
-      obj.clusterer.SetMinMarkersPerCluster(s.cluster_min);
-      obj.clusterer.SetMaxLinesPerInfoBox(s.max_lines);
+      obj.clusterer.SetMaxVisibleMarkers(+s.max_nocluster);
+      obj.clusterer.SetMinMarkersPerCluster(+s.cluster_min);
+      obj.clusterer.SetMaxLinesPerInfoBox(+s.max_lines);
     }
   });
 
   obj.bind('iconsready', function () {
     var s = Drupal.settings.gmap_markermanager;
-    if (s) {
+    if (s.marker.length) {
       obj.clusterer.SetIcon(Drupal.gmap.getIcon(s.marker, 0));
     }
   });
@@ -53,3 +53,36 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     obj.map.clearOverlays();
   });
 });
+
+////////////////// Clusterer overrides section //////////////////
+
+// Store original implementations of overridden functions
+Clusterer.origFunctions = {};
+
+// Alternate popup code from: http://drupal.org/node/155104#comment-574696
+Clusterer.origFunctions.PopUp = Clusterer.PopUp;
+Clusterer.PopUp = function (cluster) {
+  var mode = Drupal.settings.gmap_markermanager.popup_mode;
+  if (mode === 'orig') {
+    return Clusterer.origFunctions.PopUp(cluster);
+  }
+  else if (mode === 'zoom') {
+    var bounds = new GLatLngBounds();
+    for (var k in cluster.markers)
+      bounds.extend(cluster.markers[k].getPoint());
+
+    var sw = bounds.getSouthWest();
+    var ne = bounds.getNorthEast();
+    var rect = [
+      sw,
+      new GLatLng(sw.lat(), ne.lng()),
+      ne,
+      new GLatLng(ne.lat(), sw.lng()),
+      sw
+    ];
+
+    var center = bounds.getCenter();
+    var zoom = cluster.clusterer.map.getBoundsZoomLevel(bounds);
+    cluster.clusterer.map.setCenter(new GLatLng(+center.lat(), +center.lng()), +zoom);
+  }
+};

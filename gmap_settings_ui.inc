@@ -272,8 +272,14 @@ function _gmap_admin_settings() {
   if (!isset($opts['gmarkermanager']) || !is_array($opts['gmarkermanager'])) {
     $opts['gmarkermanager'] = array();
   }
+  if (!isset($opts['markermanager']) || !is_array($opts['markermanager'])) {
+    $opts['markermanager'] = array();
+  }
   if (!isset($opts['clusterer']) || !is_array($opts['clusterer'])) {
     $opts['clusterer'] = array();
+  }
+  if (!isset($opts['clustermarker']) || !is_array($opts['clustermarker'])) {
+    $opts['clustermarker'] = array();
   }
 
   $opts['gmap'] = array_merge(array(
@@ -281,20 +287,40 @@ function _gmap_admin_settings() {
   ), $opts['gmap']);
 
   $opts['gmarkermanager'] = array_merge(array(
-    'borderPadding' => 0,
+    'borderPadding' => 256,
     'maxZoom' => 4,
     'trackMarkers' => FALSE,
     'markerMinZoom' => 4,
     'markerMaxZoom' => 0,
   ), $opts['gmarkermanager']);
 
+  $opts['markermanager'] = array_merge(array(
+    'filename' => 'markermanager_packed.js',
+    'borderPadding' => 256,
+    'maxZoom' => 4,
+    'trackMarkers' => FALSE,
+    'markerMinZoom' => 4,
+    'markerMaxZoom' => 0,
+  ), $opts['markermanager']);
+
   $opts['clusterer'] = array_merge(array(
-    'clusterer_file' => 'Clusterer2.js',
+    'filename' => 'Clusterer2.js',
     'marker' => 'cluster',
     'max_nocluster' => 150,
     'cluster_min' => 5,
     'max_lines' => 10,
+    'popup_mode' => 'orig',
   ), $opts['clusterer']);
+
+  $opts['clustermarker'] = array_merge(array(
+    'filename' => 'ClusterMarker.js',
+    'borderPadding' => 256,
+    'clusteringEnabled' => TRUE,
+    'clusterMarkerIcon' => '',
+    'clusterMarkerTitle' => '',
+    'fitMapMaxZoom' => 0,
+    'intersectPadding' => 0,
+  ), $opts['clustermarker']);
 
   $form['gmap_markermanager'] = array(
     '#type' => 'fieldset',
@@ -308,30 +334,37 @@ function _gmap_admin_settings() {
     '#options' => array(
       'gmap' => t('No manager (use GMap API directly)'),
       'gmarkermanager' => t("Google's GMarkerManager"),
+      'markermanager' => t('Gmaps Utility Library MarkerManager'),
       'clusterer' => t("Jef Poskanzer's Clusterer"),
+      'clustermarker' => t("Martin Pearman's ClusterMarker"),
     ),
     '#default_value' => variable_get('gmap_mm_type', 'gmap'),
     '#description' => t('If you are planning on using many markers on a single map, you may want to consider using a marker manager to speed up map rendering.'),
   );
 
+  // No Manager
   $form['gmap_markermanager']['gmap'] = array(
     '#type' => 'fieldset',
     '#title' => t('Unmanaged marker settings'),
     '#description' => t('There are no settings for unmanaged markers.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
 
+  // Google Maps API GMarkerManager
   $form['gmap_markermanager']['gmarkermanager'] = array(
     '#type' => 'fieldset',
     '#title' => t('GMarkerManager settings'),
     '#description' => t('GMarkerManager is a new part of the official Google Maps API that provides a marker manager.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
-
   $form['gmap_markermanager']['gmarkermanager']['borderPadding'] = array(
     '#type' => 'textfield',
     '#title' => t('Border padding'),
     '#description' => t('Markers located less than this number of pixels from the viewport will be added to the map by the manager (even if they would be fully invisible.)'),
-    '#size' => 3,
-    '#maxlength' => 3,
+    '#size' => 4,
+    '#maxlength' => 4,
     '#default_value' => $opts['gmarkermanager']['borderPadding'],
   );
   $form['gmap_markermanager']['gmarkermanager']['maxZoom'] = array(
@@ -360,7 +393,6 @@ function _gmap_admin_settings() {
     '#default_value' => $opts['gmarkermanager']['markerMinZoom'],
     '#parents' => array('gmap_markermanager', 'gmarkermanager', 'markerMinZoom'),
   );
-
   $form['gmap_markermanager']['gmarkermanager']['defaults']['markerMaxZoom'] = array(
     '#type' => 'select',
     '#title' => t('Maximum zoom'),
@@ -370,16 +402,77 @@ function _gmap_admin_settings() {
     '#parents' => array('gmap_markermanager', 'gmarkermanager', 'markerMaxZoom'),
   );
 
+  // Gmaps Utility Library -- MarkerManager
+  $form['gmap_markermanager']['markermanager'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('MarkerManager settings'),
+    '#description' => t('MarkerManager is the improved open source version of GMarkerManager. To use, you must download it from <a href="@url">here</a> and place it in the <em>thirdparty</em> folder.', array('@url' => 'http://gmaps-utility-library.googlecode.com/svn/trunk/markermanager/release/src/')),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['gmap_markermanager']['markermanager']['filename'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Filename'),
+    '#description' => t('Name of downloaded file in the thirdparty folder. Default: %default', array('%default' => 'markermanager_packed.js')),
+    '#default_value' => $opts['markermanager']['filename'],
+  );
+  $form['gmap_markermanager']['markermanager']['borderPadding'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Border padding'),
+    '#description' => t('Markers located less than this number of pixels from the viewport will be added to the map by the manager (even if they would be fully invisible.)'),
+    '#size' => 4,
+    '#maxlength' => 4,
+    '#default_value' => $opts['markermanager']['borderPadding'],
+  );
+  $form['gmap_markermanager']['markermanager']['maxZoom'] = array(
+    '#type' => 'select',
+    '#title' => t('Maximum zoom'),
+    '#options' => drupal_map_assoc(range(0, 17)),
+    '#description' => t('At the specified zoom level and above, the marker manager will disable itself for additional speed.'),
+    '#default_value' => $opts['markermanager']['maxZoom'],
+  );
+  $form['gmap_markermanager']['markermanager']['trackMarkers'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Track markers'),
+    '#description' => t('If enabled, the marker manager will track marker movements. Leave off unless you need to move markers around with setPoint.'),
+    '#default_value' => $opts['markermanager']['trackMarkers'],
+  );
+  $form['gmap_markermanager']['markermanager']['defaults'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Marker defaults'),
+    '#description' => t('Default marker-specific settings for MarkerManager. Markers will appear when the current zoom level is between minZoom and maxZoom.'),
+  );
+  $form['gmap_markermanager']['markermanager']['defaults']['markerMinZoom'] = array(
+    '#type' => 'select',
+    '#title' => t('Minimum zoom'),
+    '#options' => drupal_map_assoc(range(0, 17)),
+    '#description' => t('At the specified zoom level and above (i.e. zooming in,) the marker will be shown. Choose 0 to show markers at all zoom levels by default.'),
+    '#default_value' => $opts['markermanager']['markerMinZoom'],
+    '#parents' => array('gmap_markermanager', 'markermanager', 'markerMinZoom'),
+  );
+
+  $form['gmap_markermanager']['markermanager']['defaults']['markerMaxZoom'] = array(
+    '#type' => 'select',
+    '#title' => t('Maximum zoom'),
+    '#options' => drupal_map_assoc(range(0, 17)),
+    '#description' => t('At the specified zoom level and above (i.e. zooming in,) the marker will be hidden. Choose 0 to disable by default.'),
+    '#default_value' => $opts['markermanager']['markerMaxZoom'],
+    '#parents' => array('gmap_markermanager', 'markermanager', 'markerMaxZoom'),
+  );
+
+  // Jef Poskanzer's Clusterer
   $form['gmap_markermanager']['clusterer'] = array(
     '#type' => 'fieldset',
     '#title' => t('Clusterer settings'),
     '#description' => t("Clusterer is a marker manager written by Jef Poskanzer of acme.com. To use, you must place Clusterer2.js (available ".'<a href="@url">here</a>) into the "thirdparty" folder.', array('@url' => 'http://acme.com/javascript/Clusterer2.js')),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
-  $form['gmap_markermanager']['clusterer']['clusterer_file'] = array(
+  $form['gmap_markermanager']['clusterer']['filename'] = array(
     '#type' => 'textfield',
-    '#title' => t('Clusterer filename'),
-    '#description' => t('Set the name of the Clusterer file in the thirdparty folder.'),
-    '#default_value' => $opts['clusterer']['clusterer_file'],
+    '#title' => t('Filename'),
+    '#description' => t('Name of downloaded file in the thirdparty folder. Default: %default', array('%default' => 'Clusterer2.js')),
+    '#default_value' => $opts['clusterer']['filename'],
   );
   $form['gmap_markermanager']['clusterer']['marker'] = array(
     '#type' => 'gmap_markerchooser',
@@ -392,8 +485,8 @@ function _gmap_admin_settings() {
     '#title' => t('Activate on'),
     '#field_suffix' => t('or more markers'),
     '#description' => t("Clustering is enabled when more than the specified number of markers are visible at the same time."),
-    '#size' => 3,
-    '#maxlength' => 3,
+    '#size' => 4,
+    '#maxlength' => 4,
     '#default_value' => $opts['clusterer']['max_nocluster'],
   );
   $form['gmap_markermanager']['clusterer']['cluster_min'] = array(
@@ -401,8 +494,8 @@ function _gmap_admin_settings() {
     '#title' => t('Cluster on'),
     '#field_suffix' => t('or more markers'),
     '#description' => t("Minimal number of markers per cluster"),
-    '#size' => 2,
-    '#maxlength' => 2,
+    '#size' => 3,
+    '#maxlength' => 3,
     '#default_value' => $opts['clusterer']['cluster_min'],
   );
   $form['gmap_markermanager']['clusterer']['max_lines'] = array(
@@ -411,9 +504,71 @@ function _gmap_admin_settings() {
     '#field_prefix' => t('at most'),
     '#field_suffix' => t('lines'),
     '#description' => t("Maximum number of lines per info box"),
-    '#size' => 2,
-    '#maxlength' => 2,
+    '#size' => 3,
+    '#maxlength' => 3,
     '#default_value' => $opts['clusterer']['max_lines'],
+  );
+  $form['gmap_markermanager']['clusterer']['popup_mode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Popup mode'),
+    '#options' => array('orig' => t('Original'), 'zoom' => t('Zoom to Cluster')),
+    '#default_value' => $opts['clusterer']['popup_mode'],
+  );
+
+  // Martin Pearman's ClusterMarker
+  $form['gmap_markermanager']['clustermarker'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('ClusterMarker settings'),
+    '#description' => t('ClusterMarker is a marker manager written by Martin Pearman. To use, you must download it from <a href="@url">here</a> and extract the appropriate file to the <em>thirdparty</em> folder.', array('@url' => 'http://googlemapsapi.martinpearman.co.uk/downloads.php?cat_id=1')),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['gmap_markermanager']['clustermarker']['filename'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Filename'),
+    '#description' => t('Name of downloaded file in the thirdparty folder. Default: %default', array('%default' => 'ClusterMarker.js')),
+    '#default_value' => $opts['clustermarker']['filename'],
+  );
+  $form['gmap_markermanager']['clustermarker']['borderPadding'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Border padding'),
+    '#description' => t('Markers located less than this number of pixels from the viewport will be added to the map by the manager (even if they would be fully invisible.)'),
+    '#size' => 4,
+    '#maxlength' => 4,
+    '#default_value' => $opts['clustermarker']['borderPadding'],
+  );
+  $form['gmap_markermanager']['clustermarker']['clusteringEnabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Clustering enabled'),
+    '#description' => t('Whether to use clustering or not.'),
+    '#default_value' => $opts['clustermarker']['clusteringEnabled'],
+  );
+  $form['gmap_markermanager']['clustermarker']['clusterMarkerIcon'] = array(
+    '#type' => 'gmap_markerchooser',
+    '#title' => t('Marker for clusters'),
+    '#description' => t('The marker to use when creating a cluster.'),
+    '#default_value' => $opts['clustermarker']['clusterMarkerIcon'],
+  );
+  $form['gmap_markermanager']['clustermarker']['clusterMarkerTitle'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title for clusters'),
+    '#description' => t("The title to use for clusters. %count will be replaced with the number of markers in the cluster."),
+    '#default_value' => $opts['clustermarker']['clusterMarkerTitle'],
+  );
+  $form['gmap_markermanager']['clustermarker']['fitMapMaxZoom'] = array(
+    '#type' => 'select',
+    '#title' => t('Maximum zoom for zooming to cluster'),
+    '#options' => drupal_map_assoc(range(0, 17)),
+    '#description' => t('When clicking on a cluster, the map will not zoom in farther than this.'),
+    '#default_value' => $opts['clustermarker']['fitMapMaxZoom'],
+  );
+  $form['gmap_markermanager']['clustermarker']['intersectPadding'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Intersect Padding'),
+    '#description' => t('Number of pixels to pad marker icons by when determining whether they intersect.'),
+    '#default_value' => $opts['clustermarker']['intersectPadding'],
+    '#size' => 4,
+    '#maxlength' => 4,
   );
 
   $form['#validate']['gmap_admin_settings_validate'] = array();
