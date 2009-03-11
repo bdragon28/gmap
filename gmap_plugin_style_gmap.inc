@@ -167,11 +167,10 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     );
 
     $options = array();
-    // @@@ Fix this when I'm not having a monday morning.
-    // There's likely a more "correct" way.
-    foreach ($this->display->display_options['fields'] as $id => $handler) {
-      $data = views_fetch_data($handler['table']);
-      $options[$id] = $handler['label'];
+    $fields = $this->display->handler->get_handlers('field');
+
+    foreach ($fields as $id => $handler) {
+      $options[$id] = $handler->ui_name(FALSE);
     }
 
     $form['latfield'] = array(
