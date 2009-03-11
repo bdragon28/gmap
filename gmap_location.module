@@ -124,7 +124,7 @@ function gmap_location_user_page() {
       AND
         (l.latitude != 0 OR l.longitude != 0)
       GROUP BY
-        i.uid, i.lid");
+        i.uid, i.lid, u.name, l.latitude, l.longitude");
   }
   else {
     $result = db_query("
