@@ -962,7 +962,7 @@ function gmap_get_auto_mapid() {
 function gmap_get_marker_titles($reset = FALSE) {
   static $titles;
 
-  if (!reset) {
+  if (!$reset) {
     if (is_array($titles)) {
       return $titles;
     }
