@@ -28,7 +28,7 @@ function gmap_location_theme() {
  * Implementation of hook_perm().
  */
 function gmap_location_perm() {
-  return array('set user location', 'show user map', 'user locations', 'show node map');
+  return array('show user map', 'user locations', 'show node map');
 }
 
 /**
