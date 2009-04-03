@@ -55,6 +55,10 @@ class gmap_plugin_style_gmap extends views_plugin_style {
   }
 
   function render() {
+    if (isset($this->view->live_preview) && $this->view->live_preview) {
+      return t('GMap views are not compatible with live preview.');
+    }
+
     if (empty($this->row_plugin)) {
       vpr('gmap_plugin_style_gmap: Missing row plugin');
       return;
