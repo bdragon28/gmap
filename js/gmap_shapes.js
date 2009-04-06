@@ -89,6 +89,12 @@ Drupal.gmap.addHandler('gmap', function (elem) {
       case 'line':
         shape.shape = new Pl(cargs);
         break;
+      case 'encoded_line':
+        shape.shape = GPolyline.fromEncoded(shape);        
+        break;
+      case 'encoded_polygon':
+        shape.shape = GPolygon.fromEncoded(shape);
+        break;
     }
   });
 
