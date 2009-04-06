@@ -523,5 +523,5 @@ if (Drupal.jsEnabled) {
 }
 
 Drupal.behaviors.GMap = function (context) {
-  $('.gmap-control:not(.gmap-processed)', context).addClass('gmap-processed').each(Drupal.gmap.setup);
+  $('.gmap-control:not(.gmap-processed)', context).addClass('gmap-processed').each(function () {Drupal.gmap.setup.call(this)});
 };
