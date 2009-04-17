@@ -795,6 +795,12 @@ function theme_gmap_align($element) {
  * Gmap element theme hook
  */
 function theme_gmap($element) {
+  // Usability: Prevent js errors on first visit to settings page, etc.
+  // Of course it will still error if the *wrong* key is on file.
+  if (gmap_get_key() == '') {
+    return t('Unable to render map: Google Maps API key is missing.');
+  }
+
   // Track the mapids we've used already.
   static $mapids = array();
 
