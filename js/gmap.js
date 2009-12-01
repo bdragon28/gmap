@@ -77,6 +77,14 @@
 
       if (settings || (Drupal.settings && Drupal.settings.gmap)) {
         var mapid = obj.id.split('-');
+        if (Drupal.settings['gmap_remap_widgets']) {
+          if (Drupal.settings['gmap_remap_widgets'][obj.id]) {
+            jQuery.each(Drupal.settings['gmap_remap_widgets'][obj.id].classes, function() {
+              jQuery(obj).addClass(this);
+            });
+            mapid = Drupal.settings['gmap_remap_widgets'][obj.id].id.split('-');
+          }
+        }
         var instanceid = mapid.pop();
         mapid.shift();
         mapid = mapid.join('-');
@@ -523,5 +531,10 @@ if (Drupal.jsEnabled) {
 }
 
 Drupal.behaviors.GMap = function (context) {
+  if (Drupal.settings && Drupal.settings['gmap_remap_widgets']) {
+    jQuery.each(Drupal.settings['gmap_remap_widgets'], function(key, val) {
+      $('#'+ key).addClass('gmap-control');
+    });
+  }
   $('.gmap-control:not(.gmap-processed)', context).addClass('gmap-processed').each(function () {Drupal.gmap.setup.call(this)});
 };
