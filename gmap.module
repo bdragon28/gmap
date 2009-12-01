@@ -1201,6 +1201,7 @@ function gmap_views_plugins() {
         'handler' => 'gmap_plugin_style_gmap',
         'theme' => 'gmap_view_gmap',
         'uses row plugin' => TRUE,
+        'uses grouping' => TRUE,
         'uses options' => TRUE,
         'type' => 'normal',
       ),

@@ -37,6 +37,8 @@ class gmap_plugin_style_gmap extends views_plugin_style {
   }
 
   function query() {
+    parent::query();
+
     if ($this->options['datasource'] == 'location') {
       $table = $this->view->query->ensure_table('location');
       $this->view->query->add_field($table, 'latitude', 'gmap_lat');
@@ -52,9 +54,17 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     else if ($this->options['markers'] == 'userrole') {
       $this->view->query->add_field('users_roles', 'rid', 'gmap_role_marker');
     }
+
+    if (isset($this->row_plugin)) {
+      $this->row_plugin->query();
+    }
   }
 
+  /**
+   * Render the display in this style.
+   */
   function render() {
+
     if (isset($this->view->live_preview) && $this->view->live_preview) {
       return t('GMap views are not compatible with live preview.');
     }
@@ -97,7 +107,8 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     foreach ($sets as $title => $records) {
       $markers = array();
       $offsets = array();
-        foreach ($records as $label => $row) {
+      foreach ($records as $row_index => $row) {
+        $this->view->row_index = $row_index;
         $lat = (float)$row->{$lat_field};
         $lon = (float)$row->{$lon_field};
         if (!empty($lat) && !empty($lon)) {
@@ -143,6 +154,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
         $output .= theme($this->theme_functions(), $this->view, $this->options, $map, $title);
       }
     }
+    unset($this->view->row_index);
     return $output;
   }
 
