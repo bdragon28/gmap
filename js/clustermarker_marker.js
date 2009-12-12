@@ -47,4 +47,8 @@ Drupal.gmap.addHandler('gmap', function (elem) {
   obj.bind('clearmarkers', function () {
     obj.clusterMarker.removeMarkers();
   });
+
+  obj.bind('markersready', function () {
+    obj.clusterMarker.refresh();
+  });
 });
