@@ -3,7 +3,7 @@
 
 /**
  * @file
- * These functions are used to implement a plugin for gmap.
+ * GMap plugin API.
  */
 
 /**
