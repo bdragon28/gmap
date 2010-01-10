@@ -3,11 +3,7 @@
 
 /**
  * @file
- * GMap Filters is a module to include Google Map in a module
- *
- * GMap filter allows the insertion of a googlemap in a module.  It has
- * a page to create a macro and then a filter to convet the macro into the
- * html and javascript code required to insert a google map.
+ * GMap -- Routines to use the Google Maps API in Drupal.
  */
 
 /**
