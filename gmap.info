@@ -1,5 +1,8 @@
 ; $Id$
 name = GMap
 description = Filter to allow insertion of a google map into a node
-core = 6.x
+core = 7.x
 package = Location
+files[] = gmap.module
+files[] = gmap.views.inc
+files[] = gmap-view-gmap.tpl.php
