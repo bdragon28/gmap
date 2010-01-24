@@ -68,6 +68,23 @@ Drupal.gmap.addHandler('gmap', function (elem) {
       style[3] = '#' + style[3];
       style[4] = style[4] / 100;
     }
+    
+    if (shape.type == 'encoded_line') {
+      shape.color = style[0];
+      shape.weight = style[1];
+      shape.opacity = style[2];
+    }
+    else if (shape.type == 'encoded_polygon') {
+      $.each(shape.polylines, function(i, polyline) {
+        polyline.color = style[0];
+        polyline.weight = style[1];
+        polyline.opacity = style[2];
+      });
+      shape.fill = true;
+      shape.color = style[3];
+      shape.opacity = style[4];
+      shape.outline = true;
+    }
 
     $.each(style, function (i, n) {
       cargs.push(n);
@@ -88,6 +105,12 @@ Drupal.gmap.addHandler('gmap', function (elem) {
         break;
       case 'line':
         shape.shape = new Pl(cargs);
+        break;
+      case 'encoded_line':
+        shape.shape = GPolyline.fromEncoded(shape);        
+        break;
+      case 'encoded_polygon':
+        shape.shape = GPolygon.fromEncoded(shape);
         break;
     }
   });
