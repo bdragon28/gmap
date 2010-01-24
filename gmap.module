@@ -1127,12 +1127,37 @@ function gmap_simple_map($latitude, $longitude, $markername = '', $info = '', $z
  * Implementation of hook_keys_service(). (from the keys api)
  */
 function gmap_keys_service() {
-  return array(
-    'gmap' => array(
-      'name' => t('Gmap'),
-      'description' => t('Google Maps API Key'),
-    ),
-  );
+  // @@@ Remove after everyone has upgraded.
+  if (module_exists('keys_api')) {
+    return array(
+      'gmap' => array(
+        'name' => t('Gmap'),
+        'description' => t('Google Maps API Key'),
+      ),
+    );
+  }
+  elseif (module_exists('keys')) {
+    // @greenSkin:
+    // What is your reasoning behind predefining this?
+    // I'll avoid overriding you for now, but this seems rather arbitrary.
+    // Reference: http://drupal.org/cvs?commit=310498
+
+    // Probe keys to determine if it is defining our key for us.
+    $test = array();
+    if (function_exists('keys_keys_service')) {
+      $test = keys_keys_service();
+    }
+    if (!isset($test['google_maps'])) {
+      // Be forward compatible with future versions of keys api
+      // that no longer define it.
+      return array(
+        'google_maps' => array(
+          'name' => t('Google Maps'),
+          'description' => t('Google Maps API Key'),
+        ),
+      );
+    }
+  }
 }
 
 /**
@@ -1142,6 +1167,9 @@ function gmap_get_key() {
   $key = variable_get('googlemap_api_key', '');
   if (module_exists('keys_api')) {
     $key = keys_api_get_key('gmap', $_SERVER['HTTP_HOST']);
+  }
+  elseif (module_exists('keys')) {
+    $key = keys_get_key('google_maps');
   }
   return $key;
 }

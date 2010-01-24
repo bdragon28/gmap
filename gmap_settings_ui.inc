@@ -17,24 +17,25 @@ function _gmap_admin_settings() {
     '#type' => 'fieldset',
     '#title' => t('Google Map Initialize'),
   );
-  if (!module_exists('keys_api')) {
+
+  if (!module_exists('keys_api') && !module_exists('keys')) {
     $form['initialization']['googlemap_api_key'] = array(
       '#type' => 'textfield',
-      '#title' => t('Google Maps API Key'),
       '#default_value' => variable_get('googlemap_api_key', ''),
       '#size' => 50,
       '#maxlength' => 255,
-      '#description' => t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.'),
     );
   }
   else {
     $form['initialization']['googlemap_api_key'] = array(
       '#type' => 'item',
       '#title' => t('Google Maps API Key'),
-      '#description' => t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.'),
-      '#value' => t("Managed by <a href='@url'>keys api</a>.", array('@url' => url('admin/settings/keys'))),
+      '#value' => t('Managed by <a href="@url">Keys</a>.', array('@url' => url('admin/settings/keys'))),
     );
   }
+
+  $form['initialization']['googlemap_api_key']['#title'] = t('Google Maps API Key');
+  $form['initialization']['googlemap_api_key']['#description'] = t('Your personal Googlemaps API key.  You must get this for each separate website at <a href="http://www.google.com/apis/maps/">Google Map API website</a>.');
 
   if (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) != FILE_DOWNLOADS_PUBLIC) {
     $form['initialization']['gmap_private_markerfile'] = array(
