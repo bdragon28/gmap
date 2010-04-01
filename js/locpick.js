@@ -33,16 +33,12 @@ Drupal.gmap.addHandler('gmap', function (elem) {
             obj.map.addOverlay(obj.locpick_point = new GMarker(point, {draggable: true}));
           }
           obj.locpick_point.setLatLng(point);
-          obj.map.zoomIn(point, true, true);
-          obj.map.zoomIn(point, true, true);
           GEvent.addListener(obj.locpick_point, 'drag', function () {
             obj.locpick_coord = obj.locpick_point.getLatLng();
             obj.change('locpickchange', binding);
           });
           GEvent.addListener(obj.locpick_point, 'dragend', function () {
             obj.locpick_coord = obj.locpick_point.getLatLng();
-            obj.map.zoomIn(obj.locpick_coord, true, true);
-            obj.map.zoomIn(obj.locpick_coord, true, true);
             obj.change('locpickchange', binding);
           });
           obj.locpick_coord = point;
