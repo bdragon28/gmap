@@ -38,6 +38,7 @@ function gmap_defaults() {
     'styles' => array(
       'line_default' => array('0000ff', 5, 45, '', 0, 0),
       'poly_default' => array('000000', 3, 25, 'ff0000', 45),
+      'highlight_color' => 'ff0000',
     ),
     'line_colors' => array('#00cc00', '#ff0000', '#0000ff'),
   );
@@ -119,6 +120,7 @@ function gmap_gmap($op, &$map) {
 
         drupal_add_js($path . 'icon.js');
         drupal_add_js($path . 'marker.js');
+        drupal_add_js($path .'highlight.js');
 
         $mm = variable_get('gmap_mm_type', 'gmap');
         // If you really really want to override the marker manager, implement
@@ -220,6 +222,18 @@ function gmap_gmap($op, &$map) {
           'help' => t('Used for advanced javascript work, this will enable the <em>clickshape</em> event.'),
           'internal' => TRUE,
         ),
+        'googlebar' => array(
+          'title' => t('Enable Google Bar'),
+          'default' => FALSE,
+          'help' => t('Enable the "Google Bar" at bottom of the map.'),
+          'previewable' => TRUE,
+        ),
+        'highlight' => array(
+          'title' => t('Highlight marker on rollover'),
+          'default' => FALSE,
+          'help' => t('Highlight marker by creating circle on mouse rollover event.'),
+          'previewable' => TRUE,
+        ),
       );
       break;
 
@@ -279,6 +293,7 @@ function _gmap_doheader() {
     drupal_add_js($gmap_path . '/thirdparty/' . $mms[$mm]['filename']);
   }
   drupal_add_js($gmap_path . '/js/marker.js');
+  drupal_add_js($gmap_path . '/js/highlight.js');
   drupal_add_js($gmap_path . '/js/' . $mm . '_marker.js');
   drupal_add_js(array('gmap_markermanager' => $mms[$mm]), 'setting');
 // @@@

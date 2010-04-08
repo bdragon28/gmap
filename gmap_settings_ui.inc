@@ -144,6 +144,15 @@ function gmap_admin_settings(&$form_state) {
     '#description' => t('Polygons without a specific style defined will fall back to this style'),
     '#default_value' => $defaults['styles']['poly_default'],
   );
+  $form['gmap_default']['styles']['highlight_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Highlight color'),
+    '#size' => 6,
+    '#maxlength' => 6,
+    '#field_prefix' => '#',
+    '#description' => t('This sets the color of the marker highlight when the "highlight : Highlight marker on rollover" behaviour is enabled. Hex color value. Example: #00AA33'),
+    '#default_value' => $defaults['styles']['highlight_color'],
+  );
 
   $form['gmap_default']['controltype'] = array(
     '#type' => 'select',

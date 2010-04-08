@@ -32,3 +32,12 @@
   /* Don't let long copyright texts stick out the side of the map div. */
   overflow: hidden;
 }
+
+/* Clean up unwanted styling for google toolbar */
+.gmap-map .gmnoprint table {
+  margin: 0;
+}
+
+.gmap-map .gmnoprint tbody {
+  border-top: none;
+}
