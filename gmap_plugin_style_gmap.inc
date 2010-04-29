@@ -237,9 +237,9 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     }
 
     $form['macro'] = array(
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#title' => t('Macro'),
-      '#size' => 1000,
+      '#rows' => 3,
       '#default_value' => $this->options['macro'],
     );
 
