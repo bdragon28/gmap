@@ -37,3 +37,10 @@ Google Maps API Utility Library addon
 This is an improved version of GMarkerManager.
 Website: http://code.google.com/p/gmaps-utility-library/
 Tested version: 1.0
+
+MarkerClusterer.js
+----------------
+Google Maps API Utility Library addon
+This javascript library creates and manages per-zoom-level clusters for large amounts of markers (hundreds or thousands).
+Website: http://code.google.com/p/gmaps-utility-library-dev/
+Tested version: 1.0
