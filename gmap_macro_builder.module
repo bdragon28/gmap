@@ -85,9 +85,7 @@ function gmap_macro_builder_form(&$form_state, $settings = array(), $hide = arra
   // @@@ TODO: Roll this next section into an element, it's duplicated from the settings ui.
   $baselayers = array();
 
-  foreach (module_implements('gmap') as $module) {
-    call_user_func_array($module .'_gmap', array('baselayers', &$baselayers));
-  }
+  gmap_module_invoke('baselayers', $baselayers);
 
   $options = array();
   foreach ($baselayers as $name => $layers) {

@@ -44,7 +44,7 @@ function gmap_defaults() {
   );
   $defaults['behavior'] = array();
   $m = array();
-  $behaviors = module_invoke_all('gmap', 'behaviors', $m);
+  $behaviors = gmap_module_invoke('behaviors', $m);
   foreach ($behaviors as $k => $v) {
     $defaults['behavior'][$k] = $v['default'];
   }
@@ -68,6 +68,26 @@ function gmap_theme() {
     'gmap_style' => array('arguments' => array('element')),
     'gmap' => array('arguments' => array('element')),
   );
+}
+
+/**
+ * Invokes hook_gmap() in every module.
+ *
+ * We can't use module_invoke_all() because we pass $map by reference.
+ */
+function gmap_module_invoke($op, &$map) {
+  foreach (module_implements('gmap') as $module) {
+    $function = $module . '_gmap';
+    $return = array();
+    $result = $function($op, $map);
+    if (isset($result) && is_array($result)) {
+      $return = array_merge_recursive($return, $result);
+    }
+    elseif (isset($result)) {
+      $return[] = $result;
+    }
+  }
+  return $return;
 }
 
 /**
@@ -927,10 +947,7 @@ function theme_gmap($element) {
   // @@@ Bdragon sez: Yeah, would be nice, but hard to guarantee functionality. Not everyone uses the static markerloader.
   $o = '<div style="' . implode('; ', $style) . ';" id="' . $element['#id'] . '"' . drupal_attributes($element['#attributes']) . '>' . t('Javascript is required to view this map.') . '</div>';
 
-  // $map can be manipulated by reference.
-  foreach (module_implements('gmap') as $module) {
-    call_user_func_array($module . '_gmap', array('pre_theme_map', &$map));
-  }
+  gmap_module_invoke('pre_theme_map', $map);
 
   if (isset($mapids[$element['#map']])) {
     drupal_set_message(t('Duplicate map detected! GMap does not support multiplexing maps onto one MapID! GMap MapID: %mapid', array('%mapid' => $element['#map'])), 'error');
