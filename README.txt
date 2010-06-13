@@ -34,6 +34,8 @@ If you are using the HTML filter, it will need to appear BEFORE the GMap filter;
 * If you would like to use third party functionality such as mouse wheel support
 or Clusterer, read thirdparty/README.txt for download links and instructions.
 
+* If you are translating this module to a different language also see the gmap.strings.php file for further installation instructions.  This is required for translation of marker type strings to work.
+
 
 Google Maps and XHTML
 ---------------------
