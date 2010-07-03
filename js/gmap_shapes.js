@@ -89,6 +89,9 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     $.each(style, function (i, n) {
       cargs.push(n);
     });
+    if (shape.opts) {
+      cargs.push(shape.opts);
+    }
     var Pg = function (args) {
       GPolygon.apply(this, args);
     };
