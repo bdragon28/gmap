@@ -144,9 +144,14 @@ class gmap_plugin_style_gmap extends views_plugin_style {
         $lat = (float)$row->{$lat_field};
         $lon = (float)$row->{$lon_field};
 
+        // $row->nid is present in node views, views without node as the base table must include the nid field,
+        // which will be in $row->node_nid if present.
+        // If nid for a row is required use $row_nid.
+        $row_nid = isset($row->nid) ? $row->nid : (isset($row->node_nid) ? $row->node_nid : NULL);
+
         // If this row will be used as center map then we keep its lon/lat
         // If there are multiple points on a single node take the first match
-        if (!empty($center_nid) && $center_nid == $row->nid && ($center_lon === NULL || $center_lat === NULL)) {
+        if (!empty($center_nid) && !empty($row_nid) && $center_nid == $row_nid && ($center_lon === NULL || $center_lat === NULL)) {
           $center_lon = $lon;
           $center_lat = $lat;
         }
@@ -192,7 +197,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
             'text' => $this->row_plugin->render($row),
             'opts' => array(
               'title' => $tooltip,
-              'highlight' => ($highlight_nid == $row->nid) ? 1 : 0,
+              'highlight' => (!empty($highlight_nid) && !empty($row_nid) && $highlight_nid == $row_nid) ? 1 : 0,
               'highlightcolor' => $this->options['highlight_nodearg_color'],
             ),
           );
@@ -311,7 +316,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       '#type' => 'checkbox',
       '#title' => t('Center on node argument'),
       '#default_value' => $this->options['center_on_nodearg'],
-      '#description' => t('Note: The view must contain a node by node id as an argument Global:Null'),
+      '#description' => ($this->view->base_table == 'node') ? t('Note: The view must contain an argument whose value is a node ID.') : t('Note: The view must contain an argument whose value is a node ID.') . '<br />' . t("The view must contain 'Node: nid' as one of its fields because the view type is not 'Node'."),
     );
     $form['center_on_nodearg_arg'] = array(
       '#title' => t('Argument'),
@@ -327,7 +332,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       '#type' => 'checkbox',
       '#title' => t('Highlight marker for node argument'),
       '#default_value' => $this->options['highlight_nodearg'],
-      '#description' => t('Note: The view must contain a node by node id as an argument Global:Null'),
+      '#description' => ($this->view->base_table == 'node') ? t('Note: The view must contain an argument whose value is a node ID.') : t('Note: The view must contain an argument whose value is a node ID.') . '<br />' . t("The view must contain 'Node: nid' as one of its fields because the view type is not 'Node'."),
     );
     $form['highlight_nodearg_arg'] = array(
       '#title' => t('Argument'),
