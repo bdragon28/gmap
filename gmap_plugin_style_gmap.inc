@@ -259,6 +259,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       '#default_value' => $this->options['datasource'],
       '#multiple' => FALSE,
     );
+
     $form['latfield'] = array(
       '#title' => t('Latitude field'),
       '#description' => t('Format must be degrees decimal.'),
@@ -268,6 +269,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       '#process' => array('views_process_dependency'),
       '#dependency' => array('edit-style-options-datasource' => array('fields')),
     );
+
     $form['lonfield'] = array(
       '#title' => t('Longitude field'),
       '#description' => t('Format must be degrees decimal.'),
@@ -291,6 +293,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       ),
       '#default_value' => $this->options['markers'],
     );
+
     $form['markerfield'] = array(
       '#type' => 'select',
       '#title' => t('Marker field'),
@@ -377,6 +380,6 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     // Check if highlight color is a valid hex color
     if (!preg_match('/^#[a-f0-9]{6}$/i', $form_state['values']['style_options']['highlight_nodearg_color'])) {
       form_error($form['highlight_nodearg_color'], t('Highlight colour must be a valid hex code in the form #FF0000.'));
-    } 
+    }
   }
 }
