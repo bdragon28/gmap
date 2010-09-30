@@ -84,6 +84,7 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       return;
     }
 
+    $defaults = gmap_defaults();
     $lat_field = 'gmap_lat';
     $lon_field = 'gmap_lon';
 
@@ -189,18 +190,26 @@ class gmap_plugin_style_gmap extends views_plugin_style {
             $tooltip = $row->$tooltip_field;
           }
 
-          $markers[] = array(
+          $marker = array(
             'latitude' => $lat,
             'longitude' => $lon,
             'markername' => $markername,
             'offset' => $offsets[$markername],
-            'text' => $this->row_plugin->render($row),
             'opts' => array(
               'title' => $tooltip,
               'highlight' => (!empty($highlight_nid) && !empty($row_nid) && $highlight_nid == $row_nid) ? 1 : 0,
               'highlightcolor' => $this->options['highlight_nodearg_color'],
             ),
           );
+          // Marker mode: popup.
+          if ($defaults['markermode'] == 1) {
+            $marker['text'] = $this->row_plugin->render($row);
+          }
+          // Marker mode: link.
+          else if ($defaults['markermode'] == 2) {
+            $marker['link'] = url('node/' . $row_nid);
+          }
+          $markers[] = $marker;
 
           $offsets[$markername]++;
         }
