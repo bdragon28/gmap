@@ -1263,3 +1263,36 @@ function gmap_views_plugins() {
     ),
   );
 }
+
+/**
+ * Implementation of hook_views_pre_render().
+ */
+function gmap_views_pre_render(&$view) {
+  static $gmap_processed;
+  // Add js only for gmap style views with ajax and not already processed.
+  if (($view->plugin_name != 'gmap' && !$view->use_ajax) || $gmap_processed) {
+    return;
+  }
+  // Mark the view as already processed.
+  $gmap_processed = TRUE;
+  // Add js with new views callback.
+  drupal_add_js(drupal_get_path('module', 'gmap') . '/js/gmap_views_ajax.js', 'module');
+}
+
+/**
+ * Implementation of hook_ajax_data_alter().
+ */
+function gmap_ajax_data_alter(&$object, $views, $view) {
+  // Add js callback only with gmap style plugins and with ajax.
+  if ($view->plugin_name != 'gmap' || !$view->use_ajax) {
+    return;
+  }
+
+  // Save settings.
+  $js = drupal_add_js(NULL, NULL, 'header');
+  $object->settings = $js['setting'];
+
+  // Register custom callback.
+  $object->__callbacks = array_merge($object->__callbacks, array('Drupal.gmapAjax.ajaxFixMaps'));
+}
+
