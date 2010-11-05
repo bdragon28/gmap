@@ -33,6 +33,10 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     $options['lonfield'] = array('default' => '');
     $options['markerfield'] = array('default' => '');
 
+    $options['enablermt'] = array('default' => FALSE);
+    $options['rmtfield'] = array('default' => '');
+    $options['rmtcallback'] = array('default' => '');
+
     $options['center_on_nodearg'] = array('default' => 0);
     $options['center_on_nodearg_arg'] = array('default' => '');
 
@@ -106,6 +110,12 @@ class gmap_plugin_style_gmap extends views_plugin_style {
     if ($this->options['markers'] == 'field') {
       $marker_field_obj = $this->view->display_handler->get_handler('field', $this->options['markerfield']);
       $marker_field = $marker_field_obj->field_alias;
+    }
+    
+    // Determine rmt field.
+    if ($this->options['enablermt']) {
+      $rmt_field_obj = $this->view->display_handler->get_handler('field', $this->options['rmtfield']);
+      $rmt_field = $rmt_field_obj->field_alias;
     }
 
     $markername = isset($this->options['markertype']) ? $this->options['markertype'] : 'drupal';
@@ -201,13 +211,19 @@ class gmap_plugin_style_gmap extends views_plugin_style {
               'highlightcolor' => $this->options['highlight_nodearg_color'],
             ),
           );
-          // Marker mode: popup.
-          if ($defaults['markermode'] == 1) {
-            $marker['text'] = $this->row_plugin->render($row);
+          // RMT mode.
+          if ($this->options['enablermt']) {
+            $marker['rmt'] = $row->{$rmt_field};
           }
-          // Marker mode: link.
-          else if ($defaults['markermode'] == 2) {
-            $marker['link'] = url('node/' . $row_nid);
+          else {
+            // Marker mode: popup.
+            if ($defaults['markermode'] == 1) {
+              $marker['text'] = $this->row_plugin->render($row);
+            }
+            // Marker mode: link.
+            else if ($defaults['markermode'] == 2) {
+              $marker['link'] = url('node/' . $row_nid);
+            }
           }
           $markers[] = $marker;
 
@@ -216,6 +232,9 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       }
       if (!empty($markers)) { // Don't draw empty maps.
         $map = gmap_parse_macro($this->options['macro']);
+        if ($this->options['enablermt']) {
+          $map['rmtcallback'] = $this->options['rmtcallback'];
+        }
 
         // If center lon/lat are not empty they are used to center map
         if (!empty($center_lon) && !empty($center_lat)) {
@@ -311,6 +330,30 @@ class gmap_plugin_style_gmap extends views_plugin_style {
       '#default_value' => $this->options['markerfield'],
       '#process' => array('views_process_dependency'),
       '#dependency' => array('edit-style-options-markers' => array('field')),
+    );
+
+    $form['enablermt'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable GMap RMT for markers'),
+      '#description' => t('You can pull the bodies of the markers from a callback instead of defining them inline. This is a performance feature for advanced users.'),
+      '#default_value' => $this->options['enablermt'],
+    );
+    $form['rmtfield'] = array(
+      '#type' => 'select',
+      '#title' => t('RMT field'),
+      '#description' => t('You can use a views field to define the "tail" of the path called back.'),
+      '#options' => $field_options,
+      '#default_value' => $this->options['rmtfield'],
+      '#process' => array('views_process_dependency'),
+      '#dependency' => array('edit-style-options-enablermt' => array(TRUE)),
+    );
+    $form['rmtcallback'] = array(
+      '#type' => 'textfield',
+      '#title' => t('RMT callback path'),
+      '#description' => t('Define the base path to the callback here. The value of the rmt field will be appended.'),
+      '#default_value' => $this->options['rmtcallback'],
+      '#process' => array('views_process_dependency'),
+      '#dependency' => array('edit-style-options-enablermt' => array(TRUE)),
     );
 
     // Hide the taxonomy handling if gmap_taxonomy.module isn't installed.
