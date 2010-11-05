@@ -65,22 +65,31 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     }
     // AJAX content
     if (marker.rmt) {
-      var uri = marker.rmt;
-      // If there was a callback, prefix that.
-      // (If there wasn't, marker.rmt was the FULL path.)
-      if (obj.vars.rmtcallback) {
-        uri = obj.vars.rmtcallback + '/' + marker.rmt;
+      obj.rmtcache = obj.rmtcache || {};
+      
+      // Cached RMT.
+      if (obj.rmtcache[marker.rmt]) {
+        marker.marker.openInfoWindowHtml(obj.rmtcache[marker.rmt]);
       }
-      // @Bevan: I think it makes more sense to do it in this order.
-      // @Bevan: I don't like your choice of variable btw, seems to me like
-      // @Bevan: it belongs in the map object, or at *least* somewhere in
-      // @Bevan: the gmap settings proper...
-      //if (!marker.text && Drupal.settings.loadingImage) {
-      //  marker.marker.openInfoWindowHtml(Drupal.settings.loadingImage);
-      //}
-      $.get(uri, {}, function (data) {
-        marker.marker.openInfoWindowHtml(data);
-      });
+      else {
+        var uri = marker.rmt;
+        // If there was a callback, prefix that.
+        // (If there wasn't, marker.rmt was the FULL path.)
+        if (obj.vars.rmtcallback) {
+          uri = obj.vars.rmtcallback + '/' + marker.rmt;
+        }
+        // @Bevan: I think it makes more sense to do it in this order.
+        // @Bevan: I don't like your choice of variable btw, seems to me like
+        // @Bevan: it belongs in the map object, or at *least* somewhere in
+        // @Bevan: the gmap settings proper...
+        //if (!marker.text && Drupal.settings.loadingImage) {
+        //  marker.marker.openInfoWindowHtml(Drupal.settings.loadingImage);
+        //}
+        $.get(uri, {}, function (data) {
+          obj.rmtcache[marker.rmt] = data;
+          marker.marker.openInfoWindowHtml(data);
+        });
+      }
     }
     // Tabbed content
     else if (marker.tabs) {
