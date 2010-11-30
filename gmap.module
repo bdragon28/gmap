@@ -76,9 +76,9 @@ function gmap_theme() {
  * We can't use module_invoke_all() because we pass $map by reference.
  */
 function gmap_module_invoke($op, &$map) {
+  $return = array();
   foreach (module_implements('gmap') as $module) {
     $function = $module . '_gmap';
-    $return = array();
     $result = $function($op, $map);
     if (isset($result) && is_array($result)) {
       $return = array_merge_recursive($return, $result);
