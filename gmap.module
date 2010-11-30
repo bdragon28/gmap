@@ -1296,3 +1296,14 @@ function gmap_ajax_data_alter(&$object, $views, $view) {
   $object->__callbacks = array_merge($object->__callbacks, array('Drupal.gmapAjax.ajaxFixMaps'));
 }
 
+/**
+ * Preprocess function for theme_gmap_view_gmap().
+ */
+function template_preprocess_gmap_view_gmap(&$vars) {
+  $vars['map_object'] = $vars['rows'];
+  // Rows is actually our map object.
+  unset($vars['rows']);
+
+  // Theme the map.
+  $vars['map'] = theme('gmap', array('#settings' => $vars['map_object']));
+}

@@ -24,13 +24,3 @@ function gmap_views_handlers() {
 }
 
 */
-
-
-function template_preprocess_gmap_view_gmap(&$vars) {
-  $vars['map_object'] = $vars['rows'];
-  // Rows is actually our map object.
-  unset($vars['rows']);
-
-  // Theme the map.
-  $vars['map'] = theme('gmap', array('#settings' => $vars['map_object']));
-}
