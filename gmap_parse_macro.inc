@@ -62,6 +62,7 @@ function _gmap_parse_macro($instring, $ver = 2) {
   // Get a list of keys that are "multiple."
   $m = array();
   $multiple = gmap_module_invoke('macro_multiple', $m);
+  $def = gmap_defaults();
 
   // Remove leading and trailing tags
   if (substr(trim($instring), -1)==']') {
@@ -154,19 +155,16 @@ function _gmap_parse_macro($instring, $ver = 2) {
   }
   // Fixup legacy lines.
   if (isset($m['line1'])) {
-    $def = gmap_defaults();
     if (!isset($m['line'])) $m['line'] = array();
     $m['line'][] = $def['line_colors'][0] .':'. $m['line1'];
     unset($m['line1']);
   }
   if (isset($m['line2'])) {
-    $def = gmap_defaults();
     if (!isset($m['line'])) $m['line'] = array();
     $m['line'][] = $def['line_colors'][1] .':'. $m['line3'];
     unset($m['line2']);
   }
   if (isset($m['line3'])) {
-    $def = gmap_defaults();
     if (!isset($m['line'])) $m['line'] = array();
     $m['line'][] = $def['line_colors'][2] .':'. $m['line3'];
     unset($m['line3']);
@@ -253,7 +251,12 @@ function _gmap_parse_macro($instring, $ver = 2) {
       $sep = ',';
     }
     $m['behavior-temp'] = explode($sep, $m['behavior']);
-    $m['behavior'] = array();
+    // 2010 Nov 30 change:
+    // Fix a very old bug regarding behavior flags:
+    // It was always supposed to defer to the site default behaviors for every
+    // flag not defined by the macro, but this was just plain not happening.
+    // This is a backwards-incompatible change
+    $m['behavior'] = $def['behavior'];
     foreach ($m['behavior-temp'] as $v) {
       $m['behavior'][substr($v, 1)] = (substr($v, 0, 1) == '+') ? TRUE : FALSE;
     }
