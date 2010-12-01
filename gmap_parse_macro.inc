@@ -262,6 +262,10 @@ function _gmap_parse_macro($instring, $ver = 2) {
     }
     unset($m['behavior-temp']);
   }
+  else {
+    // Inherit site default behavior.
+    $m['behavior'] = $def['behavior'];
+  }
 
   // tcontrol now is mtc.
   if (isset($m['tcontrol'])) {
