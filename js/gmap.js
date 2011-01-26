@@ -442,6 +442,27 @@ Drupal.gmap.addHandler('latlon', function (elem) {
 });
 
 ////////////////////////////////////////
+//          Extent widget             //
+////////////////////////////////////////
+Drupal.gmap.addHandler('extent', function (elem) {
+  var obj = this;
+  // Respond to incoming extent changes.
+  var binding = obj.bind("move", function () {
+    var b = obj.map.getBounds();
+    elem.value = '' + b.getSouthWest().lng() + ',' + b.getSouthWest().lat() + ',' + b.getNorthEast().lng() + ',' + b.getNorthEast().lat();
+  });
+  // Send out outgoing extent changes.
+  jQuery(elem).change(function () {
+    var t = this.value.split(',');
+    var b = new GLatLngBounds(new GLatLng(Number(t[1]), Number(t[0])), new GLatLng(Number(t[3]), Number(t[2])));
+    obj.vars.latitude = b.getCenter().lat();
+    obj.vars.longitude = b.getCenter().lng();
+    obj.vars.zoom = obj.map.getBoundsZoomLevel(b);
+    obj.map.setCenter(new GLatLng(obj.vars.latitude, obj.vars.longitude), obj.vars.zoom);
+  });
+});
+
+////////////////////////////////////////
 //          Maptype widget            //
 ////////////////////////////////////////
 Drupal.gmap.addHandler('maptype', function (elem) {
