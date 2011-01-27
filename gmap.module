@@ -828,6 +828,19 @@ function gmap_map_cleanup(&$map) {
     $map['latlon'] = $map['latlong'];
     unset($map['latlong']);
   }
+  // Normalize extent.
+  if (isset($map['extent']) && is_string($map['extent'])) {
+    $tmp = explode(',', $map['extent']);
+    if (count($tmp) == 4) {
+      // String form of extent has x,y, but native array form is lat,lon, so need to flip them a bit.
+      $map['extent'] = array(array($tmp[1], $tmp[0]), array($tmp[3], $tmp[2]));
+    }
+    else {
+      // Extent was unparseable, don't pass it.
+      unset($map['extent']);
+    }
+  }
+    
   if (isset($map['latlon']) && (!isset($map['latitude']) || !isset($map['longitude']))) {
     list($map['latitude'], $map['longitude']) = explode(',', $map['latlon']);
   }
