@@ -196,8 +196,8 @@ class gmap_plugin_style_gmap extends views_plugin_style {
           }
 
           $tooltip = "";
-          if ($this->options['tooltipenabled'] && $row->$tooltip_field) {
-            $tooltip = $row->$tooltip_field;
+          if ($this->options['tooltipenabled'] && !empty($tooltip_field) && !empty($row->{$tooltip_field})) {
+            $tooltip = $row->{$tooltip_field};
           }
 
           $marker = array(
