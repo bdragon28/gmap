@@ -41,3 +41,24 @@
 .gmap-map .gmnoprint tbody {
   border-top: none;
 }
+
+.gmap-custom-control-button {
+  position: absolute;
+  background-color: white;
+  border: 1px solid black;
+  text-align: center;
+  width: 5em;
+  cursor: pointer;
+}
+
+.gmap-custom-control-button div {
+  font-size: 12px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: white rgb(176, 176, 176) rgb(176, 176, 176) white;
+}
+
+.gmap-custom-control-button-disabled {
+  color: grey;
+}
+
