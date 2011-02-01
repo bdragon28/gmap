@@ -63,6 +63,25 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     if (marker.text) {
       marker.marker.openInfoWindowHtml(marker.text);
     }
+    // Info Window Query / Info Window Offset
+    if (marker.iwq || (obj.vars.iwq && typeof marker.iwo != 'undefined')) {
+      var iwq, iwo;
+      if (obj.vars.iwq) {
+        iwq = obj.vars.iwq;
+      }
+      if (marker.iwq) {
+        iwq = marker.iwq;
+      }
+      iwo = 0;
+      if (marker.iwo) {
+        iwo = marker.iwo;
+      }
+      // Create a container to store the cloned DOM elements.
+      var el = document.createElement('div');
+      // Clone the matched object, run through the clone, stripping off ids, and move the clone into the container.
+      jQuery(iwq).eq(iwo).clone(false).find('*').removeAttr('id').appendTo(jQuery(el));
+      marker.marker.openInfoWindow(el);
+    }
     // AJAX content
     if (marker.rmt) {
       obj.rmtcache = obj.rmtcache || {};

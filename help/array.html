@@ -27,6 +27,7 @@ can't do with a macro.</p>
     '<a href="#tl-styles"  >styles</a>' => array(),     // Shape style definitions.
     '<a href="#tl-behavior">behavior</a>' => array(),   // Various map behavior flags.
     '<a href="#tl-rmtcb"   >rmtcallback</a>' =>         // Remote callback for ahah info windows.
+    '<a href="#tl-iwq"     >iwq</a>' =>                 // Info window DOM query.
     '<a href="#tl-markers" >markers</a>' => array(),    // Array of markers to place on the map.
     '<a href="#tl-shapes"  >shapes</a>' => array(),     // Array of shapes to place on the map.
   );
@@ -339,6 +340,33 @@ can't do with a macro.</p>
 </dl>
 </li>
 
+<li><a name="tl-iwq">iwq</a>
+<dl>
+<dt>Values:</dt>
+<dd>jQuery query for matching DOM elements. (String)</dd>
+<dt>Description:</dt>
+<dd>
+  <p>Info Window Query (default).</p>
+  <p>This specifies the query to use to match existing DOM elements to use for
+  info window contents. You can use this in combination with
+  <a href="#ma-iwo">iwo</a> on markers to make info windows copied from data
+  already on the page. Additionally, <a href="#ma-iwq">iwq</a> can also be
+  specified directly on a marker.</p>
+</dd>
+<dt>Example:</dt>
+<dd>.markerdata&gt;.marker</dd>
+<dt>Notes:</dt>
+<dd>
+  Each marker that has <a href="#ma-iwo">iwo</a> set and does not have 
+  <a href="#ma-iwq">iwq</a> set will use the default iwq from the map.
+
+  A marker with neither set will not use the iwq method of providing info
+  window content. This allows mixing methods of providing info window
+  content on a single map.
+</dd>
+</dl>
+</li>
+
 <li><a name="tl-markers">markers</a>
 <dl>
 <dt>Values:</dt>
@@ -514,6 +542,8 @@ javascript side automatically. This is very useful when writing custom code.</p>
     '<a href="#ma-tabs"   >tabs</a>' => array(),              // Tabbed GInfoWindow contents.
     '<a href="#ma-link"   >link</a>' => 'http://google.com',  // Use marker as hyperlink.
     '<a href="#ma-rmt"    >rmt</a>' => '',                    // Argument to pass for rmt
+    '<a href="#ma-iwq"    >iwq</a>' => '',                    // Info window query
+    '<a href="#ma-iwo"    >iwo</a>' => 0,                     // Info window offset
     '<a href="#ma-opts"   >opts</a>' => array(),              // Use custom GMarkerOptions.
     '<a href="#ma-options">options</a>' => array(),           // Misc. behavior modifications.
   );
@@ -650,7 +680,7 @@ javascript side automatically. This is very useful when writing custom code.</p>
 </dl>
 </li>
 
-<li><a name="ma-foo">rmt</a>
+<li><a name="ma-rmt">rmt</a>
 <dl>
 <dt>Values:</dt>
 <dd>Path to append to the rmtcallback. (String)</dd>
@@ -664,6 +694,48 @@ javascript side automatically. This is very useful when writing custom code.</p>
 <dt>Notes:</dt>
 <dd>
   If you need to pass multiple identifiers, just seperate them with slashes.
+</dd>
+</dl>
+</li>
+
+<li><a name="ma-iwq">iwq</a>
+<dl>
+<dt>Values:</dt>
+<dd>jQuery query for matching DOM elements. (String)</dd>
+<dt>Description:</dt>
+<dd>
+  <p>Info Window Query.</p>
+  <p>This specifies the query to use to match existing DOM elements to use for
+  info window contents. You can also specify a default <a href="#tl-iwq">iwq</a>
+  at the top level.</p>
+</dd>
+<dt>Example:</dt>
+<dd>.markerdata&gt;.marker</dd>
+<dt>Notes:</dt>
+<dd>
+  When iwq is set on the marker, <a href="#ma-iwo">iwo</a> will default to 0.
+  Otherwise, you must set iwo if you want the default iwq to be used.
+</dd>
+</dl>
+</li>
+
+<li><a name="ma-iwo">iwo</a>
+<dl>
+<dt>Values:</dt>
+<dd>Zero based index to choose a single match from the iwq query. (Integer)</dd>
+<dt>Description:</dt>
+<dd>
+  <p>Info Window offset.</p>
+  <p>When using iwq, iwo will select which of the matches to use for the info
+  window.</p>
+</dd>
+<dt>Example:</dt>
+<dd>0</dd>
+<dt>Notes:</dt>
+<dd>
+  If using the default <a href="#tl-iwq">iwq</a>, you must set iwo even if you
+  are using offset 0. This is to allow mixing methods of showing info windows
+  within the same map.
 </dd>
 </dl>
 </li>
