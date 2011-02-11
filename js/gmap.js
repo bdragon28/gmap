@@ -277,6 +277,15 @@ Drupal.gmap.addHandler('gmap', function (elem) {
       opts.mapTypeNames.push('Physical');
     }
 
+    if (obj.vars.draggableCursor) {
+      opts.draggableCursor = obj.vars.draggableCursor;
+    }
+    if (obj.vars.draggingCursor) {
+      opts.draggingCursor = obj.vars.draggingCursor;
+    }
+    if (obj.vars.backgroundColor) {
+      opts.backgroundColor = obj.vars.backgroundColor;
+    }
   });
 
   obj.bind("boot", function () {
