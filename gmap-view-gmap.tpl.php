@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file gmap-view-gmap.tpl.php
  * Default view template for a gmap.

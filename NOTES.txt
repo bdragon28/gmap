@@ -1,4 +1,3 @@
-$Id$
 
 General notes for getting the most out of gmap.
 

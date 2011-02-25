@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 function gmap_marker_labels_potx() {
   $marker_labels = array(

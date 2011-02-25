@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * gmap.strings.php
  *

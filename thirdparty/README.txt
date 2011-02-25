@@ -1,4 +1,3 @@
-/* $Id$ */
 
 Third party code.
 Place downloaded third party code in this folder if instructed to by GMap.
