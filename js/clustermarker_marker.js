@@ -21,7 +21,8 @@ Drupal.gmap.addHandler('gmap', function (elem) {
 
   obj.bind('iconsready', function () {
     if (!obj.clusterMarker) {
-      var options = Drupal.settings.gmap_markermanager;
+      // Force copying the settings so we don't overwrite them.
+      var options = jQuery.extend(true, {}, Drupal.settings.gmap_markermanager);
       if (options.clusterMarkerIcon.length) {
         options.clusterMarkerIcon = Drupal.gmap.getIcon(options.clusterMarkerIcon, 0);
       }
