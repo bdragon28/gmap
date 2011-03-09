@@ -16,11 +16,11 @@ Drupal.gmap.addHandler('gmap', function (elem) {
   var obj = this;
 
   obj.bind('init', function () {
-    obj.clustermarker = 0;
+    obj.clusterMarker = 0;
   });
 
   obj.bind('iconsready', function () {
-    if (!obj.clustermarker) {
+    if (!obj.clusterMarker) {
       var options = Drupal.settings.gmap_markermanager;
       if (options.clusterMarkerIcon.length) {
         options.clusterMarkerIcon = Drupal.gmap.getIcon(options.clusterMarkerIcon, 0);
