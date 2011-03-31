@@ -208,6 +208,23 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     obj.map.panTo(new GLatLng(obj.vars.latitude, obj.vars.longitude));
   });
 
+  // Respond to incoming recenter commands.
+  _ib.recenter = obj.bind("recenter", function (vars) {
+    if (vars) {
+      if (vars.bounds) {
+        obj.vars.latitude = vars.bounds.getCenter().lat();
+        obj.vars.longitude = vars.bounds.getCenter().lng();
+        obj.vars.zoom = obj.map.getBoundsZoomLevel(vars.bounds);
+      }
+      else {
+        obj.vars.latitude = vars.latitude;
+        obj.vars.longitude = vars.longitude;
+        obj.vars.zoom = vars.zoom;
+      }
+    }
+    obj.map.setCenter(new GLatLng(obj.vars.latitude, obj.vars.longitude), obj.vars.zoom);
+  });
+
   // Respond to incoming map type changes
   _ib.mtc = obj.bind("maptypechange", function () {
     var i;
