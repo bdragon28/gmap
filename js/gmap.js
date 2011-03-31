@@ -51,7 +51,10 @@
     globalChange: function (name, userdata) {
       for (var mapid in Drupal.settings.gmap) {
         if (Drupal.settings.gmap.hasOwnProperty(mapid)) {
-          maps[mapid].change(name, -1, userdata);
+          // Skip maps that are set up but not shown, etc.
+          if (maps[mapid]) {
+            maps[mapid].change(name, -1, userdata);
+          }
         }
       }
     },
